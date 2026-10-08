@@ -283,7 +283,9 @@ final class CatalogStore {
         let generation = persistenceGeneration
         catalogError = nil
         defer {
-            if generation == persistenceGeneration { isLoadingCatalogs = false }
+            if generation == persistenceGeneration {
+                isLoadingCatalogs = false
+            }
         }
         let sessionAtStart = rememberedCatalogs
         await catalogSaveTask?.value
@@ -309,8 +311,7 @@ final class CatalogStore {
             // Retain unavailable entries so a later save cannot erase them.
             loadedCatalogs[URL(filePath: catalog.path).standardizedFileURL] = catalog
             let resolution: (url: URL, isStale: Bool)
-            do { resolution = try resolveCatalog(catalog) }
-            catch {
+            do { resolution = try resolveCatalog(catalog) } catch {
                 unavailablePaths.append(catalog.path)
                 continue
             }
@@ -363,7 +364,9 @@ final class CatalogStore {
         if !unavailablePaths.isEmpty {
             catalogError = "Some saved folders could not be restored. Their entries have been kept. Reconnect the drive or add the folders again:\n" + unavailablePaths.joined(separator: "\n")
         }
-        if renewedBookmarks || hadSessionCatalogs || !removedCatalogURLs.isEmpty { await saveRememberedCatalogs() }
+        if renewedBookmarks || hadSessionCatalogs || !removedCatalogURLs.isEmpty {
+            await saveRememberedCatalogs()
+        }
         await loadChildren(for: rootFolders)
     }
 

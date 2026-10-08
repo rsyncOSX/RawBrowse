@@ -139,8 +139,7 @@ final class FileBrowserViewModel {
     }
 
     func openZoom(for file: BrowserFileItem? = nil, initialZoomMode: BrowserZoomInitialMode = .fit,
-                  showFocusPointOnOpen: Bool = false, preserveViewport: Bool = false)
-    {
+                  showFocusPointOnOpen: Bool = false, preserveViewport: Bool = false) {
         if let file {
             selection.selectedFileID = file.id
         }

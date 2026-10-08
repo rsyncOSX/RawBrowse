@@ -2,14 +2,14 @@ import Foundation
 
 /// One balanced grant, shared by the catalog session and its in-flight work.
 /// Releasing the session's reference never revokes a worker's grant.
-nonisolated final class CatalogAccessLease: Sendable {
+final nonisolated class CatalogAccessLease: Sendable {
     let url: URL
     private let stopAccess: @Sendable (URL) -> Void
 
     init?(
         url: URL,
         startAccess: @Sendable (URL) -> Bool = { $0.startAccessingSecurityScopedResource() },
-        stopAccess: @escaping @Sendable (URL) -> Void = { $0.stopAccessingSecurityScopedResource() }
+        stopAccess: @escaping @Sendable (URL) -> Void = { $0.stopAccessingSecurityScopedResource() },
     ) {
         guard startAccess(url) else { return nil }
         self.url = url
@@ -27,7 +27,9 @@ final class CatalogAccess {
 
     func open(_ url: URL) -> Bool {
         let url = url.standardizedFileURL
-        if sessions[url] != nil { return true }
+        if sessions[url] != nil {
+            return true
+        }
         guard let lease = CatalogAccessLease(url: url) else { return false }
         sessions[url] = lease
         return true

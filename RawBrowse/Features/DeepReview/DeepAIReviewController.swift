@@ -152,5 +152,4 @@ final class DeepAIReviewController {
     func cancel() {
         feature.cancel()
     }
-
 }

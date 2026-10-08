@@ -11,8 +11,8 @@ struct GitHubAIModelDownloadTests {
     }
 
     @Test(arguments: ["https://example.com/weights", "http://github.com/rsyncOSX/AI-models/releases/download/v1/weights", "https://github.com/other/models/releases/download/v1/weights"])
-    func `manifest restricts model downloads to the configured repository`(_ url: String) {
-        #expect(!GitHubAIModelManifest.File.isAllowedURL(URL(string: url)!))
+    func `manifest restricts model downloads to the configured repository`(_ url: String) throws {
+        #expect(try !GitHubAIModelManifest.File.isAllowedURL(#require(URL(string: url))))
     }
 
     @Test
@@ -24,7 +24,7 @@ struct GitHubAIModelDownloadTests {
     }
 
     @Test
-    func `downloaded file must match both size and checksum`() async throws {
+    func `downloaded file must match both size and checksum`() throws {
         let url = URL.temporaryDirectory.appending(path: UUID().uuidString)
         defer { try? FileManager.default.removeItem(at: url) }
         let content = Data("model data".utf8)

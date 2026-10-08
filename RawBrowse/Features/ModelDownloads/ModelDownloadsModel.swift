@@ -19,7 +19,7 @@ final class ModelDownloadsModel {
         clipModelRefreshGeneration &+= 1
         let generation = clipModelRefreshGeneration
         let snapshot = await clipModelDownloadCoordinator.snapshot()
-        guard (!Task.isCancelled || allowCancelled), clipModelRefreshGeneration == generation else { return }
+        guard !Task.isCancelled || allowCancelled, clipModelRefreshGeneration == generation else { return }
         managedCLIPModelLocations = snapshot.managedModelLocations
         clipModelDownloadStates = snapshot.states
         locationsChanged?(managedCLIPModelLocations)

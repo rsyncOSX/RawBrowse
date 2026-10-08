@@ -17,12 +17,16 @@ struct ConcurrencyOwnershipTests {
         runner.start { token in
             started.open()
             await release.wait() // Deliberately ignores cancellation.
-            if runner.isCurrent(token) { published.append(1) }
+            if runner.isCurrent(token) {
+                published.append(1)
+            }
             finished.open()
         }
         await started.wait()
         runner.start { token in
-            if runner.isCurrent(token) { published.append(2) }
+            if runner.isCurrent(token) {
+                published.append(2)
+            }
             replacementFinished.open()
         }
         await replacementFinished.wait()
@@ -41,7 +45,9 @@ struct ConcurrencyOwnershipTests {
         runner.start { token in
             started.open()
             await release.wait()
-            if runner.isCurrent(token) { published = true }
+            if runner.isCurrent(token) {
+                published = true
+            }
             finished.open()
         }
         await started.wait()
@@ -52,13 +58,13 @@ struct ConcurrencyOwnershipTests {
     }
 
     @Test
-    func `Worker retains a balanced grant after the session releases it`() async throws {
+    func `Worker retains a balanced grant after the session releases it`() async {
         let counts = OSAllocatedUnfairLock(initialState: (starts: 0, stops: 0))
         let url = URL(filePath: "/catalog")
         var session = CatalogAccessLease(
             url: url,
             startAccess: { _ in counts.withLock { $0.starts += 1 }; return true },
-            stopAccess: { _ in counts.withLock { $0.stops += 1 } }
+            stopAccess: { _ in counts.withLock { $0.stops += 1 } },
         )
         #expect(session != nil)
         let release = OwnershipGate()
@@ -80,7 +86,7 @@ struct ConcurrencyOwnershipTests {
         let lease = CatalogAccessLease(
             url: URL(filePath: "/catalog"),
             startAccess: { _ in false },
-            stopAccess: { _ in stops.withLock { $0 += 1 } }
+            stopAccess: { _ in stops.withLock { $0 += 1 } },
         )
         #expect(lease == nil)
         #expect(stops.withLock { $0 } == 0)
@@ -94,7 +100,9 @@ private final class OwnershipGate {
     private var waiters: [CheckedContinuation<Void, Never>] = []
 
     func wait() async {
-        if isOpen { return }
+        if isOpen {
+            return
+        }
         await withCheckedContinuation { waiters.append($0) }
     }
 
@@ -102,6 +110,8 @@ private final class OwnershipGate {
         isOpen = true
         let pending = waiters
         waiters.removeAll()
-        for waiter in pending { waiter.resume() }
+        for waiter in pending {
+            waiter.resume()
+        }
     }
 }

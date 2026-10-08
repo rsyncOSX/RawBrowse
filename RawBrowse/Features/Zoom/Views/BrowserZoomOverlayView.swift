@@ -106,8 +106,7 @@ struct BrowserZoomOverlayView: View {
 
                         if zoomPresentation.isZoomFocusPointVisible,
                            !zoom.useDevelopedRAW || raw9.raw9Adjustments.crop == nil,
-                           let focusPoint = zoom.zoomExifInfo?.focusPoint
-                        {
+                           let focusPoint = zoom.zoomExifInfo?.focusPoint {
                             FocusPointMarker(
                                 focusPoint: focusPoint,
                                 imageSize: CGSize(width: image.width, height: image.height),
@@ -231,9 +230,8 @@ struct BrowserZoomOverlayView: View {
                     }
                     if zoom.useDevelopedRAW,
                        raw9SupportedURL != nil,
-                       raw9SupportedURL == selection.selectedFile?.url
-                    {
-                        centeredControlRow(height: 46) {
+                       raw9SupportedURL == selection.selectedFile?.url {
+                        centeredControlRow(height: 62) {
                             rawAdjustmentControls
                         }
                     }
@@ -368,100 +366,117 @@ struct BrowserZoomOverlayView: View {
     private var rawAdjustmentControls: some View {
         @Bindable var raw9 = raw9
 
-        return HStack(spacing: 8) {
-            adjustmentSlider("Temp K", value: Binding(
-                get: { raw9.raw9Adjustments.temperature ?? cameraTemperature },
-                set: { raw9.raw9Adjustments.temperature = $0 },
-            ), range: 2000 ... 50000, fractionDigits: 0)
-            adjustmentSlider("Tint", value: Binding(
-                get: { raw9.raw9Adjustments.tint ?? cameraTint },
-                set: { raw9.raw9Adjustments.tint = $0 },
-            ), range: -150 ... 150)
-            Button {
-                isPickingWhiteBalance.toggle()
-            } label: {
-                Label(isPickingWhiteBalance ? "Cancel picker" : "White balance", systemImage: "eyedropper")
-            }
-            .foregroundStyle(isPickingWhiteBalance ? .yellow : .secondary)
-            .disabled(isSamplingWhiteBalance || zoom.zoomImage == nil)
-            .help("Click a neutral white or gray area to set white balance")
-            adjustmentSlider("Exposure", value: $raw9.raw9Adjustments.exposure, range: -3 ... 3)
-            adjustmentSlider("Noise", value: $raw9.raw9Adjustments.noiseReduction, range: -1 ... 1)
-            adjustmentSlider("Sharpness", value: $raw9.raw9Adjustments.sharpness, range: -1 ... 1)
-            adjustmentSlider("Contrast", value: $raw9.raw9Adjustments.contrast, range: -1 ... 1)
-            adjustmentSlider("Shadows", value: Binding(
-                get: { raw9.raw9Adjustments.shadowBoost ?? toneDefaults.shadowBoost },
-                set: { raw9.raw9Adjustments.shadowBoost = $0 },
-            ), range: 0 ... 2)
-                .disabled((raw9.raw9Adjustments.globalToneMap ?? toneDefaults.globalToneMap) == 0)
-                .help("RAW 9 shadow boost. Requires a nonzero global tone curve.")
-            adjustmentSlider("Tone", value: Binding(
-                get: { raw9.raw9Adjustments.globalToneMap ?? toneDefaults.globalToneMap },
-                set: { raw9.raw9Adjustments.globalToneMap = $0 },
-            ), range: 0 ... 1)
-                .help("Amount of the RAW 9 global tone curve")
-            Button { prepareCrop() } label: {
-                if isPreparingCrop {
-                    HStack(spacing: 4) {
-                        ProgressView()
-                            .controlSize(.mini)
-                        Text("Preparing crop…")
-                    }
-                } else {
-                    Label("Crop", systemImage: "crop")
+        return HStack(spacing: 12) {
+            rawControlGroup {
+                adjustmentSlider("Temp K", value: Binding(
+                    get: { raw9.raw9Adjustments.temperature ?? cameraTemperature },
+                    set: { raw9.raw9Adjustments.temperature = $0 },
+                ), range: 2000 ... 50000, fractionDigits: 0)
+                adjustmentSlider("Tint", value: Binding(
+                    get: { raw9.raw9Adjustments.tint ?? cameraTint },
+                    set: { raw9.raw9Adjustments.tint = $0 },
+                ), range: -150 ... 150)
+                Button {
+                    isPickingWhiteBalance.toggle()
+                } label: {
+                    Label(isPickingWhiteBalance ? "Cancel picker" : "White balance", systemImage: "eyedropper")
                 }
+                .foregroundStyle(isPickingWhiteBalance ? .yellow : .secondary)
+                .disabled(isSamplingWhiteBalance || zoom.zoomImage == nil)
+                .help("Click a neutral white or gray area to set white balance")
             }
-            .disabled(isPreparingCrop)
-            .sheet(item: $cropSource) { source in
-                RAW9CropEditor(source: source)
+            rawControlGroup {
+                adjustmentSlider("Exposure", value: $raw9.raw9Adjustments.exposure, range: -3 ... 3)
+                    .help("Exposure compensation in stops. Zero preserves the default; move left to darken or right to brighten.")
             }
-            Menu {
-                ForEach(RAW9PreviewRenderer.exportTypes, id: \.self) { identifier in
-                    if let type = UTType(identifier) {
-                        Button(type.localizedDescription ?? identifier) { exportRAW(type: type) }
-                    }
-                }
-                Button("HEIF (10-bit)") { exportRAW(type: .heic, heif10: true) }
-                if !RAW9PreviewRenderer.exportTypes.contains("com.ilm.openexr-image") {
-                    Button("OpenEXR") {
-                        exportRAW(type: UTType(filenameExtension: "exr") ?? UTType(exportedAs: "com.ilm.openexr-image"))
+            rawControlGroup {
+                adjustmentSlider("Noise", value: $raw9.raw9Adjustments.noiseReduction, range: -1 ... 1)
+                adjustmentSlider("Sharpness", value: $raw9.raw9Adjustments.sharpness, range: -1 ... 1)
+            }
+            rawControlGroup {
+                adjustmentSlider("Contrast", value: $raw9.raw9Adjustments.contrast, range: -1 ... 1)
+                adjustmentSlider("Shadows", value: Binding(
+                    get: { raw9.raw9Adjustments.shadowBoost ?? toneDefaults.shadowBoost },
+                    set: { raw9.raw9Adjustments.shadowBoost = $0 },
+                ), range: 0 ... 2)
+                    .disabled((raw9.raw9Adjustments.globalToneMap ?? toneDefaults.globalToneMap) == 0)
+                    .help("Shadow amount starts at the photo’s decoder default. Lower values darken shadows; higher values lighten them. Requires a nonzero tone curve.")
+                adjustmentSlider("Tone curve", value: Binding(
+                    get: { raw9.raw9Adjustments.globalToneMap ?? toneDefaults.globalToneMap },
+                    set: { raw9.raw9Adjustments.globalToneMap = $0 },
+                ), range: 0 ... 1)
+                    .help("RAW tone curve: 0 is linear; 1 is the full default curve. This is an amount, not a centered adjustment.")
+            }
+            rawControlGroup {
+                Button { prepareCrop() } label: {
+                    if isPreparingCrop {
+                        HStack(spacing: 4) {
+                            ProgressView()
+                                .controlSize(.mini)
+                            Text("Preparing crop…")
+                        }
+                    } else {
+                        Label("Crop", systemImage: "crop")
                     }
                 }
-            } label: {
-                Label(exportQueue.outstandingCount > 0 ? "Export (\(exportQueue.outstandingCount))" : "Export", systemImage: "square.and.arrow.up")
-            }
-            .disabled(isPreparingCrop)
-            .help("Exports run in the background in request order, even after Zoom View closes.")
-            .alert("RAW 9", isPresented: Binding(get: { rawExportError != nil || exportQueue.lastError != nil }, set: {
-                if !$0 {
-                    rawExportError = nil
-                    exportQueue.lastError = nil
+                .disabled(isPreparingCrop)
+                .sheet(item: $cropSource) { source in
+                    RAW9CropEditor(source: source)
                 }
-            })) {
-                Button("OK") { rawExportError = nil; exportQueue.lastError = nil }
-            } message: { Text(rawExportError ?? exportQueue.lastError ?? "") }
-            if let error = raw9.raw9SidecarError {
-                Image(systemName: "exclamationmark.triangle.fill")
-                    .foregroundStyle(.yellow)
-                    .help(error)
-                    .accessibilityLabel(error)
+                Menu {
+                    ForEach(RAW9PreviewRenderer.exportTypes, id: \.self) { identifier in
+                        if let type = UTType(identifier) {
+                            Button(type.localizedDescription ?? identifier) { exportRAW(type: type) }
+                        }
+                    }
+                    Button("HEIF (10-bit)") { exportRAW(type: .heic, heif10: true) }
+                    if !RAW9PreviewRenderer.exportTypes.contains("com.ilm.openexr-image") {
+                        Button("OpenEXR") {
+                            exportRAW(type: UTType(filenameExtension: "exr") ?? UTType(exportedAs: "com.ilm.openexr-image"))
+                        }
+                    }
+                } label: {
+                    Label(exportQueue.outstandingCount > 0 ? "Export (\(exportQueue.outstandingCount))" : "Export", systemImage: "square.and.arrow.up")
+                }
+                .disabled(isPreparingCrop)
+                .help("Exports run in the background in request order, even after Zoom View closes.")
+                .alert("RAW 9", isPresented: Binding(get: { rawExportError != nil || exportQueue.lastError != nil }, set: {
+                    if !$0 {
+                        rawExportError = nil
+                        exportQueue.lastError = nil
+                    }
+                })) {
+                    Button("OK") { rawExportError = nil; exportQueue.lastError = nil }
+                } message: { Text(rawExportError ?? exportQueue.lastError ?? "") }
+                if let error = raw9.raw9SidecarError {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .foregroundStyle(.yellow)
+                        .help(error)
+                        .accessibilityLabel(error)
+                }
+                Button("Reset") {
+                    whiteBalanceTask?.cancel()
+                    isSamplingWhiteBalance = false
+                    isPickingWhiteBalance = false
+                    raw9.raw9Adjustments = RAW9Adjustments()
+                }
+                .disabled(raw9.raw9Adjustments == RAW9Adjustments())
             }
-            Button("Reset") {
-                whiteBalanceTask?.cancel()
-                isSamplingWhiteBalance = false
-                isPickingWhiteBalance = false
-                raw9.raw9Adjustments = RAW9Adjustments()
-            }
-            .disabled(raw9.raw9Adjustments == RAW9Adjustments())
         }
         .controlSize(.mini)
         .font(.caption2)
         .foregroundStyle(.secondary)
         .tint(.white.opacity(0.65))
-        .padding(.horizontal, 8)
-        .padding(.vertical, 6)
-        .background(.black.opacity(0.35), in: RoundedRectangle(cornerRadius: 8))
         .help("RAW 9 adjustments are saved automatically to a sidecar beside the original. Noise, sharpness and contrast are offsets from camera defaults.")
+    }
+
+    private func rawControlGroup(@ViewBuilder content: () -> some View) -> some View {
+        HStack(spacing: 10, content: content)
+            .frame(minHeight: 40)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 6)
+            .background(ZoomBadgeStyle.fill, in: RoundedRectangle(cornerRadius: 26, style: .continuous))
+            .shadow(color: .black.opacity(0.35), radius: 2, x: 0, y: 1)
     }
 
     private func prepareCrop() {
@@ -714,8 +729,7 @@ struct BrowserZoomOverlayView: View {
               viewportSize.height > 0
         else { return }
         if zoomPresentation.zoomLaunchContext.showFocusPointOnOpen,
-           !zoom.isZoomExifInfoLoaded
-        {
+           !zoom.isZoomExifInfoLoaded {
             return
         }
         applyActualPixelsZoom(imageSize: imageSize, viewportSize: viewportSize)

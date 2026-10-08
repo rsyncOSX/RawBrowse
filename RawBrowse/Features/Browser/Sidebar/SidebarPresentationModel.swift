@@ -61,8 +61,7 @@ final class SidebarPresentationModel {
         guard !folders.isEmpty else { return nil }
 
         let destinationIndex: Int = if let selectedFolder,
-                                       let selectedIndex = folders.firstIndex(where: { $0.id == selectedFolder.id })
-        {
+                                       let selectedIndex = folders.firstIndex(where: { $0.id == selectedFolder.id }) {
             selectedIndex + offset
         } else {
             offset > 0 ? folders.startIndex : folders.index(before: folders.endIndex)

@@ -76,7 +76,7 @@ struct BrowserAIWorkspaceView: View {
                     reviewFiles = []
                 },
                 isEmbedded: true,
-                canRunSelection: viewModel.canDeepReviewSelection
+                canRunSelection: viewModel.canDeepReviewSelection,
             )
             .frame(height: 420)
         }

@@ -151,7 +151,7 @@ actor RAW9PreviewRenderer {
                 maximumDimension: CGFloat? = nil) throws -> CGImage {
         try Task.checkCancellation()
         let key = try RAW9RenderedPreviewCache.Key(url: url, adjustments: adjustments,
-                                                  bitDepth: bitDepth, maximumDimension: maximumDimension)
+                                                   bitDepth: bitDepth, maximumDimension: maximumDimension)
         if let image = previews.image(for: key) {
             Logger.process.debugMessageOnly("RAW 9 preview cache hit: \(url.lastPathComponent)")
             return image
@@ -324,7 +324,9 @@ nonisolated struct RAW9RenderedPreviewCache {
     private struct Entry {
         let key: Key
         let image: CGImage
-        var cost: Int { image.bytesPerRow * image.height }
+        var cost: Int {
+            image.bytesPerRow * image.height
+        }
     }
 
     let byteLimit: Int

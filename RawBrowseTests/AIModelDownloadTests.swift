@@ -33,6 +33,7 @@ struct AIModelDownloadTests {
         let acceptance = try await persisted.acceptance(for: descriptor)
         #expect(acceptance?.matches(descriptor: descriptor) == true)
     }
+
     @Test @MainActor
     func `cancelled removal refreshes state`() async {
         let coordinator = CLIPModelDownloadCoordinator(service: CancelledRemovalService())
@@ -44,7 +45,6 @@ struct AIModelDownloadTests {
         await removal.value
         #expect(model.clipModelDownloadStates[.clipDataComp] != .removing)
     }
-
 }
 
 private actor ReadyModelDownloadService: CLIPModelDownloadServicing {
@@ -63,9 +63,15 @@ private actor ReadyModelDownloadService: CLIPModelDownloadServicing {
 }
 
 private actor CancelledRemovalService: CLIPModelDownloadServicing {
-    func state(for _: CLIPModelDownloadDescriptor) -> CLIPModelDownloadState { .ready }
+    func state(for _: CLIPModelDownloadDescriptor) -> CLIPModelDownloadState {
+        .ready
+    }
+
     func download(_: CLIPModelDownloadDescriptor, progress _: @escaping @MainActor @Sendable (Double) -> Void) -> URL {
         URL(filePath: "/tmp/model")
     }
-    func remove(_: CLIPModelDownloadDescriptor) throws { throw CancellationError() }
+
+    func remove(_: CLIPModelDownloadDescriptor) throws {
+        throw CancellationError()
+    }
 }

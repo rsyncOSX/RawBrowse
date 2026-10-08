@@ -38,24 +38,29 @@ final class CLIPFeatureModel {
     var isShowingSemanticResults: Bool {
         semanticSearchActive
     }
+
     var isShowingSimilarityResults: Bool {
         similaritySearchAnchorName != nil
     }
+
     var activeCLIPModelName: String {
         guard case let .available(_, _, modelName) = clipModelStatus else {
             return settingsModel.values.selectedCLIPModel.displayName
         }
         return modelName
     }
+
     var semanticSearchLimit: Int {
         settingsModel.values.semanticSearchLimit
     }
+
     var canIndexSelectedFolder: Bool {
         catalogURL != nil
             && clipProvider != nil
             && !isIndexing
             && !isSearching
     }
+
     var canSearch: Bool {
         hasCompatibleCLIPIndex
             && clipEngine != nil
@@ -63,12 +68,17 @@ final class CLIPFeatureModel {
             && !isSearching
     }
 
-    init(settings: SettingsModel) { settingsModel = settings }
+    init(settings: SettingsModel) {
+        settingsModel = settings
+    }
 
     func selectCatalog(_ url: URL?) {
         catalogURL = url?.standardizedFileURL
-        if let catalogURL { useCatalogCLIPIndex(at: catalogURL) }
-        else { resetCLIPIndexSelection() }
+        if let catalogURL {
+            useCatalogCLIPIndex(at: catalogURL)
+        } else {
+            resetCLIPIndexSelection()
+        }
     }
 
     func removeCatalog(at url: URL) {
@@ -82,7 +92,6 @@ final class CLIPFeatureModel {
     }
 
     func activateModel(at selectedURL: URL?) {
-
         guard let modelURL = selectedURL else {
             deactivateCLIPModelRuntime()
             return
@@ -92,7 +101,7 @@ final class CLIPFeatureModel {
         let isCurrentModelReady = activeCLIPModelURL == standardizedURL && clipProvider != nil
         let isCurrentModelBeingValidated = activeCLIPModelURL == standardizedURL
             && modelValidationTask != nil
-        guard !isCurrentModelReady && !isCurrentModelBeingValidated else { return }
+        guard !isCurrentModelReady, !isCurrentModelBeingValidated else { return }
 
         validateCLIPModel(at: standardizedURL)
     }
@@ -273,7 +282,7 @@ final class CLIPFeatureModel {
     @discardableResult
     func startSearch(
         anchorName: String?,
-        operation: @escaping @MainActor (Int) async throws -> [CLIPSearchResult]
+        operation: @escaping @MainActor (Int) async throws -> [CLIPSearchResult],
     ) -> Task<Void, Never> {
         isSearching = true
         clipFeatureError = nil
@@ -286,7 +295,9 @@ final class CLIPFeatureModel {
         return searchRunner.start { [self] token in
             defer { withExtendedLifetime(access) {} }
             defer {
-                if searchRunner.isCurrent(token) { isSearching = false }
+                if searchRunner.isCurrent(token) {
+                    isSearching = false
+                }
             }
             do {
                 let results = try await operation(limit)

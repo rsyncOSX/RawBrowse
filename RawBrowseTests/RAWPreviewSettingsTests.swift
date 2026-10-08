@@ -24,8 +24,8 @@ struct RAWPreviewSettingsTests {
 struct RAW9RenderedPreviewCacheTests {
     private func image() throws -> CGImage {
         let context = try #require(CGContext(data: nil, width: 4, height: 4, bitsPerComponent: 8,
-                                            bytesPerRow: 16, space: CGColorSpaceCreateDeviceRGB(),
-                                            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue))
+                                             bytesPerRow: 16, space: CGColorSpaceCreateDeviceRGB(),
+                                             bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue))
         return try #require(context.makeImage())
     }
 
@@ -33,7 +33,7 @@ struct RAW9RenderedPreviewCacheTests {
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: directory) }
-        let keys = try (0..<3).map { index in
+        let keys = try (0 ..< 3).map { index in
             let url = directory.appendingPathComponent("image\(index).raw")
             try Data([0]).write(to: url)
             return try RAW9RenderedPreviewCache.Key(url: url, adjustments: RAW9Adjustments(), bitDepth: .eightBit)
@@ -65,13 +65,13 @@ struct RAW9RenderedPreviewCacheTests {
         adjustments.exposure = 1
         let edited = try RAW9RenderedPreviewCache.Key(url: url, adjustments: adjustments, bitDepth: .eightBit)
         #expect(cache.image(for: edited) == nil)
-        #expect(cache.image(for: try .init(url: url, adjustments: RAW9Adjustments(), bitDepth: .sixteenBit)) == nil)
-        #expect(cache.image(for: try .init(url: url, adjustments: RAW9Adjustments(), bitDepth: .eightBit, maximumDimension: 1280)) == nil)
+        #expect(try cache.image(for: .init(url: url, adjustments: RAW9Adjustments(), bitDepth: .sixteenBit)) == nil)
+        #expect(try cache.image(for: .init(url: url, adjustments: RAW9Adjustments(), bitDepth: .eightBit, maximumDimension: 1280)) == nil)
         cache.insert(pixels, for: edited)
         #expect(cache.image(for: original) == nil)
         #expect(cache.byteCount == pixels.bytesPerRow * pixels.height)
         try Data([0, 1]).write(to: url)
-        #expect(cache.image(for: try .init(url: url, adjustments: adjustments, bitDepth: .eightBit)) == nil)
+        #expect(try cache.image(for: .init(url: url, adjustments: adjustments, bitDepth: .eightBit)) == nil)
     }
 
     @Test func `oversize images are not retained`() throws {
@@ -80,7 +80,7 @@ struct RAW9RenderedPreviewCacheTests {
         defer { try? FileManager.default.removeItem(at: url) }
         let key = try RAW9RenderedPreviewCache.Key(url: url, adjustments: RAW9Adjustments(), bitDepth: .eightBit)
         var cache = RAW9RenderedPreviewCache(byteLimit: 1)
-        cache.insert(try image(), for: key)
+        try cache.insert(image(), for: key)
         #expect(cache.image(for: key) == nil)
         #expect(cache.byteCount == 0)
     }

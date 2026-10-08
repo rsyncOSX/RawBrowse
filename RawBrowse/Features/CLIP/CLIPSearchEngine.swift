@@ -330,7 +330,6 @@ final nonisolated class CLIPSearchEngine: Sendable {
         }
         return try CLIPSimilaritySearch.results(in: index, anchorURL: imageURL, limit: limit)
     }
-
 }
 
 nonisolated enum CLIPIndexPaths {

@@ -155,8 +155,7 @@ nonisolated struct CLIPModelDownloadCatalog: Equatable, Sendable {
                     requiresExplicitAcceptance: true,
                 ),
                 releaseReadiness: .ready,
-            ),
-
+            )
         ],
     )
 

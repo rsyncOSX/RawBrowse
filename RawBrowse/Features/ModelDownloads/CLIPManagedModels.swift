@@ -1,5 +1,5 @@
-import Foundation
 import CryptoKit
+import Foundation
 
 nonisolated enum CLIPManagedModel: String, CaseIterable, Codable, Hashable, Identifiable, Sendable {
     case dataComp = "data-comp"
@@ -159,7 +159,9 @@ nonisolated struct GitHubAIModelManifest: Codable, Sendable {
               !model.files.isEmpty,
               Set(model.files.map(\.path)).count == model.files.count
         else { throw GitHubAIModelDownloadError.invalidManifest }
-        for file in model.files { try file.validate() }
+        for file in model.files {
+            try file.validate()
+        }
         // A file cannot also be the parent directory of another file.
         let paths = Set(model.files.map(\.path))
         for file in model.files {
@@ -185,10 +187,13 @@ nonisolated enum GitHubAIModelDownloadError: Error, LocalizedError {
         switch self {
         case .manifestPending:
             "AI model downloads are not published yet. Create rsyncOSX/AI-models and publish manifest.json on its main branch."
+
         case .invalidManifest:
             "The GitHub AI model manifest is invalid or unsupported."
+
         case let .httpStatus(status):
             "GitHub model download failed (HTTP \(status))."
+
         case let .checksumMismatch(path):
             "The downloaded model file failed size or SHA-256 verification: \(path)."
         }
@@ -206,7 +211,7 @@ actor GitHubCLIPModelDownloadService: CLIPModelDownloadServicing {
         root: URL = URL.applicationSupportDirectory.appending(path: "RawBrowse/AI-models", directoryHint: .isDirectory),
         session: URLSession = .shared,
         manifestURL: URL = GitHubCLIPModelDownloadService.manifestURL,
-        isEnabled: Bool = ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil
+        isEnabled: Bool = ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil,
     ) {
         self.root = root
         self.session = session
@@ -230,7 +235,7 @@ actor GitHubCLIPModelDownloadService: CLIPModelDownloadServicing {
 
     func download(
         _ descriptor: CLIPModelDownloadDescriptor,
-        progress: @escaping @MainActor @Sendable (Double) -> Void
+        progress: @escaping @MainActor @Sendable (Double) -> Void,
     ) async throws -> URL {
         guard isEnabled else { throw CLIPModelDownloadError.serviceNotConfigured }
         let model = try await fetchModel(descriptor.id)
@@ -285,7 +290,9 @@ actor GitHubCLIPModelDownloadService: CLIPModelDownloadServicing {
 
     private static func checkResponse(_ response: URLResponse, isManifest: Bool = true) throws {
         guard let http = response as? HTTPURLResponse else { throw GitHubAIModelDownloadError.invalidManifest }
-        if http.statusCode == 404, isManifest { throw GitHubAIModelDownloadError.manifestPending }
+        if http.statusCode == 404, isManifest {
+            throw GitHubAIModelDownloadError.manifestPending
+        }
         guard (200 ... 299).contains(http.statusCode) else {
             throw GitHubAIModelDownloadError.httpStatus(http.statusCode)
         }
@@ -309,7 +316,7 @@ actor GitHubCLIPModelDownloadService: CLIPModelDownloadServicing {
 }
 
 /// Immutable delegate fields allow URLSession callbacks to safely report UI progress.
-nonisolated final class GitHubModelDownloadProgress: NSObject, URLSessionDownloadDelegate, Sendable {
+final nonisolated class GitHubModelDownloadProgress: NSObject, URLSessionDownloadDelegate, Sendable {
     let completed: Double
     let total: Double
     let progress: @MainActor @Sendable (Double) -> Void
@@ -320,14 +327,14 @@ nonisolated final class GitHubModelDownloadProgress: NSObject, URLSessionDownloa
         self.progress = progress
     }
 
-    func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask,
-                    didWriteData bytesWritten: Int64, totalBytesWritten: Int64,
-                    totalBytesExpectedToWrite: Int64) {
+    func urlSession(_: URLSession, downloadTask _: URLSessionDownloadTask,
+                    didWriteData _: Int64, totalBytesWritten: Int64,
+                    totalBytesExpectedToWrite _: Int64) {
         let value = min(1, (completed + Double(totalBytesWritten)) / total)
         Task { @MainActor [progress] in progress(value) }
     }
 
-    func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didFinishDownloadingTo location: URL) {}
+    func urlSession(_: URLSession, downloadTask _: URLSessionDownloadTask, didFinishDownloadingTo _: URL) {}
 }
 
 actor CLIPModelDownloadCoordinator {

@@ -87,7 +87,6 @@ final class MemoryViewModel {
             self.appMemory = app
             self.memoryPressureThreshold = threshold
         }
-
     }
 
     // MARK: - Private helpers

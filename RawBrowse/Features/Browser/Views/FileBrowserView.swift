@@ -11,7 +11,6 @@ struct FileBrowserView: View {
 
     @Environment(ZoomPresentationState.self) private var zoomPresentation
 
-
     @Environment(CLIPFeatureModel.self) private var clip
 
     @Environment(FileBrowserViewModel.self) private var viewModel
@@ -45,7 +44,11 @@ struct FileBrowserView: View {
         }
         .alert("Saved Folders", isPresented: Binding(
             get: { catalog.catalogError != nil },
-            set: { if !$0 { catalog.catalogError = nil } }
+            set: {
+                if !$0 {
+                    catalog.catalogError = nil
+                }
+            },
         )) {
             Button("OK") { catalog.catalogError = nil }
             Button("Retry Loading") { Task { await catalog.loadRememberedCatalogs() } }
@@ -99,5 +102,4 @@ struct FileBrowserView: View {
             }
         }
     }
-
 }

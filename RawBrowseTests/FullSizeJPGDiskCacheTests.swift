@@ -234,7 +234,9 @@ private actor PreviewExtractionGate {
         arrivals += 1
         let ready = observers.filter { $0.0 <= arrivals }
         observers.removeAll { $0.0 <= arrivals }
-        for (_, observer) in ready { observer.resume() }
+        for (_, observer) in ready {
+            observer.resume()
+        }
         await withCheckedContinuation { workers.append($0) }
     }
 
@@ -246,6 +248,8 @@ private actor PreviewExtractionGate {
     func release() {
         let pending = workers
         workers.removeAll()
-        for worker in pending { worker.resume() }
+        for worker in pending {
+            worker.resume()
+        }
     }
 }

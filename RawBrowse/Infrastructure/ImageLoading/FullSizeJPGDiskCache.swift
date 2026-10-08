@@ -68,7 +68,9 @@ actor FullSizeJPGDiskCache {
                 sourceURL: sourceURL,
             )
         }.value
-        if image != nil { policy?.recordHit(fileURL) }
+        if image != nil {
+            policy?.recordHit(fileURL)
+        }
         return image
     }
 

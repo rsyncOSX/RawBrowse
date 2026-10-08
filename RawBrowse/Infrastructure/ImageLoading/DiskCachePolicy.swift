@@ -14,7 +14,7 @@ nonisolated struct DiskCachePolicy {
     init(directory: URL, maximumBytes: Int64) throws {
         self.maximumBytes = max(0, maximumBytes)
         let files = try FileManager.default.contentsOfDirectory(
-            at: directory, includingPropertiesForKeys: [.fileSizeKey, .contentModificationDateKey, .isRegularFileKey]
+            at: directory, includingPropertiesForKeys: [.fileSizeKey, .contentModificationDateKey, .isRegularFileKey],
         )
         for file in files where file.pathExtension == "jpg" {
             let values = try file.resourceValues(forKeys: [.fileSizeKey, .contentModificationDateKey, .isRegularFileKey])
@@ -55,7 +55,9 @@ nonisolated struct DiskCachePolicy {
             }
             entries.removeValue(forKey: url)
             totalBytes -= entry.bytes
-            if totalBytes <= maximumBytes { break }
+            if totalBytes <= maximumBytes {
+                break
+            }
         }
     }
 }

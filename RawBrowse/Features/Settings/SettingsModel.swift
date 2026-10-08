@@ -10,7 +10,7 @@ final class SettingsModel {
 
     init(
         load: @escaping @MainActor () async -> BrowserSettings = { await BrowserSettingsStore.load() },
-        save: @escaping @MainActor (BrowserSettings) async -> Void = { await BrowserSettingsStore.save($0) }
+        save: @escaping @MainActor (BrowserSettings) async -> Void = { await BrowserSettingsStore.save($0) },
     ) {
         self.load = load
         self.save = save

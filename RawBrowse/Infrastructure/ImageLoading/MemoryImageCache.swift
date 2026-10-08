@@ -1,9 +1,9 @@
 import AppKit
 import Foundation
 
-// Keep cache policy changes and storage behind one isolation boundary.
-// The current SDK imports NSImage as Sendable; no unchecked cache wrapper or
-// additional synchronization contract is needed for callers.
+/// Keep cache policy changes and storage behind one isolation boundary.
+/// The current SDK imports NSImage as Sendable; no unchecked cache wrapper or
+/// additional synchronization contract is needed for callers.
 actor MemoryImageCache {
     static let shared = MemoryImageCache()
 

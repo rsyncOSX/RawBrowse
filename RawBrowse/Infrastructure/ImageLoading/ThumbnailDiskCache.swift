@@ -47,7 +47,9 @@ actor ThumbnailDiskCache {
             guard let image = OrientationNormalizedImageLoader.loadCGImage(from: fileURL) else { return nil }
             return NSImage(cgImage: image, size: NSSize(width: image.width, height: image.height))
         }.value
-        if image != nil { policy?.recordHit(fileURL) }
+        if image != nil {
+            policy?.recordHit(fileURL)
+        }
         return image
     }
 

@@ -11,7 +11,6 @@ final class DeepReviewModel {
     @ObservationIgnored private var sam3ValidationTask: Task<Void, Never>?
 
     func activateModel(at selectedURL: URL?) {
-
         let standardizedURL = selectedURL?.standardizedFileURL
         guard activeSAM3ModelURL != standardizedURL else { return }
         validateSAM3Model(at: standardizedURL)

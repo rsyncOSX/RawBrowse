@@ -68,7 +68,7 @@ struct CatalogPersistenceTests {
                 #expect(accessActive)
                 return RememberedCatalog(path: url.path, bookmarkData: Data([2]))
             }, openAccess: { _ in accessActive = true; return true }, closeAccess: { _ in },
-            lease: { _ in nil }, discoverFolders: { _ in [] }
+            lease: { _ in nil }, discoverFolders: { _ in [] },
         )
         await store.loadRememberedCatalogs()
         #expect(saved.first?.bookmarkData == Data([2]))
