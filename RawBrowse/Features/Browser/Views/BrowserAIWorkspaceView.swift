@@ -14,7 +14,6 @@ struct BrowserAIWorkspaceView: View {
     @Environment(\.openWindow) private var openWindow
     @State private var reviewFiles: [BrowserFileItem] = []
     @State private var reviewSignature: BurstGroupSignature?
-    @State private var activeTab = "review"
 
     var body: some View {
         VStack(spacing: 0) {
@@ -33,103 +32,105 @@ struct BrowserAIWorkspaceView: View {
             }
             .padding(20)
             Divider()
-            TabView(selection: $activeTab) {
-                Tab("Subject Detail", systemImage: "viewfinder", value: "review") {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    search
+                    Divider()
                     subjectReview
                 }
-                Tab("Search & Similar", systemImage: "sparkle.magnifyingglass", value: "search") {
-                    search
-                }
+                .padding(20)
             }
-            .padding(16)
         }
         .frame(minWidth: 1120, minHeight: 650)
     }
 
-    private func prepareSubjectReview() {
-        reviewFiles = selection.selectedFiles
-        reviewSignature = BurstGroupSignature(files: reviewFiles, catalog: contents.selectedFolder?.url)
-    }
-
     private var subjectReview: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Subject Detail").font(.headline)
-                    Text("Compare subject sharpness and inspect subject outlines.")
-                        .foregroundStyle(.secondary)
-                }
-                Spacer()
-                Button(reviewSignature == nil ? "Review Selected Photos" : "Update from Browser Selection") {
-                    prepareSubjectReview()
-                }
-                .disabled(!viewModel.canDeepReviewSelection || deepReview.deepAIReviewController.isRunning)
-            }
-            if let signature = reviewSignature {
+        let files = reviewSignature == nil ? selection.selectedFiles : reviewFiles
+        let signature = reviewSignature ?? BurstGroupSignature(files: files, catalog: contents.selectedFolder?.url)
+
+        return VStack(alignment: .leading, spacing: 12) {
+            Text("Subject Detail").font(.headline)
+            Text("Compare subject sharpness and inspect subject outlines.")
+                .foregroundStyle(.secondary)
+            if reviewSignature != nil {
                 Text("Reviewing \(reviewFiles.count) photos from your saved selection.")
                     .font(.callout)
                     .foregroundStyle(.secondary)
-                DeepAIReviewSheetView(controller: deepReview.deepAIReviewController,
-                                      groupID: signature.hashValue, groupSignature: signature, files: reviewFiles,
-                                      onRun: {
-                                          await viewModel.startDeepReview(groupID: signature.hashValue,
-                                                                          groupSignature: signature, files: reviewFiles)
-                                      }, onApply: { result in
-                                          if let winner = reviewFiles.first(where: { $0.id == result.recommendedFileID }) {
-                                              selection.selectOnlyFile(winner)
-                                              openWindow(id: "main-window")
-                                          }
-                                      }, onClose: { reviewSignature = nil }, isEmbedded: true)
-            } else {
-                ContentUnavailableView("Ready for Subject Review", systemImage: "viewfinder",
-                                       description: Text(deepReview.sam3ModelStatus.isAvailable
-                                           ? "Select photos in the browser to compare subject detail and inspect subject outlines."
-                                           : "Subject detail review requires a configured SAM 3 model. Manage models in Settings."))
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
+            DeepAIReviewSheetView(
+                controller: deepReview.deepAIReviewController,
+                groupID: signature.hashValue,
+                groupSignature: signature,
+                files: files,
+                onRun: {
+                    guard viewModel.canDeepReviewSelection else { return }
+                    let selectedFiles = selection.selectedFiles
+                    let selectedSignature = BurstGroupSignature(files: selectedFiles, catalog: contents.selectedFolder?.url)
+                    reviewFiles = selectedFiles
+                    reviewSignature = selectedSignature
+                    await viewModel.startDeepReview(groupID: selectedSignature.hashValue,
+                                                    groupSignature: selectedSignature, files: selectedFiles)
+                },
+                onClose: {
+                    reviewSignature = nil
+                    reviewFiles = []
+                },
+                isEmbedded: true,
+                canRunSelection: viewModel.canDeepReviewSelection
+            )
+            .frame(height: 420)
         }
     }
 
     private var search: some View {
         @Bindable var clip = clip
 
-        return Form {
-            Section("Find images by description") {
-                TextField("Image description", text: $clip.semanticSearchQuery,
-                          prompt: Text("For example: a bird flying over water"))
-                    .labelsHidden()
-                    .textFieldStyle(.roundedBorder)
-                    .frame(maxWidth: .infinity)
-                    .onSubmit { submitSemanticSearch() }
-                Button("Search Images", systemImage: "sparkle.magnifyingglass") {
-                    submitSemanticSearch()
+        return VStack(alignment: .leading, spacing: 16) {
+            HStack(alignment: .top, spacing: 16) {
+                GroupBox("Find images by description") {
+                    VStack(alignment: .leading, spacing: 10) {
+                        TextField("Image description", text: $clip.semanticSearchQuery,
+                                  prompt: Text("For example: a bird flying over water"))
+                            .labelsHidden()
+                            .textFieldStyle(.roundedBorder)
+                            .onSubmit { submitSemanticSearch() }
+                        Button("Search Images", systemImage: "sparkle.magnifyingglass") {
+                            submitSemanticSearch()
+                        }
+                        .disabled(!clip.canSearch || clip.semanticSearchQuery.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                        Text("Search returns up to \(clip.semanticSearchLimit) images using the current Settings.")
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(8)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
-                .disabled(!clip.canSearch || clip.semanticSearchQuery.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                Text("Search returns up to \(clip.semanticSearchLimit) images using the current Settings.")
+                .frame(maxWidth: .infinity)
+                GroupBox("Find similar images") {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text(selection.selectedFile?.name ?? "Select an image in the browser.")
+                            .lineLimit(1)
+                        Button("Find Similar", systemImage: "photo.stack") {
+                            viewModel.startSimilaritySearch()
+                            openWindow(id: "main-window")
+                        }
+                        .disabled(!viewModel.canFindSimilar)
+                    }
+                    .padding(8)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .frame(width: 300)
+            }
+            if !clip.canSearch, !clip.isSearching {
+                Text("Search uses the top-level catalog’s index. Manage the CLIP model and catalog index in Settings.")
                     .foregroundStyle(.secondary)
             }
-            Section("Find similar images") {
-                Text(selection.selectedFile?.name ?? "Select an image in the browser.")
-                Button("Find Similar", systemImage: "photo.stack") {
-                    viewModel.startSimilaritySearch()
-                    openWindow(id: "main-window")
-                }
-                .disabled(!viewModel.canFindSimilar)
+            if clip.isSearching {
+                ProgressView("Searching…")
             }
-            Section {
-                if !clip.canSearch, !clip.isSearching {
-                    Text("Search uses the top-level catalog’s index. Manage the CLIP model and catalog index in Settings.")
-                        .foregroundStyle(.secondary)
-                }
-                if clip.isSearching {
-                    ProgressView("Searching…")
-                }
-                if let error = clip.clipFeatureError {
-                    Text(error).foregroundStyle(.orange)
-                }
+            if let error = clip.clipFeatureError {
+                Text(error).foregroundStyle(.orange)
             }
         }
-        .formStyle(.grouped)
     }
 
     private func submitSemanticSearch() {

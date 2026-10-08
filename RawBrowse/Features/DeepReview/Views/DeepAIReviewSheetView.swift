@@ -7,31 +7,21 @@ struct DeepAIReviewSheetView: View {
     let groupSignature: BurstGroupSignature
     let files: [BrowserFileItem]
     let onRun: () async -> Void
-    let onApply: (DeepAIReviewResult) -> Void
     let onClose: () -> Void
     var isEmbedded = false
-
-    private var result: DeepAIReviewResult? {
-        controller.result(for: groupSignature)
-    }
+    var canRunSelection = true
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             DeepAIReviewSheetControls(
                 controller: controller,
-                canRun: !files.isEmpty && !controller.isActionUnavailable,
-                canApply: result?.recommendedFileID != nil,
+                canRun: canRunSelection && !files.isEmpty && !controller.isActionUnavailable,
                 onRun: {
                     Task {
                         await onRun()
                     }
                 },
                 onCancel: controller.cancel,
-                onApply: {
-                    if let result {
-                        onApply(result)
-                    }
-                },
                 onClose: onClose,
                 isEmbedded: isEmbedded,
             )
@@ -58,10 +48,8 @@ struct DeepAIReviewSheetView: View {
 private struct DeepAIReviewSheetControls: View {
     @Bindable var controller: DeepAIReviewController
     let canRun: Bool
-    let canApply: Bool
     let onRun: () -> Void
     let onCancel: () -> Void
-    let onApply: () -> Void
     let onClose: () -> Void
     let isEmbedded: Bool
 
@@ -98,11 +86,6 @@ private struct DeepAIReviewSheetControls: View {
             }
 
             Spacer()
-
-            Button(isEmbedded ? "Select Winner" : "Select Winner & Close", systemImage: "checkmark.circle", action: onApply)
-                .buttonStyle(.borderedProminent)
-                .disabled(!canApply || controller.isRunning)
-                .accessibilityHint("Selects the recommended image and closes Deep Review.")
 
             Button(isEmbedded ? "Clear Review" : "Close", systemImage: "xmark", action: onClose)
                 .buttonStyle(.bordered)
