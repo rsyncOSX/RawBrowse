@@ -1,659 +1,386 @@
 +++
 author = "Thomas Evensen"
-title = "Download AI models"
+title = "Build and publish RawBrowse AI models"
 date = "2026-09-26"
-lastmod = "2026-09-30"
+lastmod = "2026-10-08"
 weight = 25
-tags = ["ai", "models", "hugging-face", "core-ai", "background-assets", "release"]
+tags = ["ai", "models", "hugging-face", "core-ai", "github", "release"]
 categories = ["technical details"]
 +++
 
-# Download and prepare the three AI model packs
+# Build CLIP and SAM 3 for RawBrowse
 
-This is a terminal workbook for rebuilding RawCull's **DataComp CLIP**, **Meta
-SAM 3**, and **Qwen3-VL-2B-Instruct** model packs from source and finishing with
-three Apple Managed Background Assets `.aar` files. It was assembled on
-September 26, 2026 from the local PhotoAIKit exporters, the RawCull release
-runbook, and the existing layout in `/Users/thomas/ModelAssets/Release`.
+This terminal workbook builds two complete PhotoAIKit-compatible Core AI
+bundles: **DataComp CLIP** for semantic search and image similarity, and **Meta
+SAM 3** for subject review. Build assets under `/Users/thomas/ModelAssetsV2` and
+publish their files to [rsyncOSX/AI-models](https://github.com/rsyncOSX/AI-models).
+The app repository is [RawBrowse](https://github.com/rsyncOSX/RawBrowse).
 
-Run each numbered block in **zsh** and inspect the indicated output before the
-next block. The workbook builds in a fresh directory below
-`/Users/thomas/ModelAssets`; it does not overwrite the three existing
-`Release/Output/*.aar` files. Conversion is CPU and memory intensive and the
-source downloads are several gigabytes. Keep ample free space for source
-weights, intermediate models, three converted bundles, and three archives.
+Run the numbered blocks in the same **zsh** session. Conversion downloads
+several gigabytes and needs space for source weights, caches, intermediate
+assets, and both runtime bundles. Each run creates a separate build directory.
+The commands below are instructions to run locally; updating this guide does
+not download, convert, or publish models.
 
-These commands produce **local release candidates**, not App Store approval.
-After packaging, compare the new hashes with the application catalog and follow
-the [publishing runbook](https://github.com/rsyncOSX/RawCull/blob/version-3.2.6/Docs/newmodels.md)
-to update RawCull, upload the packs, and test a signed TestFlight build. A fresh conversion may produce different archive
-bytes even when the same source model was used.
-
-## 0. What will be produced
-
-| Model | Permanent pack ID | Selected installed model path | Output archive |
-|---|---|---|---|
-| DataComp CLIP | `rawcull-clip-datacomp` | `Models/CLIP-DataComp` | `clip-datacomp.aar` |
-| Meta SAM 3 | `rawcull-sam3` | `Models/SAM3` | `sam3.aar` |
-| Qwen3-VL-2B-Instruct | `rawcull-qwen3-vl-2b` | `Models/Qwen/qwen3_vl_2b` | `qwen3-vl-2b.aar` |
-
-The starting evidence is the RawCull repository at
-`/Users/thomas/GitHub/RawCull/RawCull`, its sibling
-`/Users/thomas/GitHub/RawCull/PhotoAIKit`, and the notices in
-`RawCull/ModelAssets/Notices`. The old archive sizes and SHA-256 values in the
-application catalog describe the **September 17, 2026 artifacts**, not expected
-values for this rebuild. OpenAI CLIP and EfficientSAM are outside this
-three-pack release.
-
-## 1. Check the Mac and select tools
-
-Install Xcode 27 with the Core AI and Background Assets tools and select it in
-Xcode Settings or with `xcode-select`. Install `git` and `uv` if needed. The
-commands below merely check the selected tools:
+## 1. Set paths and check tools
 
 ```zsh
 set -e
 set -o pipefail
-RAWCULL_REPO='/Users/thomas/GitHub/RawCull/RawCull'
+RAWBROWSE_REPO='/Users/thomas/GitHub/RawCull/RawBrowse'
 PHOTOAIKIT_REPO='/Users/thomas/GitHub/RawCull/PhotoAIKit'
-MODEL_ASSETS='/Users/thomas/ModelAssets'
+MODEL_ASSETS_V2='/Users/thomas/ModelAssetsV2'
 
-test -d "$RAWCULL_REPO/.git"
-test -d "$PHOTOAIKIT_REPO/.git"
-test -d "$MODEL_ASSETS"
+test -f "$RAWBROWSE_REPO/RawBrowse.xcodeproj/project.pbxproj"
+test -f "$PHOTOAIKIT_REPO/Package.swift"
 command -v uv
 command -v git
 command -v python3
 xcode-select -p
 xcodebuild -version
-xcrun ba-package --version
-```
-
-If `uv` is missing and Homebrew is available, install it with `brew install
-uv`, then rerun the checks. Record the exact tool versions with the eventual
-archive hashes. At the time this workbook was written the local Mac selected
-Xcode 27.0 (27A266a) and `ba-package` 2.0; a later toolchain can produce
-different output. The PhotoAIKit exporter scripts declare their Python
-dependencies in their own `# /// script` blocks, so `uv run` creates the
-appropriate isolated environments automatically. Do not combine the CLIP and
-SAM dependency sets by hand: their `transformers` requirements differ.
-
-## 2. Start a clean build directory
-
-Paste this block into the same Terminal window that will run later blocks. If
-you open a new window, rerun the variable definitions in this block and set
-`BUILD_ROOT` to the directory printed by `echo`.
-
-```zsh
-set -e
-set -o pipefail
-RAWCULL_REPO='/Users/thomas/GitHub/RawCull/RawCull'
-PHOTOAIKIT_REPO='/Users/thomas/GitHub/RawCull/PhotoAIKit'
-MODEL_ASSETS='/Users/thomas/ModelAssets'
-BUILD_ROOT="$(mktemp -d "$MODEL_ASSETS/Build-2026-09-26.XXXXXX")"
-HF_HOME="$BUILD_ROOT/HuggingFace"
-HF_HUB_CACHE="$HF_HOME/hub"
-export HF_HOME HF_HUB_CACHE
-mkdir -p "$BUILD_ROOT/Release/Models/Qwen" \
-  "$BUILD_ROOT/Release/Notices" \
-  "$BUILD_ROOT/Release/Packaging" \
-  "$BUILD_ROOT/Release/Output" \
-  "$BUILD_ROOT/Release/Evidence" \
+mkdir -p "$MODEL_ASSETS_V2"
+BUILD_ROOT="$(mktemp -d "$MODEL_ASSETS_V2/Build-2026-10-08.XXXXXX")"
+mkdir -p "$BUILD_ROOT/Release/Models" "$BUILD_ROOT/Release/Runtime" \
+  "$BUILD_ROOT/Release/Output" "$BUILD_ROOT/Release/Evidence" \
   "$BUILD_ROOT/Tools"
+export HF_HOME="$BUILD_ROOT/HuggingFace"
+export HF_HUB_CACHE="$HF_HOME/hub"
 echo "BUILD_ROOT=$BUILD_ROOT"
-df -h "$MODEL_ASSETS"
+df -h "$MODEL_ASSETS_V2"
 ```
 
-This layout isolates the Hugging Face cache and the new release candidates.
-Never run `rm -rf` against the existing `ModelAssets/Release` tree to make room.
-For a later run, change the date in the `mktemp` template or leave it: the
-random suffix still creates a separate directory.
+Use Xcode 27 and Apple Silicon, matching RawBrowse's macOS 27 requirement. If
+`uv` is missing, install it before continuing. Save `BUILD_ROOT` so later
+terminal sessions can resume the same candidate. Keep all existing build runs.
 
-## 3. Freeze source and exporter revisions
+## 2. Freeze PhotoAIKit and record the current CoreAI pin
 
-The model revisions recorded in the existing RawCull catalog are:
+The local PhotoAIKit checkout on October 8, 2026 is commit
+`b7265ab168a1dd009a3a6c26ebc367f4e6fa137c` and pins `apple/coreai-models` to
+`1953c4f90ba0214c1abc7bebcb9be5107e329a46` in `Package.swift`. The block below
+reads the pin from the checkout used for this build instead of retaining an
+older hard-coded revision.
 
-```zsh
-CLIP_REV='4afec35ffe57a943d569ff7ee888061830164da8'
-SAM_REV='3c879f39826c281e95690f02c7821c4de09afae7'
-QWEN_REV='78448d793a7eb2f7a987a1da76d464384aa1becd'
-CLIP_TOKENIZER_REV='3d74acf9a28c67741b2f4f2ea7635f0aaf6f0268'
-COREAI_MODELS_REV='475c585fdb0fe82a83c8f777f259e9414bd44c98'
-```
-
-`COREAI_MODELS_REV` is the revision pinned by the local PhotoAIKit package in
-the September 2026 RawCull work. These revision labels are a **starting recipe**.
-The old DataComp and Qwen provenance explicitly does not prove which exact
-weight bytes their exporters consumed. This rebuild records the actual source
-inventory so its evidence is stronger.
-
-First save the repository states. If either repository has local changes to
-the exporter, review them before proceeding:
+Review `git status` first. Commit any intended exporter changes before freezing
+the checkout: `git archive HEAD` includes committed files only.
 
 ```zsh
-git -C "$RAWCULL_REPO" rev-parse HEAD | tee "$BUILD_ROOT/Release/Evidence/rawcull-commit.txt"
-git -C "$PHOTOAIKIT_REPO" rev-parse HEAD | tee "$BUILD_ROOT/Release/Evidence/photoaikit-commit.txt"
-git -C "$RAWCULL_REPO" status --short
 git -C "$PHOTOAIKIT_REPO" status --short
-shasum -a 256 "$PHOTOAIKIT_REPO/Tools/export_clip.py" \
-  "$PHOTOAIKIT_REPO/Tools/export_sam3.py" \
-  "$PHOTOAIKIT_REPO/Tools/select_sam3_asset.py" \
-  | tee "$BUILD_ROOT/Release/Evidence/photoaikit-exporters-sha256.txt"
-```
-
-Get Apple's converter at the selected revision in the build directory. A
-normal `git clone` also preserves its licence and Python project configuration.
-If the pinned revision is unavailable, stop and choose a reviewed revision;
-do not silently use the current `main` branch.
-
-```zsh
+git -C "$RAWBROWSE_REPO" rev-parse HEAD \
+  | tee "$BUILD_ROOT/Release/Evidence/rawbrowse-commit.txt"
+git -C "$PHOTOAIKIT_REPO" rev-parse HEAD \
+  | tee "$BUILD_ROOT/Release/Evidence/photoaikit-commit.txt"
+EXPORTER_REPO="$BUILD_ROOT/Tools/PhotoAIKit"
+mkdir -p "$EXPORTER_REPO"
+git -C "$PHOTOAIKIT_REPO" archive HEAD | tar -x -C "$EXPORTER_REPO"
+COREAI_MODELS_REV="$(python3 - "$EXPORTER_REPO/Package.swift" <<'PY'
+import pathlib, re, sys
+text = pathlib.Path(sys.argv[1]).read_text()
+match = re.search(r'url:\s*"https://github.com/apple/coreai-models.git",\s*revision:\s*"([0-9a-f]{40})"', text)
+if not match:
+    raise SystemExit('Expected an explicit CoreAI revision in PhotoAIKit/Package.swift')
+print(match.group(1))
+PY
+)"
+printf '%s\n' "$COREAI_MODELS_REV" \
+  | tee "$BUILD_ROOT/Release/Evidence/coreai-models-pin.txt"
 git clone https://github.com/apple/coreai-models.git "$BUILD_ROOT/Tools/coreai-models"
 git -C "$BUILD_ROOT/Tools/coreai-models" checkout --detach "$COREAI_MODELS_REV"
 git -C "$BUILD_ROOT/Tools/coreai-models" rev-parse HEAD \
   | tee "$BUILD_ROOT/Release/Evidence/coreai-models-commit.txt"
+shasum -a 256 "$EXPORTER_REPO/Tools/export_clip.py" \
+  "$EXPORTER_REPO/Tools/export_sam3.py" \
+  "$EXPORTER_REPO/Tools/select_sam3_asset.py" \
+  | tee "$BUILD_ROOT/Release/Evidence/exporters-sha256.txt"
 ```
 
-## 4. Download immutable Hugging Face snapshots
+**Runtime pin versus conversion tools:** the CoreAI revision above is the Swift
+runtime dependency. PhotoAIKit's `Tools/export_clip.py` and `Tools/export_sam3.py`
+are separate Python exporters adapted from Apple's recipes. They currently
+specify `coreai-core==1.0.0b2` and `coreai-torch==0.4.1` in their script dependency
+blocks. Cloning a newer `coreai-models` checkout does not change those exporters
+or their Python dependencies. Use the frozen PhotoAIKit tools below to preserve
+its bundle metadata and fingerprints. If adopting newer upstream conversion
+changes, integrate and verify those changes in PhotoAIKit first, then start a
+new candidate. Let `uv run` use each script's own dependency set.
 
-SAM 3 is gated: sign in to Hugging Face in a browser, request/receive access to
-`facebook/sam3`, accept its terms, and authenticate the terminal with
-`uvx --from huggingface-hub hf auth login`. Do not paste your access token into
-this workbook or a shell command. Qwen and DataComp are public, but checking
-their model cards and current redistribution terms is still part of release
-review. These downloads use [Hugging Face's CLI](https://huggingface.co/docs/huggingface_hub/guides/cli).
+Before runtime validation, ensure RawBrowse resolves the intended PhotoAIKit
+commit and its CoreAI dependency. Inspect
+`RawBrowse.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved`;
+a newer sibling checkout alone does not update RawBrowse's package resolution.
+
+## 3. Download pinned source weights and tokenizer
+
+These are the model and tokenizer revisions recorded by RawBrowse's current
+catalog. A newer converter does not require changing the source checkpoint.
+Record a reviewed replacement revision explicitly if you choose newer weights.
+
+SAM 3 requires access to `facebook/sam3` on Hugging Face and acceptance of its
+terms. Authenticate with `hf auth login`; keep the token out of commands and
+release evidence. See the [Hugging Face CLI documentation](https://huggingface.co/docs/huggingface_hub/guides/cli).
 
 ```zsh
+CLIP_REV='4afec35ffe57a943d569ff7ee888061830164da8'
+SAM_REV='3c879f39826c281e95690f02c7821c4de09afae7'
+CLIP_TOKENIZER_REV='3d74acf9a28c67741b2f4f2ea7635f0aaf6f0268'
+uvx --from huggingface-hub hf auth login
 uvx --from huggingface-hub hf auth whoami
 uvx --from huggingface-hub hf download \
   laion/CLIP-ViT-B-32-256x256-DataComp-s34B-b86K \
-  --revision "$CLIP_REV" \
-  --local-dir "$BUILD_ROOT/Source/CLIP-DataComp"
+  --revision "$CLIP_REV" --local-dir "$BUILD_ROOT/Source/CLIP-DataComp"
 uvx --from huggingface-hub hf download facebook/sam3 \
-  --revision "$SAM_REV" \
-  --local-dir "$BUILD_ROOT/Source/SAM3"
-uvx --from huggingface-hub hf download Qwen/Qwen3-VL-2B-Instruct \
-  --revision "$QWEN_REV" \
-  --local-dir "$BUILD_ROOT/Source/Qwen"
-```
+  --revision "$SAM_REV" --local-dir "$BUILD_ROOT/Source/SAM3"
 
-The exporters do not all take a `--revision` or `--source-dir` flag. To make
-their ordinary model-ID lookups use the selected snapshots, populate the
-isolated Hugging Face cache at the same revisions and bind its `main` refs to
-those revisions. This is explicit, local to `BUILD_ROOT`, and leaves your
-ordinary Hugging Face cache alone. The CLIP exporter also obtains the OpenAI
-CLIP tokenizer, so cache it separately.
-
-```zsh
 uvx --from huggingface-hub hf download \
-  laion/CLIP-ViT-B-32-256x256-DataComp-s34B-b86K \
-  --revision "$CLIP_REV"
+  laion/CLIP-ViT-B-32-256x256-DataComp-s34B-b86K --revision "$CLIP_REV"
 uvx --from huggingface-hub hf download facebook/sam3 --revision "$SAM_REV"
-uvx --from huggingface-hub hf download Qwen/Qwen3-VL-2B-Instruct \
-  --revision "$QWEN_REV"
 uvx --from huggingface-hub hf download openai/clip-vit-base-patch32 \
   --revision "$CLIP_TOKENIZER_REV"
-
 mkdir -p "$HF_HUB_CACHE/models--laion--CLIP-ViT-B-32-256x256-DataComp-s34B-b86K/refs" \
   "$HF_HUB_CACHE/models--facebook--sam3/refs" \
-  "$HF_HUB_CACHE/models--Qwen--Qwen3-VL-2B-Instruct/refs" \
   "$HF_HUB_CACHE/models--openai--clip-vit-base-patch32/refs"
 printf '%s' "$CLIP_REV" > "$HF_HUB_CACHE/models--laion--CLIP-ViT-B-32-256x256-DataComp-s34B-b86K/refs/main"
 printf '%s' "$SAM_REV" > "$HF_HUB_CACHE/models--facebook--sam3/refs/main"
-printf '%s' "$QWEN_REV" > "$HF_HUB_CACHE/models--Qwen--Qwen3-VL-2B-Instruct/refs/main"
 printf '%s' "$CLIP_TOKENIZER_REV" > "$HF_HUB_CACHE/models--openai--clip-vit-base-patch32/refs/main"
-```
-
-The first `--local-dir` downloads are the inspectable evidence copies; the
-second downloads populate the cache actually used by the model-ID loaders.
-Record source hashes, including every Qwen weight shard:
-
-```zsh
-find "$BUILD_ROOT/Source" -type f ! -name '.DS_Store' -print0 \
-  | xargs -0 shasum -a 256 \
-  | sort > "$BUILD_ROOT/Release/Evidence/source-files-sha256.txt"
-rg 'safetensors|tokenizer.json|LICENSE' \
-  "$BUILD_ROOT/Release/Evidence/source-files-sha256.txt" | head -80
-```
-
-Check that the expected source files exist before converting:
-
-```zsh
-test -f "$BUILD_ROOT/Source/SAM3/model.safetensors"
-test -f "$BUILD_ROOT/Source/Qwen/config.json"
-find "$BUILD_ROOT/Source/Qwen" -maxdepth 1 -name '*.safetensors' -print
-find "$BUILD_ROOT/Source/CLIP-DataComp" -maxdepth 1 -type f -print
-```
-
-**DataComp binding limitation:** `open_clip.create_model_and_transforms` uses
-the `datacomp_s34b_b86k` preset and may resolve its checkpoint through an
-OpenCLIP configuration rather than the checked-out LAION directory. Run it
-with the isolated cache and inspect the export log and cache entries. Do not
-claim that the LAION file was consumed solely because it was downloaded. If
-the resolved source differs, capture that actual source file, revision and
-SHA-256, or adapt the exporter to accept an explicit local weight path before
-release.
-
-## 5. Convert DataComp CLIP
-
-The PhotoAIKit exporter creates one two-function `.aimodel` plus tokenizer and
-bundle metadata. Its default DataComp options use ViT-B/32 at 256 px,
-`datacomp_s34b_b86k`, float16, and static shapes. The script itself pins the
-Python packages, including `coreai-core==1.0.0b2` and
-`coreai-torch==0.4.1`.
-
-```zsh
-cd "$PHOTOAIKIT_REPO"
+find "$BUILD_ROOT/Source" -type f ! -path '*/.cache/*' ! -name '.DS_Store' -print0 \
+  | xargs -0 shasum -a 256 | sort \
+  > "$BUILD_ROOT/Release/Evidence/source-files-sha256.txt"
 export HF_HUB_OFFLINE=1
+```
+
+The first downloads retain inspectable source copies; the second populate the
+isolated cache used by model-ID loaders. Setting its `refs/main` files binds
+those lookups to the selected snapshots. Offline conversion prevents fallback
+to an unpinned download.
+
+The DataComp exporter uses OpenCLIP's `datacomp_s34b_b86k` preset, which can
+resolve a different checkpoint repository from the LAION evidence copy. Check
+its export log and actual cached weight file. If offline export reports a
+missing checkpoint, identify OpenCLIP's configured source, download a pinned
+snapshot into this isolated cache, and record its actual SHA-256 before
+retrying. Do not claim exact source binding from the evidence copy alone.
+
+## 4. Export the two complete model bundles
+
+```zsh
+cd "$EXPORTER_REPO"
 uv run Tools/export_clip.py \
-  --model openclip-datacomp \
-  --architecture ViT-B-32-256 \
-  --pretrained datacomp_s34b_b86k \
-  --dtype float16 \
-  --output-dir "$BUILD_ROOT/Release/Models" \
-  --bundle-name CLIP-DataComp \
+  --model openclip-datacomp --architecture ViT-B-32-256 \
+  --pretrained datacomp_s34b_b86k --dtype float16 \
+  --output-dir "$BUILD_ROOT/Release/Models" --bundle-name CLIP-DataComp \
   2>&1 | tee "$BUILD_ROOT/Release/Evidence/clip-export.log"
-```
 
-The exporter checks parity between the OpenCLIP tokenizer IDs and the saved
-PhotoAIKit tokenizer. Stop if that check fails. `HF_HUB_OFFLINE=1` intentionally
-prevents a network fallback to an unpinned source. If OpenCLIP needs a different
-checkpoint repository, find its actual configured repository, pin and download
-it, then rerun this block in a **new** build directory. Do not use `--overwrite`
-until you have saved and reviewed the first result.
-
-```zsh
-test -f "$BUILD_ROOT/Release/Models/CLIP-DataComp/metadata.json"
-test -f "$BUILD_ROOT/Release/Models/CLIP-DataComp/tokenizer/tokenizer.json"
-test -f "$BUILD_ROOT/Release/Models/CLIP-DataComp/ViT-B-32-256-datacomp_s34b_b86k_float16_static.aimodel/main.mlirb"
-cat "$BUILD_ROOT/Release/Models/CLIP-DataComp/metadata.json"
-```
-
-## 6. Convert Meta SAM 3
-
-The SAM exporter downloads the gated checkpoint by model ID, exports a source
-asset and an optimized runtime asset, and writes tokenizer and metadata. Select
-the optimized `sam3_float16.aimodel` so the package contains the runtime asset
-only. The selector refreshes the bundle fingerprint metadata.
-
-```zsh
-cd "$PHOTOAIKIT_REPO"
-export HF_HUB_OFFLINE=1
 uv run Tools/export_sam3.py \
-  --model facebook/sam3 \
-  --dtype float16 \
-  --output-dir "$BUILD_ROOT/Release/Models" \
-  --bundle-name SAM3 \
+  --model facebook/sam3 --dtype float16 \
+  --output-dir "$BUILD_ROOT/Release/Models" --bundle-name SAM3 \
   2>&1 | tee "$BUILD_ROOT/Release/Evidence/sam3-export.log"
-
 python3 Tools/select_sam3_asset.py sam3_float16.aimodel \
   --bundle-dir "$BUILD_ROOT/Release/Models/SAM3"
-```
 
-Inspect the result. The package selector below includes only the optimized
-asset, tokenizer and metadata; it does not include any remaining
-`*_source.aimodel` directory.
-
-```zsh
-test -f "$BUILD_ROOT/Release/Models/SAM3/metadata.json"
-test -f "$BUILD_ROOT/Release/Models/SAM3/tokenizer/tokenizer.json"
-test -f "$BUILD_ROOT/Release/Models/SAM3/sam3_float16.aimodel/main.mlirb"
-cat "$BUILD_ROOT/Release/Models/SAM3/metadata.json"
-```
-
-## 7. Convert Qwen3-VL-2B-Instruct
-
-Apple's [VLM exporter](https://github.com/apple/coreai-models/blob/main/python/src/coreai_models/vlm/export.py)
-creates the text decoder, embedding lookup, vision encoder, tokenizer, and
-`metadata.json` in a `qwen3_vl_2b` directory. Use the full model: do not set
-`--num-layers` or `--skip-vision`. The existing RawCull bundle records a 4096
-token context. The exporter has no `--revision` option, so the isolated cache
-and offline mode from section 4 matter here. Its output directory is the
-**parent** of `qwen3_vl_2b`.
-
-```zsh
-cd "$BUILD_ROOT/Tools/coreai-models"
-export HF_HUB_OFFLINE=1
-uv run coreai.vlm.export --list-models
-uv run coreai.vlm.export qwen3-vl \
-  --max-context-length 4096 \
-  --compression none \
-  --output-dir "$BUILD_ROOT/Release/Models/Qwen" \
-  2>&1 | tee "$BUILD_ROOT/Release/Evidence/qwen-export.log"
-```
-
-If the pinned converter revision does not offer `qwen3-vl` or one of these
-options, stop and inspect that revision's `--help`; record and review any
-converter revision change. Qwen export can take a long time and use substantial
-memory. A process killed by macOS needs a fresh build directory or a carefully
-inspected incomplete-output cleanup before retrying.
-
-```zsh
-QWEN_BUNDLE="$BUILD_ROOT/Release/Models/Qwen/qwen3_vl_2b"
-test -f "$QWEN_BUNDLE/metadata.json"
-test -f "$QWEN_BUNDLE/tokenizer/tokenizer.json"
-test -f "$QWEN_BUNDLE/qwen3_vl_2b.aimodel/main.mlirb"
-test -f "$QWEN_BUNDLE/embed.aimodel/main.mlirb"
-test -f "$QWEN_BUNDLE/vision.aimodel/main.mlirb"
-python3 -m json.tool "$QWEN_BUNDLE/metadata.json"
-```
-
-Check that the metadata still names `Qwen/Qwen3-VL-2B-Instruct`, the three
-assets, 448 px vision input, and 4096 context. This is a format check, not an
-inference test. RawCull's Qwen provider must also load and run the bundle.
-
-## 8. Stage licences, notices and build provenance
-
-Copy the reviewed notice catalog from RawCull. These files include the complete
-model, tokenizer, and Apple conversion-recipe notices used by the existing
-release. Review their terms and dates against the newly downloaded sources
-before redistribution. SAM 3's licence acceptance is required in RawCull.
-
-```zsh
-for name in CLIP-DataComp SAM3 Qwen; do
-  ditto "$RAWCULL_REPO/ModelAssets/Notices/$name" \
-    "$BUILD_ROOT/Release/Notices/$name"
+for name in CLIP-DataComp SAM3; do
+  test -f "$BUILD_ROOT/Release/Models/$name/metadata.json"
+  test -f "$BUILD_ROOT/Release/Models/$name/tokenizer/tokenizer.json"
+  python3 -m json.tool "$BUILD_ROOT/Release/Models/$name/metadata.json"
 done
-find "$BUILD_ROOT/Release/Notices" -type f -maxdepth 2 -print | sort
 ```
 
-Those checked-in `NOTICE.md` files describe earlier published versions. Mark
-the staging copies as new candidates without changing their licence text:
+CLIP contains both image and text encoder functions in one runtime asset. Its
+exporter checks tokenizer parity; resolve a failed check before publication.
+SAM 3 includes its optimized runtime asset, tokenizer, and metadata. The SAM
+selector updates `assets.main` and the runtime fingerprint. Source assets stay
+in the conversion directory and are excluded from the publication bundle.
+
+## 5. Stage runtime assets and notices
+
+Read `assets.main` from each bundle's metadata rather than guessing a filename.
+Copy that entire `.aimodel` directory, all tokenizer resources, metadata, and
+notices. The stage is the exact model root RawBrowse will install.
+
+```zsh
+python3 - "$BUILD_ROOT" "$RAWBROWSE_REPO" <<'PY'
+import json, pathlib, shutil, sys
+root, repo = map(pathlib.Path, sys.argv[1:])
+for name, model_id in [('CLIP-DataComp', 'clip-datacomp'), ('SAM3', 'sam3')]:
+    source = root / 'Release/Models' / name
+    destination = root / 'Release/Runtime' / model_id
+    if destination.exists():
+        raise SystemExit(f'Already staged: {destination}; use a new candidate directory')
+    metadata = json.loads((source / 'metadata.json').read_text())
+    asset_name = metadata['assets']['main']
+    if pathlib.Path(asset_name).name != asset_name:
+        raise SystemExit(f'Unexpected runtime asset name: {asset_name}')
+    asset = source / asset_name
+    if not (asset / 'main.mlirb').is_file():
+        raise SystemExit(f'Missing complete runtime asset: {asset}')
+    destination.mkdir()
+    shutil.copy2(source / 'metadata.json', destination / 'metadata.json')
+    shutil.copytree(asset, destination / asset_name)
+    shutil.copytree(source / 'tokenizer', destination / 'tokenizer')
+    shutil.copytree(repo / 'ModelAssets/Notices' / name, destination / 'Notices')
+PY
+```
+
+Review the staged notices against the source licences. Preserve the complete
+licence texts. Copied `PROVENANCE.json` and release paragraphs in `NOTICE.md`
+refer to historical artifacts: replace those staging records with this
+candidate's PhotoAIKit commit, CoreAI pin, source revisions, exporter hashes,
+and converted asset fingerprints before publication. Record hosting as GitHub
+and the app as RawBrowse; use model IDs `clip-datacomp` and `sam3`. Keep the
+licence inventory. SAM 3's verified licence acceptance remains required in the
+app. See [the current publishing instructions](../ModelAssets/README.md).
+
+## 6. Generate GitHub release files and the download manifest
+
+RawBrowse reads
+`https://raw.githubusercontent.com/rsyncOSX/AI-models/main/manifest.json`.
+Its schema is `schemaVersion: 1`, containing two `models` entries with IDs
+`clip-datacomp` and `sam3`. Each entry lists **every runtime file** using a
+model-relative `path`, HTTPS `url`, exact `byteCount`, and lowercase `sha256`.
+
+The app downloads individual files; it does not extract ZIP or Background
+Assets archives. GitHub release assets have flat names, so the script generates
+unique upload names while retaining the original paths in the manifest.
+[GitHub limits each release asset to under 2 GiB](https://docs.github.com/en/repositories/releasing-projects-on-github/about-releases#storage-and-bandwidth-quotas)
+and permits up to 1,000 assets per release. This generator checks both limits.
+
+Choose an unused release tag. Do not replace files behind URLs in an already
+published manifest.
+
+```zsh
+MODEL_RELEASE_TAG='models-v2-2026-10-08'
+python3 - "$BUILD_ROOT" "$MODEL_RELEASE_TAG" <<'PY'
+import hashlib, json, pathlib, re, shutil, sys
+root = pathlib.Path(sys.argv[1])
+tag = sys.argv[2]
+if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9._-]*', tag):
+    raise SystemExit('Use a simple immutable release tag')
+output = root / 'Release/Output'
+assets = output / 'assets'
+if assets.exists():
+    raise SystemExit('Output assets already exist; use a new candidate directory')
+assets.mkdir()
+manifest = {'schemaVersion': 1, 'models': []}
+asset_count = 0
+for model_id in ['clip-datacomp', 'sam3']:
+    source = root / 'Release/Runtime' / model_id
+    files = []
+    for path in sorted(source.rglob('*')):
+        if path.is_symlink():
+            raise SystemExit(f'Symlinks are not publishable: {path}')
+        if not path.is_file():
+            continue
+        relative = path.relative_to(source).as_posix()
+        if path.name == '.DS_Store' or '.cache' in path.parts:
+            continue
+        size = path.stat().st_size
+        if not 0 < size < 2 * 1024**3:
+            raise SystemExit(f'File must be nonempty and under 2 GiB: {path}')
+        digest = hashlib.sha256()
+        with path.open('rb') as stream:
+            for chunk in iter(lambda: stream.read(1024 * 1024), b''):
+                digest.update(chunk)
+        upload_name = f'{model_id}-{len(files):04d}.bin'
+        shutil.copy2(path, assets / upload_name)
+        files.append({
+            'path': relative,
+            'url': f'https://github.com/rsyncOSX/AI-models/releases/download/{tag}/{upload_name}',
+            'byteCount': size,
+            'sha256': digest.hexdigest(),
+        })
+    if not files:
+        raise SystemExit(f'No files in {source}')
+    asset_count += len(files)
+    manifest['models'].append({'id': model_id, 'files': files})
+if asset_count > 1000:
+    raise SystemExit('More than 1,000 assets; use separate release tags and adjust URLs')
+(output / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
+print(f'Prepared {asset_count} release assets and {output / "manifest.json"}')
+PY
+python3 -m json.tool "$BUILD_ROOT/Release/Output/manifest.json" >/dev/null
+shasum -a 256 "$BUILD_ROOT/Release/Output/manifest.json" \
+  | tee "$BUILD_ROOT/Release/Evidence/manifest-sha256.txt"
+```
+
+Do not edit runtime files after this step. Any changed metadata, weights,
+notices, or tokenizer requires a fresh manifest and newly verified assets.
+Keep source weights, caches, exporter logs, and authentication files out of
+`Release/Output/assets`.
+
+## 7. Verify the staged files before publication
 
 ```zsh
 python3 - "$BUILD_ROOT" <<'PY'
-from pathlib import Path
-import sys
-base = Path(sys.argv[1]) / 'Release/Notices'
-replacements = {
-    'CLIP-DataComp': (
-        'RawCull publishes this pack in the v2 model release. The release catalog\n'
-        'records its download size and version, while the release host records the\n'
-        'archive checksum. This notice catalog records the upstream reference revision,\n'
-        'runtime fingerprint, and complete accompanying licence notices.',
-        'This converted bundle is a new local release candidate. Its final archive\n'
-        'size, SHA-256, Apple-assigned version, and review status must be recorded\n'
-        'after packaging and upload.'),
-    'SAM3': (
-        'The Apple-hosted asset pack is enabled for download at the project owner\'s\n'
-        'direction. Its archive byte size and SHA-256 are recorded in the external\n'
-        'release evidence after packaging, while the host-correct in-pack release record\n'
-        'is in `PROVENANCE.json`. This release decision does not claim an independent\n'
-        'legal review. Verified licence acceptance remains required.',
-        'This converted bundle is a new local release candidate. Record its archive\n'
-        'size, SHA-256, Apple-assigned version, and review status after packaging\n'
-        'and upload. Verified SAM licence acceptance remains required.'),
-    'Qwen': (
-        'RawCull publishes this pack in the v3 model release. The release catalog\n'
-        'records its download size and version, while the release host records the\n'
-        'archive checksum.',
-        'This converted bundle is a new local release candidate. Record its final\n'
-        'archive size, SHA-256, Apple-assigned version, and review status after\n'
-        'packaging and upload.'),
-}
-for name, (old, new) in replacements.items():
-    path = base / name / 'NOTICE.md'
-    content = path.read_text()
-    if content.count(old) != 1:
-        raise RuntimeError(f'Expected release paragraph not found: {path}')
-    path.write_text(content.replace(old, new))
-PY
-```
-
-The copied `PROVENANCE.json` files describe the **old release**. Replace only
-the staging copies with a clearly identified record of this build. The script
-below preserves the licence inventory, writes the actual converted-component
-hashes, and points to the source inventory. It intentionally has no final `.aar`
-hash because that hash cannot be embedded inside its own archive.
-
-```zsh
-python3 - "$BUILD_ROOT" "$CLIP_REV" "$SAM_REV" "$QWEN_REV" <<'PY'
-import datetime, hashlib, json, pathlib, sys
+import hashlib, json, pathlib, sys
 root = pathlib.Path(sys.argv[1])
-revisions = dict(zip(('CLIP-DataComp', 'SAM3', 'Qwen'), sys.argv[2:]))
-models = {
-    'CLIP-DataComp': root / 'Release/Models/CLIP-DataComp',
-    'SAM3': root / 'Release/Models/SAM3',
-    'Qwen': root / 'Release/Models/Qwen/qwen3_vl_2b',
-}
-for name, model_dir in models.items():
-    notice_dir = root / 'Release/Notices' / name
-    old = json.loads((notice_dir / 'PROVENANCE.json').read_text())
-    components = {}
-    for path in sorted(model_dir.rglob('main.mlirb')):
-        digest = hashlib.sha256()
-        with path.open('rb') as stream:
-            for chunk in iter(lambda: stream.read(4 * 1024 * 1024), b''):
-                digest.update(chunk)
-        components[str(path.relative_to(model_dir))] = digest.hexdigest()
-    record = {
-        'catalog_version': 2,
-        'release_status': 'candidate',
-        'release': {
-            'hosting': 'apple',
-            'app_bundle_id': 'no.blogspot.RawCull',
-            'asset_pack_id': {
-                'CLIP-DataComp': 'rawcull-clip-datacomp',
-                'SAM3': 'rawcull-sam3',
-                'Qwen': 'rawcull-qwen3-vl-2b',
-            }[name],
-            'packaging_date': datetime.date.today().isoformat(),
-            'processing_status': 'not-uploaded',
-            'review_state': 'not-submitted',
-        },
-        'model': {
-            'bundle': old.get('model', {}).get('bundle', name),
-            'converted_main_mlirb_sha256': components,
-        },
-        'upstream': {
-            'project': old.get('upstream', {}).get('project'),
-            'selected_revision': revisions[name],
-            'source_inventory': 'Release/Evidence/source-files-sha256.txt',
-            'exporter_binding_note': 'Verify exporter log and isolated cache before claiming exact source binding.',
-        },
-        'conversion': {
-            'photoaikit_commit_file': 'Release/Evidence/photoaikit-commit.txt',
-            'coreai_models_commit_file': 'Release/Evidence/coreai-models-commit.txt',
-        },
-        'licences': old.get('licences', []),
-    }
-    (notice_dir / 'PROVENANCE.json').write_text(json.dumps(record, indent=2) + '\n')
+manifest = json.loads((root / 'Release/Output/manifest.json').read_text())
+assert manifest['schemaVersion'] == 1
+assert [m['id'] for m in manifest['models']] == ['clip-datacomp', 'sam3']
+for model in manifest['models']:
+    total = 0
+    for file in model['files']:
+        upload_name = file['url'].rsplit('/', 1)[1]
+        for path in [root / 'Release/Runtime' / model['id'] / file['path'],
+                     root / 'Release/Output/assets' / upload_name]:
+            assert path.stat().st_size == file['byteCount'], path
+            digest = hashlib.sha256()
+            with path.open('rb') as stream:
+                for chunk in iter(lambda: stream.read(1024 * 1024), b''):
+                    digest.update(chunk)
+            assert digest.hexdigest() == file['sha256'], path
+        total += file['byteCount']
+    print(model['id'], len(model['files']), 'files;', total, 'download bytes')
 PY
 ```
 
-The staging provenance format is release-candidate evidence; it is **not** a
-drop-in replacement for RawCull's checked-in `PROVENANCE.json`. After packaging,
-update the repository record using its full validated schema and the final
-archive hash, size, App Store Connect pack version, and processing state.
+Record those totals for RawBrowse's estimated download/installed sizes in
+`CLIPModelDownloadCatalog.swift`. Update its source revisions and model version
+if they changed. The live GitHub manifest supplies file checksums; old Apple
+archive checksums are not applicable to these files.
 
-## 9. Create the three packaging manifests
+## 8. Publish and validate in RawBrowse
 
-These selector paths are relative to the current directory used by
-`ba-package`, which must be `BUILD_ROOT/Release`. Keep the permanent IDs and
-installed paths identical to RawCull's catalog.
+1. Create the public `rsyncOSX/AI-models` repository with a `main` branch.
+2. Create a release using `MODEL_RELEASE_TAG` and upload every file from
+   `Release/Output/assets`. Keep the generated flat names unchanged. For large
+   file lists, upload in batches using GitHub's release UI or `gh release upload`.
+3. Publish the release and check that all asset URLs can be downloaded without
+   authentication. Publish `Release/Output/manifest.json` as **`manifest.json`
+   at the root of `main` only after the assets are available**. A manifest
+   uploaded solely as a release attachment will not be discovered by RawBrowse.
+4. Confirm RawBrowse's resolved PhotoAIKit/CoreAI revisions, build the app, and
+   open **Settings > AI Models > Download AI Models**. Accept the SAM licence,
+   download both models, and verify their installed locations with Show in Finder.
+5. Build a CLIP catalog index, run semantic search and Find Similar, then run
+   SAM 3 Subject Detail review. Check a representative set of photos for useful
+   results; valid metadata alone does not demonstrate inference compatibility.
+6. Test cancellation, retry, removal, and a clean redownload. Relaunch offline
+   to verify both installed bundles remain usable. Existing installed models are
+   reused; remove and redownload to test a new publication.
 
-```zsh
-cat > "$BUILD_ROOT/Release/Packaging/clip-datacomp.json" <<'JSON'
-{
-  "assetPackID": "rawcull-clip-datacomp",
-  "downloadPolicy": { "onDemand": {} },
-  "fileSelectors": [
-    { "file": "Models/CLIP-DataComp/metadata.json" },
-    { "directory": "Models/CLIP-DataComp/tokenizer" },
-    { "directory": "Models/CLIP-DataComp/ViT-B-32-256-datacomp_s34b_b86k_float16_static.aimodel" },
-    { "directory": "Notices/CLIP-DataComp" }
-  ],
-  "platforms": ["macOS"]
-}
-JSON
+RawBrowse installs under its Application Support directory:
 
-cat > "$BUILD_ROOT/Release/Packaging/sam3.json" <<'JSON'
-{
-  "assetPackID": "rawcull-sam3",
-  "downloadPolicy": { "onDemand": {} },
-  "fileSelectors": [
-    { "file": "Models/SAM3/metadata.json" },
-    { "directory": "Models/SAM3/tokenizer" },
-    { "directory": "Models/SAM3/sam3_float16.aimodel" },
-    { "directory": "Notices/SAM3" }
-  ],
-  "platforms": ["macOS"]
-}
-JSON
+| Model | Download manifest ID | Installed model root |
+|---|---|---|
+| DataComp CLIP | `clip-datacomp` | `RawBrowse/AI-models/clip-datacomp` |
+| Meta SAM 3 | `sam3` | `RawBrowse/AI-models/sam3` |
 
-cat > "$BUILD_ROOT/Release/Packaging/qwen3-vl-2b.json" <<'JSON'
-{
-  "assetPackID": "rawcull-qwen3-vl-2b",
-  "downloadPolicy": { "onDemand": {} },
-  "fileSelectors": [
-    { "file": "Models/Qwen/qwen3_vl_2b/metadata.json" },
-    { "directory": "Models/Qwen/qwen3_vl_2b/tokenizer" },
-    { "directory": "Models/Qwen/qwen3_vl_2b/embed.aimodel" },
-    { "directory": "Models/Qwen/qwen3_vl_2b/qwen3_vl_2b.aimodel" },
-    { "directory": "Models/Qwen/qwen3_vl_2b/vision.aimodel" },
-    { "directory": "Notices/Qwen" }
-  ],
-  "platforms": ["macOS"]
-}
-JSON
+All model paths in the manifest are relative to those roots. Include the full
+runtime asset directory and tokenizer, not just `main.mlirb`. RawBrowse checks
+file size and SHA-256 and stages every file before installation.
 
-for slug in clip-datacomp sam3 qwen3-vl-2b; do
-  python3 -m json.tool "$BUILD_ROOT/Release/Packaging/$slug.json" >/dev/null
-done
-```
-
-## 10. Inspect and freeze the selected input files
-
-`.DS_Store` files are present in the older `ModelAssets/Release` directories;
-the new candidate should not include them. Do not delete anything from the old
-release. Check the fresh selected directories and resolve any unexpected
-symlink or secret before packaging.
-
-```zsh
-cd "$BUILD_ROOT/Release"
-find Models/CLIP-DataComp Models/SAM3 Models/Qwen/qwen3_vl_2b \
-  Notices/CLIP-DataComp Notices/SAM3 Notices/Qwen \
-  \( -name '.DS_Store' -o -type l \) -print
-
-find Models/CLIP-DataComp Models/SAM3 Models/Qwen/qwen3_vl_2b \
-  Notices/CLIP-DataComp Notices/SAM3 Notices/Qwen \
-  -type f -print0 | xargs -0 shasum -a 256 | sort \
-  > Evidence/selected-inputs-sha256.txt
-
-for slug in clip-datacomp sam3 qwen3-vl-2b; do
-  xcrun ba-package evaluate "Packaging/$slug.json" \
-    | tee "Evidence/$slug-evaluate.txt"
-done
-```
-
-Read all three `Evidence/*-evaluate.txt` files. Each list should contain only
-its model bundle, tokenizer, metadata, and matching notice directory. The
-Qwen pack needs all three `.aimodel` directories. No source weight files,
-download cache, old archive, or other model should be selected. If the
-evaluation output is wrong, fix the manifest and rerun evaluation and the
-input inventory before packaging.
-
-## 11. Build the three `.aar` files
-
-`ba-package` creates Background Assets archives; `.aar` is not a ZIP file.
-Run it from `BUILD_ROOT/Release` so the relative file selectors resolve.
-
-```zsh
-cd "$BUILD_ROOT/Release"
-xcrun ba-package package Packaging/clip-datacomp.json \
-  --output-path Output/clip-datacomp.aar --verbose \
-  2>&1 | tee Evidence/clip-datacomp-package.log
-
-xcrun ba-package package Packaging/sam3.json \
-  --output-path Output/sam3.aar --verbose \
-  2>&1 | tee Evidence/sam3-package.log
-
-xcrun ba-package package Packaging/qwen3-vl-2b.json \
-  --output-path Output/qwen3-vl-2b.aar --verbose \
-  2>&1 | tee Evidence/qwen3-vl-2b-package.log
-```
-
-Do not edit an archive after this point. Any changed model, metadata, notice,
-or manifest requires another `ba-package package` run and a new hash. For the
-three existing App Store Connect pack records, a changed archive will become a
-new pack **version** under the same permanent ID.
-
-## 12. Verify and record the result
-
-```zsh
-cd "$BUILD_ROOT/Release"
-for slug in clip-datacomp sam3 qwen3-vl-2b; do
-  test -s "Output/$slug.aar"
-  stat -f '%N|%z bytes' "Output/$slug.aar"
-  shasum -a 256 "Output/$slug.aar"
-  shasum -a 256 "Packaging/$slug.json"
-done | tee Evidence/archive-and-manifest-sha256.txt
-
-find Output -maxdepth 1 -type f -name '*.aar' -print | sort
-```
-
-The last command must print exactly these three paths:
-
-```text
-Output/clip-datacomp.aar
-Output/qwen3-vl-2b.aar
-Output/sam3.aar
-```
-
-Compare the final `selected-inputs-sha256.txt` with a fresh hash pass to catch
-any source mutation while the archives were built:
-
-```zsh
-find Models/CLIP-DataComp Models/SAM3 Models/Qwen/qwen3_vl_2b \
-  Notices/CLIP-DataComp Notices/SAM3 Notices/Qwen \
-  -type f -print0 | xargs -0 shasum -a 256 | sort \
-  > Evidence/selected-inputs-after-sha256.txt
-diff -u Evidence/selected-inputs-sha256.txt \
-  Evidence/selected-inputs-after-sha256.txt
-```
-
-An empty `diff` and exit status 0 confirm that the selected inputs remained
-unchanged during packaging. Record the `BUILD_ROOT` path, Xcode version,
-exporter commits, source hashes, and all three archive hashes with the release
-candidate. The files are at:
-
-```text
-<BUILD_ROOT>/Release/Output/clip-datacomp.aar
-<BUILD_ROOT>/Release/Output/sam3.aar
-<BUILD_ROOT>/Release/Output/qwen3-vl-2b.aar
-```
-
-## 13. Before uploading or calling these release files
-
-1. Verify that the DataComp exporter actually consumed the pinned checkpoint;
-   the downloaded LAION snapshot alone does not prove it. For all three packs,
-   retain actual source-weight hashes and exporter logs.
-2. Review the current model licences and all copied notice files. Keep the
-   correct notice directory inside each `.aar`.
-3. Run RawCull's `make verify-model-provenance`, catalog and release-metadata
-   tests, and release preflight **after** updating its manifest template,
-   Swift catalog, and checked-in provenance to the new archive values. Never
-   leave the old archive SHA-256 in the app catalog for new `.aar` files.
-4. If uploading, use the existing `rawcull-clip-datacomp`, `rawcull-sam3`, and
-   `rawcull-qwen3-vl-2b` App Store Connect records. Follow
-   [`RawCull/Docs/newmodels.md`](https://github.com/rsyncOSX/RawCull/blob/version-3.2.6/Docs/newmodels.md)
-   for `xcrun altool`, API-key handling, processing checks, and TestFlight
-   verification. The `AppStore` build must use Apple hosting and the matching
-   App Group. A successful local `.aar` build does not test runtime inference.
-
-### If a step fails
+## Troubleshooting
 
 | Symptom | Check |
 |---|---|
-| `401`/`403` downloading SAM 3 | Hugging Face approval and `hf auth whoami`; accept the gated model terms. |
-| Offline source missing | Check the isolated `HF_HUB_CACHE` and the model's `refs/main`; download the exact revision before re-exporting. |
-| CLIP tokenizer parity failure | Do not package; inspect the tokenizer source and OpenCLIP configuration. |
-| SAM export leaves source asset | Package only the optimized asset selected by `select_sam3_asset.py`. |
-| Qwen bundle lacks `vision.aimodel` | Rebuild with a converter that supports Qwen VLM and without `--skip-vision`. |
-| `ba-package evaluate` lists extra files | Correct its `fileSelectors`; evaluate again before packaging. |
-| Archive hash differs from the old release | Expected for a new conversion; update catalog and provenance before upload. |
+| SAM download returns 401/403 | Hugging Face access approval, accepted terms, and `hf auth whoami`. |
+| Offline export cannot find weights | Actual exporter source repository, isolated cache snapshot, and `refs/main`. |
+| CLIP tokenizer parity failure | Tokenizer source and OpenCLIP configuration before rebuilding. |
+| New Swift pin but unchanged conversion output | Python exporters have separate pinned dependencies; inspect their script headers and source. |
+| App reports models are not published | Public `main/manifest.json` and published release assets. |
+| Model file fails checksum verification | Manifest corresponds to the exact uploaded bytes and release tag. |
+| Bundle validates but inference fails | Full runtime files, metadata fingerprints, and RawBrowse's resolved PhotoAIKit/CoreAI revisions. |
 
-The source commands and pack layout come from [PhotoAIKit's export tools](https://github.com/rsyncOSX/PhotoAIKit/tree/main/Tools),
-[Apple's Core AI model recipes](https://github.com/apple/coreai-models),
-[Apple's managed pack documentation](https://developer.apple.com/documentation/backgroundassets/creating-managed-asset-packs),
-and the RawCull release runbook linked above. Verify the exact checkout used
-for a release: repository `main` branches and tool versions can change.
+Reference implementations: [PhotoAIKit export tools](https://github.com/rsyncOSX/PhotoAIKit/tree/main/Tools),
+[the recorded CoreAI revision](https://github.com/apple/coreai-models/tree/1953c4f90ba0214c1abc7bebcb9be5107e329a46),
+and RawBrowse's [model publishing instructions](../ModelAssets/README.md) and
+[manifest template](../ModelAssets/manifest.template.json).
