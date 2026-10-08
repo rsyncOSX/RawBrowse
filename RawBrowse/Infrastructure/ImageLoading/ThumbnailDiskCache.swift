@@ -1,0 +1,100 @@
+import AppKit
+import CryptoKit
+import Foundation
+import ImageIO
+import OSLog
+import RawParserKit
+import UniformTypeIdentifiers
+
+actor ThumbnailDiskCache {
+    private static let cacheKeyVersion = "v3-source-fingerprint"
+    static let shared = ThumbnailDiskCache()
+
+    private var policy: DiskCachePolicy?
+    let cacheDirectory: URL
+
+    init(cacheDirectory: URL? = nil, maximumBytes: Int64 = 1 * 1024 * 1024 * 1024) {
+        let folder: URL
+        if let cacheDirectory {
+            folder = cacheDirectory
+        } else {
+            let paths = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)
+            folder = paths[0]
+                .appendingPathComponent("RawBrowse", isDirectory: true)
+                .appendingPathComponent("Thumbnails", isDirectory: true)
+        }
+        self.cacheDirectory = folder
+        do {
+            try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+            policy = try DiskCachePolicy(directory: folder, maximumBytes: maximumBytes)
+        } catch {
+            Logger.process.warning("ThumbnailDiskCache: Failed to create directory \(folder): \(error)")
+        }
+    }
+
+    private func cacheURL(for sourceURL: URL, maxPixelSize: Int) -> URL {
+        let sourceKey = ImageSourceFingerprint.key(for: sourceURL)
+        let data = Data("\(Self.cacheKeyVersion):\(sourceKey):\(max(maxPixelSize, 1))".utf8)
+        let digest = Insecure.MD5.hash(data: data)
+        let hash = digest.map { String(format: "%02x", $0) }.joined()
+        return cacheDirectory.appendingPathComponent(hash).appendingPathExtension("jpg")
+    }
+
+    func load(for sourceURL: URL, maxPixelSize: Int) async -> NSImage? {
+        let fileURL = cacheURL(for: sourceURL, maxPixelSize: maxPixelSize)
+
+        let image = await Task<NSImage?, Never>.detached(priority: .userInitiated) {
+            guard let image = OrientationNormalizedImageLoader.loadCGImage(from: fileURL) else { return nil }
+            return NSImage(cgImage: image, size: NSSize(width: image.width, height: image.height))
+        }.value
+        if image != nil { policy?.recordHit(fileURL) }
+        return image
+    }
+
+    func save(_ jpegData: Data, for sourceURL: URL, maxPixelSize: Int) async {
+        let fileURL = cacheURL(for: sourceURL, maxPixelSize: maxPixelSize)
+
+        guard policy != nil else { return }
+        do {
+            try jpegData.write(to: fileURL, options: .atomic)
+            try policy?.recordWrite(fileURL, bytes: jpegData.count)
+        } catch {
+            Logger.process.warning("ThumbnailDiskCache: Failed to write image to disk \(fileURL.path): \(error)")
+        }
+    }
+
+    func sizeInBytes() throws -> Int64 {
+        let files = try FileManager.default.contentsOfDirectory(
+            at: cacheDirectory, includingPropertiesForKeys: [.fileSizeKey, .isRegularFileKey],
+        )
+        return try files.filter { $0.pathExtension == "jpg" }.reduce(Int64(0)) { total, file in
+            let values = try file.resourceValues(forKeys: [.fileSizeKey, .isRegularFileKey])
+            return total + (values.isRegularFile == true ? Int64(values.fileSize ?? 0) : 0)
+        }
+    }
+
+    func clear() throws {
+        let files = try FileManager.default.contentsOfDirectory(
+            at: cacheDirectory, includingPropertiesForKeys: nil,
+        )
+        for file in files where file.pathExtension == "jpg" {
+            try FileManager.default.removeItem(at: file)
+        }
+        policy?.reset()
+    }
+
+    nonisolated static func jpegData(from cgImage: CGImage) -> Data? {
+        let mutableData = NSMutableData()
+        guard let destination = CGImageDestinationCreateWithData(
+            mutableData,
+            UTType.jpeg.identifier as CFString,
+            1,
+            nil,
+        ) else { return nil }
+
+        let options: [CFString: Any] = [kCGImageDestinationLossyCompressionQuality: 0.7]
+        CGImageDestinationAddImage(destination, cgImage, options as CFDictionary)
+        guard CGImageDestinationFinalize(destination) else { return nil }
+        return mutableData as Data
+    }
+}

@@ -1,0 +1,126 @@
+import CryptoKit
+import Foundation
+import ImageIO
+import OSLog
+import RawParserKit
+import UniformTypeIdentifiers
+
+actor FullSizeJPGDiskCache {
+    nonisolated enum Variant: String {
+        case embeddedJPG
+        case developedRAW
+    }
+
+    private static let cacheKeyVersion = "v6-source-jpeg-orientation"
+    static let shared = FullSizeJPGDiskCache()
+
+    private var policy: DiskCachePolicy?
+    let cacheDirectory: URL
+
+    init(cacheDirectory: URL? = nil, maximumBytes: Int64 = 8 * 1024 * 1024 * 1024) {
+        let folder: URL
+        if let cacheDirectory {
+            folder = cacheDirectory
+        } else {
+            let paths = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)
+            folder = paths[0]
+                .appendingPathComponent("RawBrowse", isDirectory: true)
+                .appendingPathComponent("FullsizeJPGs", isDirectory: true)
+        }
+        self.cacheDirectory = folder
+        do {
+            try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+            policy = try DiskCachePolicy(directory: folder, maximumBytes: maximumBytes)
+        } catch {
+            Logger.process.warning("FullSizeJPGDiskCache: Failed to create directory \(folder): \(error)")
+        }
+    }
+
+    private func cacheURL(for sourceURL: URL, variant: Variant) -> URL {
+        let standardizedPath = sourceURL.standardized.path
+        let attributes = try? FileManager.default.attributesOfItem(atPath: standardizedPath)
+        let fileSize = (attributes?[.size] as? NSNumber)?.int64Value ?? -1
+        let modificationTime = (attributes?[.modificationDate] as? Date)?.timeIntervalSince1970 ?? -1
+        let variantKey = variant == .embeddedJPG ? "" : ":\(variant.rawValue):raw9"
+        let data = Data(
+            "\(Self.cacheKeyVersion):\(standardizedPath):\(fileSize):\(modificationTime)\(variantKey)".utf8,
+        )
+        let digest = Insecure.MD5.hash(data: data)
+        let hash = digest.map { String(format: "%02x", $0) }.joined()
+        return cacheDirectory.appendingPathComponent(hash).appendingPathExtension("jpg")
+    }
+
+    /// Loads a cached full-size JPEG as a `CGImage`.
+    /// Uses `kCGImageSourceShouldCache: false` and `CGImageSourceRemoveCacheAtIndex`
+    /// to prevent ImageIO from retaining the decoded full-resolution pixel buffer
+    /// in its process-level cache.
+    func load(for sourceURL: URL, variant: Variant = .embeddedJPG) async -> CGImage? {
+        let fileURL = cacheURL(for: sourceURL, variant: variant)
+
+        let image = await Task.detached(priority: .userInitiated) {
+            guard variant == .embeddedJPG,
+                  let data = try? Data(contentsOf: fileURL)
+            else {
+                return OrientationNormalizedImageLoader.loadCGImage(from: fileURL)
+            }
+            return OrientationNormalizedImageLoader.loadEmbeddedPreview(
+                from: data,
+                sourceURL: sourceURL,
+            )
+        }.value
+        if image != nil { policy?.recordHit(fileURL) }
+        return image
+    }
+
+    func save(_ jpegData: Data, for sourceURL: URL, variant: Variant = .embeddedJPG) async {
+        let fileURL = cacheURL(for: sourceURL, variant: variant)
+
+        guard policy != nil else { return }
+        do {
+            try jpegData.write(to: fileURL, options: .atomic)
+            try policy?.recordWrite(fileURL, bytes: jpegData.count)
+        } catch {
+            Logger.process.warning("FullSizeJPGDiskCache: Failed to write image to disk \(fileURL.path): \(error)")
+        }
+    }
+
+    func sizeInBytes() throws -> Int64 {
+        let files = try FileManager.default.contentsOfDirectory(
+            at: cacheDirectory, includingPropertiesForKeys: [.fileSizeKey, .isRegularFileKey],
+        )
+        return try files.filter { $0.pathExtension == "jpg" }.reduce(Int64(0)) { total, file in
+            let values = try file.resourceValues(forKeys: [.fileSizeKey, .isRegularFileKey])
+            return total + (values.isRegularFile == true ? Int64(values.fileSize ?? 0) : 0)
+        }
+    }
+
+    func clear() throws {
+        let files = try FileManager.default.contentsOfDirectory(
+            at: cacheDirectory, includingPropertiesForKeys: nil,
+        )
+        for file in files where file.pathExtension == "jpg" {
+            try FileManager.default.removeItem(at: file)
+        }
+        policy?.reset()
+    }
+
+    /// Encodes a `CGImage` to JPEG `Data` at quality 0.85. Call this before
+    /// crossing actor/task boundaries with an extracted full-size image.
+    nonisolated static func jpegData(from cgImage: CGImage) -> Data? {
+        let mutableData = NSMutableData()
+        guard let destination = CGImageDestinationCreateWithData(
+            mutableData,
+            UTType.jpeg.identifier as CFString,
+            1,
+            nil,
+        ) else { return nil }
+
+        let options: [CFString: Any] = [
+            kCGImageDestinationLossyCompressionQuality: 0.85,
+            kCGImagePropertyOrientation: 1
+        ]
+        CGImageDestinationAddImage(destination, cgImage, options as CFDictionary)
+        guard CGImageDestinationFinalize(destination) else { return nil }
+        return mutableData as Data
+    }
+}

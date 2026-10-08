@@ -1,0 +1,97 @@
+import AppKit
+import SwiftUI
+
+struct BrowserThumbnailCell: View {
+    let file: BrowserFileItem
+    let isFocused: Bool
+    let isSelected: Bool
+    let thumbnailSize: Int
+    let displayPath: String?
+
+    @State private var image: NSImage?
+    @State private var isLoading = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            thumbnail
+
+            Text(displayPath ?? file.name)
+                .font(.caption)
+                .lineLimit(2)
+                .truncationMode(.middle)
+                .textSelection(.enabled)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .contentShape(.rect)
+        .task(id: taskID) {
+            if let cached = await MemoryImageCache.shared.thumbnail(for: file.url, maxPixelSize: thumbnailSize) {
+                image = cached
+                return
+            }
+            isLoading = true
+            image = await BrowserImageLoader.shared.thumbnail(for: file.url, targetSize: thumbnailSize)
+            isLoading = false
+        }
+        .onDisappear {
+            image = nil
+            isLoading = false
+        }
+    }
+
+    private var thumbnail: some View {
+        RoundedRectangle(cornerRadius: 6)
+            .fill(Color(nsColor: .controlBackgroundColor))
+            .aspectRatio(1, contentMode: .fit)
+            .overlay {
+                GeometryReader { geometry in
+                    thumbnailContent
+                        .frame(width: geometry.size.width, height: geometry.size.height)
+                }
+            }
+            .clipShape(.rect(cornerRadius: 6))
+            .overlay {
+                RoundedRectangle(cornerRadius: 6)
+                    .strokeBorder(borderColor, lineWidth: isSelected ? 3 : 1)
+            }
+            .overlay(alignment: .topTrailing) {
+                if isSelected {
+                    Image(systemName: isFocused ? "checkmark.circle.fill" : "checkmark.circle")
+                        .font(.title3)
+                        .symbolRenderingMode(.hierarchical)
+                        .foregroundStyle(Color.accentColor)
+                        .padding(6)
+                }
+            }
+    }
+
+    private var borderColor: Color {
+        if isFocused {
+            return .accentColor
+        }
+        if isSelected {
+            return .accentColor.opacity(0.72)
+        }
+        return .primary.opacity(0.08)
+    }
+
+    private var taskID: String {
+        "\(file.url.path)|\(thumbnailSize)"
+    }
+
+    @ViewBuilder
+    private var thumbnailContent: some View {
+        if let image {
+            Image(nsImage: image)
+                .resizable()
+                .scaledToFit()
+                .clipped()
+        } else if isLoading {
+            ProgressView()
+                .controlSize(.small)
+        } else {
+            Image(systemName: "photo")
+                .font(.largeTitle)
+                .foregroundStyle(.secondary)
+        }
+    }
+}

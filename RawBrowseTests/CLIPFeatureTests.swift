@@ -1,0 +1,352 @@
+import Foundation
+import PhotoAIContracts
+@testable import RawBrowse
+import Testing
+
+@Suite("CLIP feature")
+struct CLIPFeatureTests {
+    @Test
+    func `Search uses the catalog index while browsing descendants`() async {
+        let catalog = CatalogStore(save: { _ in }, clear: {}, openAccess: { _ in true },
+                                   closeAccess: { _ in }, lease: { _ in nil })
+        let contents = BrowserContentsModel(discover: { _ in ([], []) })
+        let viewModel = FileBrowserViewModel(catalog: catalog, contents: contents)
+        let root = BrowserFolderItem(url: URL(filePath: "/tmp/photos"))
+        let other = BrowserFolderItem(url: URL(filePath: "/tmp/photos-other"))
+        viewModel.catalog.rootFolders = [root, other]
+        viewModel.selectFolder(BrowserFolderItem(url: URL(filePath: "/tmp/photos/trip/day1")))
+        #expect(viewModel.clip.catalogURL == root.url.standardizedFileURL)
+        viewModel.selectFolder(other)
+        #expect(viewModel.clip.catalogURL == other.url.standardizedFileURL)
+        await viewModel.clearRememberedCatalogs()
+        #expect(viewModel.clip.catalogURL == nil)
+    }
+
+    @Test
+    func `Managed AI catalog contains CLIP and SAM 3 models`() {
+        let catalog = CLIPModelDownloadCatalog.production
+
+        #expect(catalog.models.map(\.id) == [.clipDataComp, .sam3])
+        #expect(
+            catalog.descriptor(for: .clipDataComp)?.assetPackID
+                == "rawbrowse-clip-datacomp",
+        )
+        #expect(
+            catalog.descriptor(for: .sam3)?.assetPackID
+                == "rawbrowse-sam3",
+        )
+        #expect(
+            catalog.descriptor(for: .clipDataComp)?.assetPackModelPath
+                == "Models/CLIP-DataComp",
+        )
+        #expect(
+            catalog.descriptor(for: .sam3)?.assetPackModelPath
+                == "Models/SAM3",
+        )
+    }
+
+    @Test
+    func `DataComp is the default and managed CLIP selection is persisted`() throws {
+        #expect(BrowserSettings().selectedCLIPModel == .dataComp)
+
+        let decoded = try JSONDecoder().decode(
+            BrowserSettings.self,
+            from: Data(#"{"selectedCLIPModel":"data-comp"}"#.utf8),
+        )
+
+        #expect(decoded.selectedCLIPModel == .dataComp)
+    }
+
+    @Test
+    func `Semantic result limit defaults to 50`() {
+        #expect(BrowserSettings().semanticSearchLimit == 50)
+    }
+
+    @Test
+    func `CLIP and SAM 3 model-folder settings are optional and decode when present`() throws {
+        let defaults = BrowserSettings()
+        #expect(defaults.clipModelPath == nil)
+        #expect(defaults.sam3ModelPath == nil)
+
+        let decoded = try JSONDecoder().decode(
+            BrowserSettings.self,
+            from: Data(#"{"clipModelPath":"/tmp/CLIP","sam3ModelPath":"/tmp/SAM3"}"#.utf8),
+        )
+
+        #expect(decoded.clipModelPath == "/tmp/CLIP")
+        #expect(decoded.sam3ModelPath == "/tmp/SAM3")
+    }
+
+    @Test
+    func `Decoded semantic result limit is bounded`() throws {
+        let tooSmall = try JSONDecoder().decode(
+            BrowserSettings.self,
+            from: Data(#"{"semanticSearchLimit":-20}"#.utf8),
+        )
+        let tooLarge = try JSONDecoder().decode(
+            BrowserSettings.self,
+            from: Data(#"{"semanticSearchLimit":900}"#.utf8),
+        )
+
+        #expect(tooSmall.semanticSearchLimit == 10)
+        #expect(tooLarge.semanticSearchLimit == 500)
+    }
+
+    @Test
+    func `Index paths are hidden and model-specific`() {
+        let directory = URL(filePath: "/tmp/photos", directoryHint: .isDirectory)
+        let first = CLIPIndexPaths.defaultIndexURL(
+            directory: directory,
+            modelFingerprint: "model-a",
+        )
+        let second = CLIPIndexPaths.defaultIndexURL(
+            directory: directory,
+            modelFingerprint: "model-b",
+        )
+
+        #expect(first != second)
+        #expect(first.deletingLastPathComponent().lastPathComponent == ".clipbench")
+        #expect(first.pathExtension == "clipindex")
+    }
+
+    @Test
+    func `Folder discovery marks any stored CLIP index without validating it`() async throws {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("RawBrowseIndexBadge-\(UUID().uuidString)", isDirectory: true)
+        let indexedFolder = root.appendingPathComponent("indexed", isDirectory: true)
+        let indexDirectory = indexedFolder.appendingPathComponent(".clipbench", isDirectory: true)
+        try FileManager.default.createDirectory(at: indexDirectory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+
+        try Data("not a valid index".utf8).write(
+            to: indexDirectory.appendingPathComponent("broken.clipindex"),
+        )
+
+        let folders = await BrowserImageLoader.shared.discoverFolders(at: root)
+
+        #expect(folders.count == 1)
+        #expect(folders.first?.hasCLIPIndex == true)
+    }
+
+    @Test
+    func `Only current or partially outdated indexes allow search`() {
+        let directory = URL(filePath: "/tmp/photos", directoryHint: .isDirectory)
+        let updatedAt = Date(timeIntervalSince1970: 1)
+        let valid = CLIPIndexStatus.valid(directory: directory, indexed: 10, updatedAt: updatedAt)
+        let needsUpdate = CLIPIndexStatus.needsUpdate(
+            directory: directory,
+            indexed: 10,
+            missing: 2,
+            changed: 1,
+            removed: 0,
+            updatedAt: updatedAt,
+        )
+
+        #expect(valid.allowsSearch)
+        #expect(!valid.recommendsUpdate)
+        #expect(valid.indexFileExists == true)
+        #expect(needsUpdate.allowsSearch)
+        #expect(needsUpdate.recommendsUpdate)
+        #expect(needsUpdate.indexFileExists == true)
+        #expect(!CLIPIndexStatus.notFound(directory).allowsSearch)
+        #expect(CLIPIndexStatus.notFound(directory).indexFileExists == false)
+        #expect(!CLIPIndexStatus.invalid(directory: directory, reason: "bad index").allowsSearch)
+        #expect(CLIPIndexStatus.invalid(directory: directory, reason: "bad index").indexFileExists == true)
+    }
+
+    @Test
+    func `Discovery is recursive and ignores hidden or unsupported files`() throws {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("RawBrowseTests-\(UUID().uuidString)", isDirectory: true)
+        let nested = root.appendingPathComponent("nested", isDirectory: true)
+        try FileManager.default.createDirectory(at: nested, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+
+        try Data([0]).write(to: root.appendingPathComponent("first.jpg"))
+        try Data([0]).write(to: nested.appendingPathComponent("second.ARW"))
+        try Data([0]).write(to: root.appendingPathComponent("notes.txt"))
+        try Data([0]).write(to: root.appendingPathComponent(".hidden.jpg"))
+
+        let discovered = try CLIPImageDiscovery.sources(in: root)
+        let names = Set(discovered.map(\.displayName))
+
+        #expect(names == ["first.jpg", "second.ARW"])
+    }
+
+    @Test
+    func `Image similarity ranks indexed neighbors and excludes its anchor`() throws {
+        let anchor = try indexedEntry(path: "/photos/anchor.jpg", values: [1, 0])
+        let nearest = try indexedEntry(path: "/photos/nearest.jpg", values: [0.9, 0.1])
+        let furthest = try indexedEntry(path: "/photos/furthest.jpg", values: [0, 1])
+        let index = CLIPPersistedIndex(
+            backend: testBackend,
+            entries: [furthest, anchor, nearest],
+        )
+
+        let results = try CLIPSimilaritySearch.results(
+            in: index,
+            anchorURL: anchor.source.url,
+            limit: 10,
+        )
+
+        #expect(results.map(\.fileName) == ["nearest.jpg", "furthest.jpg"])
+        #expect(results.map(\.rank) == [1, 2])
+        #expect(results.allSatisfy { $0.path != anchor.source.url.path })
+    }
+
+    @Test
+    func `Local CLIP bundle returns semantic search results`() async throws {
+        guard let bundlePath = ProcessInfo.processInfo.environment["CLIP_COREAI_BUNDLE"] else {
+            return
+        }
+        let load = await CLIPModelManager().load(
+            url: URL(filePath: bundlePath, directoryHint: .isDirectory),
+        )
+        guard let provider = load.provider else {
+            Issue.record("RawBrowse rejected the CLIP model bundle")
+            return
+        }
+
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("RawBrowseSemanticSearch-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let fixture = URL(filePath: #filePath)
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .appendingPathComponent("images/background.png")
+        try FileManager.default.copyItem(
+            at: fixture,
+            to: root.appendingPathComponent("fixture.png"),
+        )
+
+        let engine = CLIPSearchEngine(
+            provider: provider,
+            indexStore: CLIPIndexStore(
+                fileURL: CLIPIndexPaths.defaultIndexURL(
+                    directory: root,
+                    modelFingerprint: provider.backendDescriptor.modelFingerprint,
+                ),
+            ),
+        )
+        let summary = try await engine.synchronize(directory: root)
+        let results = try await engine.search(text: "muskox", limit: 10)
+
+        #expect(summary.indexed == 1)
+        #expect(results.count == 1)
+        #expect(results.first?.fileName == "fixture.png")
+    }
+
+    @Test
+    func `SigLIP 2 bundle indexes and searches through RawBrowse`() async throws {
+        let environment = ProcessInfo.processInfo.environment
+        guard let bundlePath = environment["SIGLIP2_COREAI_BUNDLE"],
+              let referencePath = environment["SIGLIP2_REFERENCE"]
+        else {
+            return
+        }
+
+        let load = await CLIPModelManager().load(
+            url: URL(filePath: bundlePath, directoryHint: .isDirectory),
+        )
+        guard case let .available(_, _, modelName) = load.status,
+              let provider = load.provider
+        else {
+            Issue.record("RawBrowse rejected the SigLIP 2 model bundle")
+            return
+        }
+        #expect(modelName == "SigLIP2-Base-Patch16-256")
+        #expect(provider.backendDescriptor.backend == "siglip2")
+
+        let referenceURL = URL(filePath: referencePath)
+        let reference = try JSONDecoder().decode(
+            SigLIP2SearchReference.self,
+            from: Data(contentsOf: referenceURL),
+        )
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("RawBrowseSigLIP2-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+
+        for (offset, item) in reference.images.enumerated() {
+            let source = URL(
+                filePath: item.path,
+                directoryHint: .notDirectory,
+                relativeTo: referenceURL.deletingLastPathComponent(),
+            ).standardizedFileURL
+            try FileManager.default.copyItem(
+                at: source,
+                to: root.appendingPathComponent("fixture-\(offset).jpg"),
+            )
+        }
+
+        let indexURL = CLIPIndexPaths.defaultIndexURL(
+            directory: root,
+            modelFingerprint: provider.backendDescriptor.modelFingerprint,
+        )
+        let engine = CLIPSearchEngine(
+            provider: provider,
+            indexStore: CLIPIndexStore(fileURL: indexURL),
+        )
+        let summary = try await engine.synchronize(directory: root)
+        let results = try await engine.search(text: "puffins portrait", limit: 10)
+        let similar = try await engine.search(
+            similarTo: root.appendingPathComponent("fixture-0.jpg"),
+            limit: 10,
+        )
+
+        #expect(summary.discovered == reference.images.count)
+        #expect(summary.indexed == reference.images.count)
+        #expect(summary.failures.isEmpty)
+        #expect(results.count == reference.images.count)
+        #expect(similar.count == max(0, reference.images.count - 1))
+        #expect(await engine.hasCompatibleIndex())
+    }
+
+    private var testBackend: SimilarityBackendDescriptor {
+        SimilarityBackendDescriptor(
+            backend: "clip",
+            modelFingerprint: testModel.artifactIdentifier,
+            representation: "embedding",
+            preprocessingVersion: "1",
+            normalizationVersion: "1",
+            configurationVersion: "1",
+        )
+    }
+
+    private var testModel: ModelIdentity {
+        ModelIdentity(family: "clip", name: "test", assetName: "test")
+    }
+
+    private func indexedEntry(path: String, values: [Float]) throws -> CLIPIndexEntry {
+        let url = URL(filePath: path)
+        let source = AIImageSource(id: UUID(), url: url, displayName: url.lastPathComponent)
+        let fingerprint = SourceFingerprint(
+            standardizedPath: url.standardizedFileURL.path,
+            fileSize: nil,
+            modificationDate: nil,
+        )
+        let embedding = ImageEmbedding(
+            backend: testBackend.backend,
+            modelIdentity: testModel,
+            values: values,
+        )
+        let artifact = try SimilarityArtifact(
+            descriptor: SimilarityArtifactDescriptor(
+                backend: testBackend,
+                dimensions: values.count,
+                sourceFingerprint: fingerprint,
+            ),
+            payload: JSONEncoder().encode(embedding),
+        )
+        return CLIPIndexEntry(source: source, fingerprint: fingerprint, artifact: artifact)
+    }
+}
+
+private struct SigLIP2SearchReference: Decodable {
+    struct ImageItem: Decodable {
+        let path: String
+    }
+
+    let images: [ImageItem]
+}

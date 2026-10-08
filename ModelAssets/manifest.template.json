@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "models": [
+    {
+      "id": "clip-datacomp",
+      "files": [
+        {
+          "path": "config.json",
+          "url": "https://github.com/rsyncOSX/AI-models/releases/download/REPLACE_TAG/clip-datacomp-config.json",
+          "byteCount": 0,
+          "sha256": "REPLACE_WITH_FILE_SHA256"
+        }
+      ]
+    },
+    {
+      "id": "sam3",
+      "files": [
+        {
+          "path": "config.json",
+          "url": "https://github.com/rsyncOSX/AI-models/releases/download/REPLACE_TAG/sam3-config.json",
+          "byteCount": 0,
+          "sha256": "REPLACE_WITH_FILE_SHA256"
+        }
+      ]
+    }
+  ]
+}

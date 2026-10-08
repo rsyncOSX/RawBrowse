@@ -1,0 +1,53 @@
+{
+  "catalog_version": 2,
+  "release_status": "ready",
+  "release": {
+    "tag": "v2",
+    "archive_sha256": "e9181157c2d4012db2e6478949488f9906696a4ed78ecaa10235d9762621136c",
+    "archive_byte_count": 282866068
+  },
+  "model": {
+    "bundle": "CLIP-OpenAI",
+    "asset": "Models/CLIP-OpenAI/clip-vit-base-patch32_float16_static.aimodel",
+    "architecture": "ViT-B-32",
+    "precision": "float16",
+    "static_shapes": true,
+    "runtime_main_mlirb_sha256": "828e6ef52700c48b9c72696d785f5b45bd01a06748c538eb284cf3a42f2530da",
+    "exporter_fingerprint_algorithm": "directory-tree-sha256-v1",
+    "exporter_fingerprint": "24a20d7c5c88da2afe3ed81dca0ddf223450dd6afd1f3aff34be7acfc48f4914"
+  },
+  "upstream": {
+    "project": "openai/clip-vit-base-patch32",
+    "model_url": "https://huggingface.co/openai/clip-vit-base-patch32",
+    "local_cache_snapshot_revision": "3d74acf9a28c67741b2f4f2ea7635f0aaf6f0268",
+    "source_weight_file": "pytorch_model.bin",
+    "source_weight_sha256": "a63082132ba4f97a80bea76823f544493bffa8082296d62d71581a4feff1576f",
+    "source_revision_recorded_by_exporter": "3d74acf9a28c67741b2f4f2ea7635f0aaf6f0268",
+    "evidence_note": "The exported metadata records this immutable Hugging Face revision, and the source weight file was verified before conversion."
+  },
+  "tokenizer": {
+    "source": "openai/clip-vit-base-patch32",
+    "snapshot_revision": "3d74acf9a28c67741b2f4f2ea7635f0aaf6f0268",
+    "tokenizer_json_sha256": "6d9109cc838977f3ca94a379eec36aecc7c807e1785cd729660ca2fc0171fb35"
+  },
+  "conversion": {
+    "producer": "coreai-core 1.0.0b2",
+    "model_creation_date": "2026-08-10T06:27:23Z",
+    "apple_coreai_models_reference_revision": "bffc38fe48f50e4e962ac9772b64a5b55a605286",
+    "photoaikit_revision": "6e3216027b267c27ccaf99d334807b18ea1aaec9"
+  },
+  "licences": [
+    {
+      "component": "OpenAI CLIP source and tokenizer",
+      "spdx": "MIT",
+      "file": "OpenAI-CLIP-MIT.txt",
+      "sha256": "893951b3bf94db8df1b13e05da5cdeb499400960e4d44a3962a8b33ed0b4f28e"
+    },
+    {
+      "component": "Apple coreai-models conversion recipe",
+      "spdx": "BSD-3-Clause",
+      "file": "Apple-coreai-models-BSD-3-Clause.txt",
+      "sha256": "6762cc4b6772662c50c4c666dafbb2d0c97c80d6d54c9d628480ab59d655cf6e"
+    }
+  ]
+}
