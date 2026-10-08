@@ -1,6 +1,6 @@
 # RawBrowse
 
-RawBrowse is a macOS SwiftUI photo browser with local CLIP indexing, semantic search, and SAM 3 subject review. It browses and previews JPEG, PNG, HEIC/HEIF, TIFF, Sony ARW, and DNG files, and provides recursive semantic search over supported image formats.
+RawBrowse is a macOS SwiftUI photo browser with local CLIP indexing, semantic search, and SAM 3 subject review. It browses JPEG, PNG, TIFF, and the RAW formats recognized by RawParserKit, including Sony ARW and DNG. Local AI features provide recursive semantic search, visual similarity, and subject sharpness review.
 
 ## Source organization
 
@@ -8,8 +8,8 @@ RawBrowse is a macOS SwiftUI photo browser with local CLIP indexing, semantic se
 and the browser composition root. `RawBrowse/Features` groups browser,
 zoom, RAW9, AI, downloads, and settings code with their views.
 `RawBrowse/Infrastructure` holds shared image loading, access leases,
-concurrency helpers, and logging. See [the implementation record](Docs/modularization.md)
-and [source relocation inventory](Docs/source-layout.md) for ownership and paths.
+concurrency helpers, and logging. Each feature owns its state and presentation;
+shared infrastructure supports folder access and image loading.
 
 ## Requirements
 
@@ -30,7 +30,7 @@ and [source relocation inventory](Docs/source-layout.md) for ownership and paths
 - Download DataComp CLIP before enabling indexing or search.
 - Download Meta SAM 3 for Deep Review.
 - Select an indexed image and use **Find Similar** to rank its nearest visual neighbors.
-- Recursively and incrementally index a selected folder into its hidden `.clipbench` directory.
+- Recursively and incrementally index a selected catalog into its hidden `.clipbench` directory.
 - Search locally with natural-language descriptions and show thumbnail/path results.
 - Adjust the semantic result limit in steps of ten (default 50, range 10–500).
 - Enrich SAM 3 Deep Review with CLIP subject labels, EXIF autofocus points, and a whole-frame sharpness score.
@@ -38,25 +38,48 @@ and [source relocation inventory](Docs/source-layout.md) for ownership and paths
 
 ## AI models and settings
 
-Open **RawBrowse > Settings > AI Models** to check model availability and open **Download AI Models**. CLIP and SAM 3 download from [rsyncOSX/AI-models](https://github.com/rsyncOSX/AI-models), using `manifest.json` on the `main` branch. The repository and manifest are pending publication; the app reports this clearly until they are available.
+Open **RawBrowse > Settings > AI Models** to check model availability and open **Download AI Models**. CLIP and SAM 3 download from [rsyncOSX/AI-models](https://github.com/rsyncOSX/AI-models), using `manifest.json` on the `main` branch. If the repository or manifest is unavailable, the app reports that models have not been published.
 
-Downloaded models are stored under `Application Support/RawBrowse/AI-models/clip-datacomp` and `sam3`. Each file is checked against its manifest byte count and SHA-256 before installation. SAM 3 requires acceptance of the bundled SAM licence. Downloads support progress, cancellation, retry, removal, and Show in Finder. See [model publishing instructions](ModelAssets/README.md).
+Downloaded models are stored under `Application Support/RawBrowse/AI-models/clip-datacomp` and `sam3`. Each file is checked against its manifest byte count and SHA-256 before installation. SAM 3 requires acceptance of the bundled SAM licence. Downloads support progress, cancellation, retry, removal, and Show in Finder. See [model publishing instructions](ModelAssets/README.md) and the [conversion and publication workbook](Docs/aimodelsdownload.md).
 
 The AI workspace offers CLIP semantic search and Find Similar, plus SAM 3 Subject Detail review. The semantic result limit is available in AI Models settings.
 
-**CLIP Indexes** manages catalog indexes; **Memory** and **Cache** configure image memory and disk caching.
+**CLIP Indexes** checks and manages catalog indexes; **Memory** and **Cache** configure image memory and disk caching. **Images** selects 8-bit or 16-bit RAW 9 previews.
 
 ## CLIP workflow
 
 1. Open **RawBrowse > Settings > AI Models**.
-2. Download DataComp CLIP, or open **Manual AI** and choose **Select CLIP Model** to use a compatible local Core AI bundle. A manually selected bundle overrides the downloaded model until the selection is cleared.
-3. Wait for the model to report a valid verification status.
-4. Select the folder that should become the recursive index root.
-5. Choose **Index Selected Folder** in the main toolbar. Indexing never starts automatically.
-6. Enter a description in the semantic search field and press Return or Search.
-7. Double-click a result to inspect its full embedded/rendered JPEG with EXIF information and histogram.
+2. Open **Download AI Models**, download DataComp CLIP, and wait for it to report **Installed**. Managed models are used automatically.
+3. Select a catalog in the image browser. Its top-level folder is the recursive index root, including when browsing a subfolder.
+4. Open **Settings > CLIP Indexes** and choose **Create Index**, **Update Index**, **Rebuild Index**, or **Index Catalog**, depending on the current status. Indexing never starts automatically.
+5. Open **Workspace > AI Workspace** (⌘2), enter a description, and choose **Search Images**.
+6. Inspect results in the image browser. Select an indexed image and choose **Find Similar** in the AI workspace to search by visual similarity.
 
-RawBrowse stores one model-specific index at `.clipbench/clip-<model-hash>.clipindex` inside the selected root. Source photographs are not modified. Model inference, embeddings, and search stay on the Mac.
+CLIP indexing currently includes JPEG, PNG, HEIC/HEIF, TIFF, and Sony ARW files. This list is narrower than the RAW formats available in the image browser.
+
+RawBrowse stores one model-specific index at `.clipbench/clip-<model-hash>.clipindex` inside the selected root. Indexing does not modify source photographs. Model inference, embeddings, and search stay on the Mac.
+
+## RAW 9 editing and export
+
+In zoom view, switch from **JPG** to **RAW 9** when the installed Core Image decoder supports the photo. Adjust white balance, exposure, noise reduction, sharpness, contrast, shadows, and tone, or apply a crop. You can copy and paste adjustments between supported photos.
+
+Adjustments are saved automatically beside the original as `<original filename>.rawcull-raw9.json`; the original RAW file stays unchanged. These app-specific sidecars are separate from XMP files used by other editors. **Settings > Images** controls preview bit depth without changing saved adjustments.
+
+The **Export** menu offers the writable ImageIO formats available on the Mac, plus HEIF (10-bit) and OpenEXR. Exports run in a queue and continue after navigating to another photo or closing zoom.
+
+## Keyboard shortcuts
+
+| Context | Shortcut | Action |
+|---|---|---|
+| Workspace | ⌘1 / ⌘2 | Open Image Browser / AI Workspace |
+| Grid | Arrow keys / N / P | Change selection |
+| Grid | Return | Open selected image in zoom |
+| Grid / Zoom | ⌘C | Copy selected originals / displayed original for pasting in Finder |
+| Zoom | N / P | Show next / previous image |
+| Zoom | E | Toggle histogram and EXIF |
+| Zoom | A | Toggle autofocus point |
+| Zoom | + / − | Zoom in / out |
+| Zoom | Esc | Close zoom |
 
 ## Privacy Policy
 
@@ -68,9 +91,9 @@ RawBrowse processes your photographs on your Mac. The app does not collect or tr
 
 The app accesses folders and files you select through macOS permissions. It reads photographs and their metadata to provide previews, search, and local AI analysis. CLIP and SAM 3 model inference runs locally; photographs and prompts are not uploaded for AI processing.
 
-App settings, remembered folder access, image caches, and downloaded models are stored locally. Semantic indexes are stored in the hidden `.clipbench` directory inside the folder you index and may contain image paths and embeddings. If you run Semantic Test, its report is saved in that folder and includes queries and result paths. These files remain until you remove them or use the applicable cleanup controls.
+App settings, remembered folder access, image caches, and downloaded models are stored locally. RAW 9 edits are stored in JSON sidecars beside the original photographs, and exports are saved to locations you choose. Semantic indexes are stored in the hidden `.clipbench` directory inside the folder you index and may contain image paths and embeddings. These files remain until you remove them or use the applicable cleanup controls.
 
-You can clear image caches in **Settings > Cache**, remove managed models through **Download AI Models**, and delete `.clipbench` directories and semantic test reports in Finder. Removing the app does not automatically remove indexes or reports from your photo folders. You control any copying, backup, or synchronization of those folders through other software.
+You can clear image caches in **Settings > Cache**, remove managed models through **Download AI Models**, and delete `.clipbench` directories in Finder. Removing the app does not automatically remove indexes, RAW 9 sidecars, or exports from your photo folders. You control any copying, backup, or synchronization of those folders through other software.
 
 ### Downloads and external links
 
@@ -90,7 +113,7 @@ Requirements are pinned to exact versions or revisions in the Xcode project and 
 
 | Package (resolved identity) | Resolved pin | Responsibility | Main APIs/products used by RawBrowse |
 |---|---:|---|---|
-| [PhotoAIKit](https://github.com/rsyncOSX/PhotoAIKit) (`photoaikit`) | revision `77cc1d84a5d98a485caa15be102c8a55eb3d7698` | Core AI model discovery and validation, CLIP inference, embedding artifacts, multi-object SAM 3 masks, and AI workflow contracts | `CoreAICLIPProvider`, `CoreAISAM3Provider`, `PhotoAIContracts`, `PhotoAIWorkflows` |
+| [PhotoAIKit](https://github.com/rsyncOSX/PhotoAIKit) (`photoaikit`) | revision `7f9adfcd69661c6bae4a640c16a4056dfc7393df` | Core AI model discovery and validation, CLIP inference, embedding artifacts, multi-object SAM 3 masks, and AI workflow contracts | `CoreAICLIPProvider`, `CoreAISAM3Provider`, `PhotoAIContracts`, `PhotoAIWorkflows` |
 | [RawParserKit](https://github.com/rsyncOSX/RawParserKit) (`rawparserkit`) | `1.3.1` | RAW metadata, embedded previews, thumbnails, focus-point metadata, and supported-format handling, including Sony ARW and DNG | `RawImageLoader`, `BrowserExifInfo`, `RawFocusPoint` |
 | [RawCullCore](https://github.com/rsyncOSX/RawCullCore) (`rawcullcore`) | `1.1.2` | Shared image-analysis utilities | `HistogramCalculator.normalizedLuminanceHistogram` |
 
@@ -100,12 +123,12 @@ Resolved transitive dependencies are recorded here as build inputs even though R
 
 | Resolved identity | Resolved pin | Role in the package graph |
 |---|---:|---|
-| `coreai-models` | revision `475c585fdb0fe82a83c8f777f259e9414bd44c98` | Apple Core AI model and conversion support reached through PhotoAIKit |
+| `coreai-models` | revision `1953c4f90ba0214c1abc7bebcb9be5107e329a46` | Apple Core AI model and conversion support reached through PhotoAIKit |
 | `eventsource` | `1.5.1` | Server-sent-event transport used by transitive model tooling |
-| `swift-asn1` | `1.7.2` | ASN.1 support reached through the cryptography stack |
-| `swift-collections` | `1.6.0` | Collection data structures used by transitive packages |
+| `swift-asn1` | `1.7.3` | ASN.1 support reached through the cryptography stack |
+| `swift-collections` | `1.7.2` | Collection data structures used by transitive packages |
 | `swift-crypto` | `4.5.2` | Cryptographic primitives used by transitive packages |
-| `swift-huggingface` | `0.10.1` | Hugging Face model download and metadata support used by model tooling |
+| `swift-huggingface` | `0.13.0` | Hugging Face model download and metadata support used by model tooling |
 | `swift-jinja` | `2.5.1` | Prompt-template rendering used by model tooling |
 | `swift-transformers` | `1.3.4` | Tokenizer and transformer support used by the AI package graph |
 | `xgrammar` | `0.2.2` | Grammar-constrained generation support used by Core AI language models |
@@ -122,7 +145,7 @@ open RawBrowse.xcodeproj
 Build from the command line:
 
 ```sh
-xcodebuild -project RawBrowse.xcodeproj -scheme RawBrowse -destination 'platform=macOS' build
+xcodebuild -project RawBrowse.xcodeproj -scheme RawBrowse -destination 'platform=macOS,arch=arm64' -onlyUsePackageVersionsFromResolvedFile build
 ```
 
 Create a Release archive and a signed app for local testing:
@@ -150,7 +173,7 @@ make test-full
 
 RawBrowse is intended for GitHub distribution. Use Developer ID signing and notarization for downloadable releases. `make build` provides the existing archive, signature verification, notarization, and DMG workflow; configure your signing identities and notary credentials before running it.
 
-AI model publication is separate from app releases. No model binaries are checked in. Historical App Store upload records in `Docs/releaseprocedure.md` do not configure or enable the GitHub downloader.
+AI model publication is separate from app releases. No model binaries are checked in. See the [conversion and publication workbook](Docs/aimodelsdownload.md) for preparing complete runtime bundles and a GitHub download manifest.
 
 ## Project Layout
 
@@ -163,5 +186,6 @@ AI model publication is separate from app releases. No model binaries are checke
 - `Assets.xcassets/` — Shared asset catalog.
 - `ModelAssets/` — Pack manifest template, notices, historical provenance, and release setup instructions.
 - `Makefile` — Build, test, archive, and export automation.
+- `exportOptionsDeveloperID.plist` — Developer ID archive export settings.
 - `exportOptionsAppStore.plist` and `exportOptions.plist` — App Store Connect archive export settings.
 - `exportOptionsDebug.plist` — Local debug archive export settings.
