@@ -26,6 +26,7 @@ not download, convert, or publish models.
 
 ```zsh
 set -e
+set -u
 set -o pipefail
 RAWBROWSE_REPO='/Users/thomas/GitHub/RawCull/RawBrowse'
 PHOTOAIKIT_REPO='/Users/thomas/GitHub/RawCull/PhotoAIKit'
@@ -53,6 +54,38 @@ Use Xcode 27 and Apple Silicon, matching RawBrowse's macOS 27 requirement. If
 `uv` is missing, install it before continuing. Save `BUILD_ROOT` so later
 terminal sessions can resume the same candidate. Keep all existing build runs.
 
+### Resume in a new terminal session
+
+Shell variables do not carry over to a new terminal window. Paths such as
+`/models--facebook--sam3` or `/Release/Evidence` mean the build variables were
+empty. Restore them before resuming; do not rerun `mktemp` for an existing run.
+Find your candidate with `ls -dt /Users/thomas/ModelAssetsV2/Build-*`, then set
+`BUILD_ROOT` to that exact directory:
+
+```zsh
+set -e
+set -u
+set -o pipefail
+BUILD_ROOT='/Users/thomas/ModelAssetsV2/Build-REPLACE-WITH-YOUR-EXISTING-DIRECTORY'
+test -d "$BUILD_ROOT/Release/Evidence"
+RAWBROWSE_REPO='/Users/thomas/GitHub/RawCull/RawBrowse'
+PHOTOAIKIT_REPO='/Users/thomas/GitHub/RawCull/PhotoAIKit'
+MODEL_ASSETS_V2='/Users/thomas/ModelAssetsV2'
+EXPORTER_REPO="$BUILD_ROOT/Tools/PhotoAIKit"
+export HF_HOME="$BUILD_ROOT/HuggingFace"
+export HF_HUB_CACHE="$HF_HOME/hub"
+CLIP_REV='4afec35ffe57a943d569ff7ee888061830164da8'
+SAM_REV='3c879f39826c281e95690f02c7821c4de09afae7'
+CLIP_TOKENIZER_REV='3d74acf9a28c67741b2f4f2ea7635f0aaf6f0268'
+unset HF_HUB_OFFLINE
+printf 'Build: %s\nCache: %s\n' "$BUILD_ROOT" "$HF_HUB_CACHE"
+```
+
+Keep offline mode unset while downloading. If downloads already completed,
+resume section 3 at its `mkdir -p` block after restoring these variables, then
+record the source inventory and enable offline mode. Later conversion blocks
+set offline mode explicitly. Completed downloads remain in this build's cache.
+
 ## 2. Freeze PhotoAIKit and record the current CoreAI pin
 
 The local PhotoAIKit checkout on October 8, 2026 is commit
@@ -65,6 +98,8 @@ Review `git status` first. Commit any intended exporter changes before freezing
 the checkout: `git archive HEAD` includes committed files only.
 
 ```zsh
+: "${BUILD_ROOT:?Restore BUILD_ROOT using the resume instructions}"
+test -d "$BUILD_ROOT/Release/Evidence"
 git -C "$PHOTOAIKIT_REPO" status --short
 git -C "$RAWBROWSE_REPO" rev-parse HEAD \
   | tee "$BUILD_ROOT/Release/Evidence/rawbrowse-commit.txt"
@@ -120,6 +155,10 @@ terms. Authenticate with `hf auth login`; keep the token out of commands and
 release evidence. See the [Hugging Face CLI documentation](https://huggingface.co/docs/huggingface_hub/guides/cli).
 
 ```zsh
+: "${BUILD_ROOT:?Restore BUILD_ROOT using the resume instructions}"
+test -d "$BUILD_ROOT/Release/Evidence"
+: "${HF_HUB_CACHE:?Restore HF_HUB_CACHE using the resume instructions}"
+unset HF_HUB_OFFLINE
 CLIP_REV='4afec35ffe57a943d569ff7ee888061830164da8'
 SAM_REV='3c879f39826c281e95690f02c7821c4de09afae7'
 CLIP_TOKENIZER_REV='3d74acf9a28c67741b2f4f2ea7635f0aaf6f0268'
@@ -163,18 +202,29 @@ retrying. Do not claim exact source binding from the evidence copy alone.
 ## 4. Export the two complete model bundles
 
 ```zsh
-cd "$EXPORTER_REPO"
-uv run Tools/export_clip.py \
+: "${BUILD_ROOT:?Restore BUILD_ROOT using the resume instructions}"
+test -d "$BUILD_ROOT/Release/Evidence"
+EXPORTER_REPO="$BUILD_ROOT/Tools/PhotoAIKit"
+export HF_HOME="$BUILD_ROOT/HuggingFace"
+export HF_HUB_CACHE="$HF_HOME/hub"
+for script in export_clip.py export_sam3.py select_sam3_asset.py; do
+  test -f "$EXPORTER_REPO/Tools/$script" || {
+    print -u2 "Missing exporter: $EXPORTER_REPO/Tools/$script"
+    return 1
+  }
+done
+export HF_HUB_OFFLINE=1
+uv run "$EXPORTER_REPO/Tools/export_clip.py" \
   --model openclip-datacomp --architecture ViT-B-32-256 \
   --pretrained datacomp_s34b_b86k --dtype float16 \
   --output-dir "$BUILD_ROOT/Release/Models" --bundle-name CLIP-DataComp \
   2>&1 | tee "$BUILD_ROOT/Release/Evidence/clip-export.log"
 
-uv run Tools/export_sam3.py \
+uv run "$EXPORTER_REPO/Tools/export_sam3.py" \
   --model facebook/sam3 --dtype float16 \
   --output-dir "$BUILD_ROOT/Release/Models" --bundle-name SAM3 \
   2>&1 | tee "$BUILD_ROOT/Release/Evidence/sam3-export.log"
-python3 Tools/select_sam3_asset.py sam3_float16.aimodel \
+python3 "$EXPORTER_REPO/Tools/select_sam3_asset.py" sam3_float16.aimodel \
   --bundle-dir "$BUILD_ROOT/Release/Models/SAM3"
 
 for name in CLIP-DataComp SAM3; do
@@ -192,19 +242,25 @@ in the conversion directory and are excluded from the publication bundle.
 
 ## 5. Stage runtime assets and notices
 
+This block can resume an interrupted copy from the same unchanged conversion.
+Use a fresh candidate for changed models so old files are not carried forward.
+Rerunning also restores notices from the repository; make candidate provenance
+edits after staging completes.
+
 Read `assets.main` from each bundle's metadata rather than guessing a filename.
 Copy that entire `.aimodel` directory, all tokenizer resources, metadata, and
 notices. The stage is the exact model root RawBrowse will install.
 
 ```zsh
+: "${BUILD_ROOT:?Restore BUILD_ROOT using the resume instructions}"
+test -d "$BUILD_ROOT/Release/Evidence"
+RAWBROWSE_REPO='/Users/thomas/GitHub/RawCull/RawBrowse'
 python3 - "$BUILD_ROOT" "$RAWBROWSE_REPO" <<'PY'
 import json, pathlib, shutil, sys
 root, repo = map(pathlib.Path, sys.argv[1:])
 for name, model_id in [('CLIP-DataComp', 'clip-datacomp'), ('SAM3', 'sam3')]:
     source = root / 'Release/Models' / name
     destination = root / 'Release/Runtime' / model_id
-    if destination.exists():
-        raise SystemExit(f'Already staged: {destination}; use a new candidate directory')
     metadata = json.loads((source / 'metadata.json').read_text())
     asset_name = metadata['assets']['main']
     if pathlib.Path(asset_name).name != asset_name:
@@ -212,11 +268,15 @@ for name, model_id in [('CLIP-DataComp', 'clip-datacomp'), ('SAM3', 'sam3')]:
     asset = source / asset_name
     if not (asset / 'main.mlirb').is_file():
         raise SystemExit(f'Missing complete runtime asset: {asset}')
-    destination.mkdir()
+    notices = repo / 'ModelAssets/Notices' / name
+    for required in [source / 'tokenizer', notices]:
+        if not required.is_dir():
+            raise SystemExit(f'Missing source directory: {required}')
+    destination.mkdir(parents=True, exist_ok=True)
     shutil.copy2(source / 'metadata.json', destination / 'metadata.json')
-    shutil.copytree(asset, destination / asset_name)
-    shutil.copytree(source / 'tokenizer', destination / 'tokenizer')
-    shutil.copytree(repo / 'ModelAssets/Notices' / name, destination / 'Notices')
+    shutil.copytree(asset, destination / asset_name, dirs_exist_ok=True)
+    shutil.copytree(source / 'tokenizer', destination / 'tokenizer', dirs_exist_ok=True)
+    shutil.copytree(notices, destination / 'Notices', dirs_exist_ok=True)
 PY
 ```
 
@@ -247,6 +307,8 @@ Choose an unused release tag. Do not replace files behind URLs in an already
 published manifest.
 
 ```zsh
+: "${BUILD_ROOT:?Restore BUILD_ROOT using the resume instructions}"
+test -d "$BUILD_ROOT/Release/Evidence"
 MODEL_RELEASE_TAG='models-v2-2026-10-08'
 python3 - "$BUILD_ROOT" "$MODEL_RELEASE_TAG" <<'PY'
 import hashlib, json, pathlib, re, shutil, sys
@@ -309,6 +371,8 @@ Keep source weights, caches, exporter logs, and authentication files out of
 ## 7. Verify the staged files before publication
 
 ```zsh
+: "${BUILD_ROOT:?Restore BUILD_ROOT using the resume instructions}"
+test -d "$BUILD_ROOT/Release/Evidence"
 python3 - "$BUILD_ROOT" <<'PY'
 import hashlib, json, pathlib, sys
 root = pathlib.Path(sys.argv[1])
