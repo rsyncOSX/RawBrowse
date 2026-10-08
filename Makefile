@@ -52,10 +52,16 @@ archive-debug: clean
 	echo "Debug build completed successfully"
 
 sign-app:
+	@echo "Exporting archive with Developer ID signing and a secure timestamp..."
+	xcodebuild -exportArchive \
+		-exportOptionsPlist "exportOptionsDeveloperID.plist" \
+		-archivePath "$(BUILD_PATH)/$(APP).xcarchive" \
+		-exportPath "$(BUILD_PATH)" \
+		-allowProvisioningUpdates
 	osascript -e 'display notification "Verifying Developer ID signatures..." with title "Build RawBrowse"'
 	echo "Verifying exported Developer ID signatures..."
 	codesign --verify --deep --strict --verbose=2 $(APP_PATH)
-	@APP_SIGNATURE=$$(codesign -dv --verbose=4 $(APP_PATH) 2>&1); \
+	@set -e; APP_SIGNATURE=$$(codesign -dv --verbose=4 $(APP_PATH) 2>&1); \
 		echo "$$APP_SIGNATURE"; \
 		echo "$$APP_SIGNATURE" | grep -q "Authority=Developer ID Application:" || \
 			(echo "$(APP) is not signed with Developer ID Application"; exit 1); \
