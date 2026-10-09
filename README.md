@@ -75,7 +75,8 @@ The **Export** menu offers the writable ImageIO formats available on the Mac, pl
 | Grid | Arrow keys / N / P | Change selection |
 | Grid | Return | Open selected image in zoom |
 | Grid / Zoom | ⌘C | Copy selected originals / displayed original for pasting in Finder |
-| Zoom | N / P | Show next / previous image |
+| Zoom | Arrow keys | Show next / previous image |
+| Zoom | P / p | Toggle image-only preview in JPG or RAW; zoom and pan stay active |
 | Zoom | E | Toggle histogram and EXIF |
 | Zoom | A | Toggle autofocus point |
 | Zoom | + / − | Zoom in / out |

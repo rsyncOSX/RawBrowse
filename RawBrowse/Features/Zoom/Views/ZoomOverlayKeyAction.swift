@@ -8,6 +8,7 @@ nonisolated enum ZoomOverlayKeyAction: Equatable {
     case zoomOut
     case toggleSubjectOutline
     case toggleMetadata
+    case togglePreview
     case toggleFocusPoints
 
     nonisolated static func resolve(
@@ -47,6 +48,9 @@ nonisolated enum ZoomOverlayKeyAction: Equatable {
 
         case "e", "E":
             .toggleMetadata
+
+        case "p", "P":
+            .togglePreview
 
         case "a", "A":
             .toggleFocusPoints

@@ -69,6 +69,7 @@ struct BrowserZoomOverlayView: View {
     @State private var viewportSize: CGSize = .zero
     @State private var subjectOutline: CGImage?
     @State private var showSubjectOutline = false
+    @State private var isImageOnlyPreview = false
     @State private var isLoadingSubjectOutline = false
 
     private var subjectOutlineCandidate: DeepAIReviewCandidate? {
@@ -99,7 +100,7 @@ struct BrowserZoomOverlayView: View {
                             .scaledToFit()
                             .frame(width: geometry.size.width, height: geometry.size.height)
 
-                        if showSubjectOutline, !zoom.useDevelopedRAW || raw9.raw9Adjustments.crop == nil, let subjectOutline {
+                        if !isImageOnlyPreview, showSubjectOutline, !zoom.useDevelopedRAW || raw9.raw9Adjustments.crop == nil, let subjectOutline {
                             Image(decorative: subjectOutline, scale: 1, orientation: .up)
                                 .resizable()
                                 .scaledToFit()
@@ -111,7 +112,7 @@ struct BrowserZoomOverlayView: View {
                                 .transition(.opacity)
                         }
 
-                        if zoomPresentation.isZoomFocusPointVisible,
+                        if !isImageOnlyPreview, zoomPresentation.isZoomFocusPointVisible,
                            let focusPoint = normalizedFocusPoint {
                             FocusPointMarker(
                                 normalizedFocusPoint: focusPoint,
@@ -251,6 +252,10 @@ struct BrowserZoomOverlayView: View {
                 .padding(.horizontal, 18)
                 .padding(.bottom, 18)
             }
+            // Keep the JPG/RAW change handler and export/crop presentations mounted in preview mode.
+            .opacity(isImageOnlyPreview ? 0 : 1)
+            .allowsHitTesting(!isImageOnlyPreview)
+            .accessibilityHidden(isImageOnlyPreview)
 
             Button("Close") { close() }
                 .keyboardShortcut(.cancelAction)
@@ -293,7 +298,7 @@ struct BrowserZoomOverlayView: View {
             dismiss()
             return .handled
         }
-        .onKeyPress(characters: CharacterSet(charactersIn: "+-sSaAeExX")) { press in
+        .onKeyPress(characters: CharacterSet(charactersIn: "+-sSaAeEpPxX")) { press in
             handleKeyAction(ZoomOverlayKeyAction.resolve(
                 characters: press.characters,
                 keyCode: 0,
@@ -816,6 +821,13 @@ struct BrowserZoomOverlayView: View {
 
         case .toggleMetadata:
             zoomPresentation.isZoomMetadataVisible.toggle()
+            return .handled
+
+        case .togglePreview:
+            isImageOnlyPreview.toggle()
+            if isImageOnlyPreview {
+                isPickingWhiteBalance = false
+            }
             return .handled
 
         case .toggleFocusPoints:
