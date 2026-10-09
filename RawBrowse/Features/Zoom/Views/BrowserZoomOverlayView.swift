@@ -237,7 +237,7 @@ struct BrowserZoomOverlayView: View {
                     if zoom.useDevelopedRAW,
                        raw9SupportedURL != nil,
                        raw9SupportedURL == selection.selectedFile?.url {
-                        centeredControlRow(height: 62) {
+                        centeredControlRow(height: 50) {
                             rawAdjustmentControls
                         }
                     }
@@ -372,7 +372,7 @@ struct BrowserZoomOverlayView: View {
     private var rawAdjustmentControls: some View {
         @Bindable var raw9 = raw9
 
-        return HStack(spacing: 12) {
+        return HStack(spacing: 8) {
             rawControlGroup {
                 adjustmentSlider("Temp K", value: Binding(
                     get: { raw9.raw9Adjustments.temperature ?? cameraTemperature },
@@ -387,6 +387,8 @@ struct BrowserZoomOverlayView: View {
                 } label: {
                     Label(isPickingWhiteBalance ? "Cancel picker" : "White balance", systemImage: "eyedropper")
                 }
+                .labelStyle(.iconOnly)
+                .frame(minWidth: 24, minHeight: 24)
                 .foregroundStyle(isPickingWhiteBalance ? .yellow : .secondary)
                 .disabled(isSamplingWhiteBalance || zoom.zoomImage == nil)
                 .help("Click a neutral white or gray area to set white balance")
@@ -477,12 +479,15 @@ struct BrowserZoomOverlayView: View {
     }
 
     private func rawControlGroup(@ViewBuilder content: () -> some View) -> some View {
-        HStack(spacing: 10, content: content)
-            .frame(minHeight: 40)
-            .padding(.horizontal, 14)
-            .padding(.vertical, 6)
-            .background(ZoomBadgeStyle.fill, in: RoundedRectangle(cornerRadius: 26, style: .continuous))
-            .shadow(color: .black.opacity(0.35), radius: 2, x: 0, y: 1)
+        HStack(spacing: 8, content: content)
+            .frame(minHeight: 32)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 4)
+            .background(ZoomBadgeStyle.fill, in: Capsule())
+            .overlay {
+                Capsule().strokeBorder(.white.opacity(0.08), lineWidth: 0.5)
+            }
+            .shadow(color: .black.opacity(0.25), radius: 4, x: 0, y: 2)
     }
 
     private func prepareCrop() {
@@ -524,8 +529,8 @@ struct BrowserZoomOverlayView: View {
     }
 
     private func adjustmentSlider(_ title: String, value: Binding<Double>, range: ClosedRange<Double>, fractionDigits: Int = 1) -> some View {
-        VStack(spacing: 2) {
-            HStack(spacing: 4) {
+        VStack(spacing: 0) {
+            HStack(spacing: 3) {
                 Text(title)
                 Text(value.wrappedValue, format: .number.precision(.fractionLength(fractionDigits)))
                     .monospacedDigit()
@@ -540,7 +545,7 @@ struct BrowserZoomOverlayView: View {
             }
             .accessibilityLabel(title)
         }
-        .frame(width: 78)
+        .frame(width: 74)
     }
 
     private var zoomControlRow: some View {
