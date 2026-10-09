@@ -1,6 +1,18 @@
 import SwiftUI
 
 enum BrowserZoomViewportMath {
+    /// EXIF and crop coordinates both use the full image's top-left origin.
+    static func displayedFocusPoint(_ point: CGPoint, crop: RAW9Crop?) -> CGPoint? {
+        guard let crop else { return point }
+        guard crop.isValid else { return nil }
+        let mapped = CGPoint(
+            x: (point.x - crop.x) / crop.width,
+            y: (point.y - crop.y) / crop.height,
+        )
+        guard (0 ... 1).contains(mapped.x), (0 ... 1).contains(mapped.y) else { return nil }
+        return mapped
+    }
+
     static func actualPixelsTransform(
         imageSize: CGSize,
         viewportSize: CGSize,

@@ -1,15 +1,14 @@
-import RawParserKit
 import SwiftUI
 
 struct FocusPointMarker: View {
-    let focusPoint: RawFocusPoint
+    let normalizedFocusPoint: CGPoint
     let imageSize: CGSize
     let containerSize: CGSize
 
     var body: some View {
         FocusPointBracketMarker(
-            normalizedX: CGFloat(focusPoint.normalizedX),
-            normalizedY: CGFloat(focusPoint.normalizedY),
+            normalizedX: normalizedFocusPoint.x,
+            normalizedY: normalizedFocusPoint.y,
             boxSize: 16,
             imageSize: imageSize,
         )

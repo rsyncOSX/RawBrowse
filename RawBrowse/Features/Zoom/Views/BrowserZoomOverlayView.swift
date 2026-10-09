@@ -112,10 +112,9 @@ struct BrowserZoomOverlayView: View {
                         }
 
                         if zoomPresentation.isZoomFocusPointVisible,
-                           !zoom.useDevelopedRAW || raw9.raw9Adjustments.crop == nil,
-                           let focusPoint = zoom.zoomExifInfo?.focusPoint {
+                           let focusPoint = normalizedFocusPoint {
                             FocusPointMarker(
-                                focusPoint: focusPoint,
+                                normalizedFocusPoint: focusPoint,
                                 imageSize: CGSize(width: image.width, height: image.height),
                                 containerSize: geometry.size,
                             )
@@ -775,7 +774,10 @@ struct BrowserZoomOverlayView: View {
 
     private var normalizedFocusPoint: CGPoint? {
         guard let focusPoint = zoom.zoomExifInfo?.focusPoint else { return nil }
-        return CGPoint(x: CGFloat(focusPoint.normalizedX), y: CGFloat(focusPoint.normalizedY))
+        return BrowserZoomViewportMath.displayedFocusPoint(
+            CGPoint(x: CGFloat(focusPoint.normalizedX), y: CGFloat(focusPoint.normalizedY)),
+            crop: zoom.useDevelopedRAW ? raw9.raw9Adjustments.crop : nil,
+        )
     }
 
     private func close() {
