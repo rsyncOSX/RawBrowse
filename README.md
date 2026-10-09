@@ -1,5 +1,10 @@
 # RawBrowse
 
+[![macOS 27](https://img.shields.io/badge/macOS-27-000000?logo=apple)](https://www.apple.com/macos/)
+[![Swift 6](https://img.shields.io/badge/Swift-6-F05138?logo=swift&logoColor=white)](https://www.swift.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](Licence.MD)
+
+
 RawBrowse is a macOS SwiftUI photo browser with local CLIP indexing, semantic search, and SAM 3 subject review. It browses JPEG, PNG, TIFF, and the RAW formats recognized by RawParserKit, including Sony ARW and DNG. Local AI features provide recursive semantic search, visual similarity, and subject sharpness review.
 
 ## Source organization
