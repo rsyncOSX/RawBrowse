@@ -92,8 +92,8 @@ final class FileBrowserViewModel {
         }
         let task = Task { [self] in
             await settingsModel.loadSettings()
-            await downloads.refreshCLIPModels()
             await catalog.loadRememberedCatalogs()
+            await downloads.refreshCLIPModels()
             for folder in catalog.rootFolders {
                 clip.validateCatalogCLIPIndex(at: folder.url.standardizedFileURL)
             }
