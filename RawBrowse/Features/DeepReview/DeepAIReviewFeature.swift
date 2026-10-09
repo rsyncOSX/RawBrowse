@@ -84,10 +84,16 @@ nonisolated struct DeepAIReviewCandidate: Equatable, Identifiable, Sendable {
     let isCompleted: Bool
     let deepScore: Float?
     let normalSharpnessScore: Float?
+    // Retained as review evidence and for synthesized candidate equality.
+    // periphery:ignore
     let broadSubjectScore: Float?
     let localDetailScore: Float?
+    // Retained as review evidence and for synthesized candidate equality.
+    // periphery:ignore
     let fineDetailScore: Float?
     let maskPromptUsed: SubjectSegmentationPrompt?
+    // Retained as review evidence and for synthesized candidate equality.
+    // periphery:ignore
     let maskConfidence: Float?
     let maskCoverage: Float?
     let autofocusInsideMask: Bool?

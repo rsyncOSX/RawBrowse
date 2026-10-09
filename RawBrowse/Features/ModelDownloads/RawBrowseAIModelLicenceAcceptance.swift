@@ -6,7 +6,11 @@ nonisolated struct RawBrowseAIModelLicenceAcceptance: Codable, Equatable, Sendab
     let licenceName: String
     let licenceVersion: String?
     let licenceTextSHA256: String
+    // Encoded in the persisted licence acceptance audit record.
+    // periphery:ignore
     let acceptedAt: Date
+    // Encoded in the persisted licence acceptance audit record.
+    // periphery:ignore
     let rawCullBrowseVersion: String
 
     func matches(

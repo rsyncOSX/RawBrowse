@@ -62,7 +62,6 @@ nonisolated enum CLIPModelDownloadState: Equatable, Sendable {
 nonisolated struct CLIPModelDownloadsSnapshot: Equatable, Sendable {
     let states: [CLIPModelDownloadID: CLIPModelDownloadState]
     let managedModelLocations: [CLIPModelDownloadID: URL]
-    let acceptedLicenceModelIDs: Set<CLIPModelDownloadID>
 }
 
 nonisolated enum CLIPModelDownloadError: Error, LocalizedError, Sendable {
@@ -359,7 +358,6 @@ actor CLIPModelDownloadCoordinator {
             CLIPModelDownloadID: CLIPModelDownloadState
         ] = [:]
         var locations: [CLIPModelDownloadID: URL] = [:]
-        var acceptedIDs: Set<CLIPModelDownloadID> = []
 
         for descriptor in catalog.models {
             if case let .blocked(reason) = descriptor.releaseReadiness {
@@ -379,7 +377,6 @@ actor CLIPModelDownloadCoordinator {
                     if try await acceptanceStore.acceptance(
                         for: descriptor,
                     ) != nil {
-                        acceptedIDs.insert(descriptor.id)
                         states[descriptor.id] = serviceState
                     } else {
                         states[descriptor.id] = .licenceRequired
@@ -397,7 +394,6 @@ actor CLIPModelDownloadCoordinator {
         return CLIPModelDownloadsSnapshot(
             states: states,
             managedModelLocations: locations,
-            acceptedLicenceModelIDs: acceptedIDs,
         )
     }
 

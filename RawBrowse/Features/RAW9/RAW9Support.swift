@@ -302,8 +302,14 @@ nonisolated struct RAW9RenderedPreviewCache {
         let url: URL
         let fileSize: Int
         let modificationDate: Date
+        // Used by synthesized Equatable to distinguish rendered preview cache keys.
+        // periphery:ignore
         let adjustments: RAW9Adjustments
+        // Used by synthesized Equatable to distinguish rendered preview cache keys.
+        // periphery:ignore
         let bitDepth: RAWPreviewBitDepth
+        // Used by synthesized Equatable to distinguish rendered preview cache keys.
+        // periphery:ignore
         let maximumDimension: CGFloat?
 
         init(url: URL, adjustments: RAW9Adjustments, bitDepth: RAWPreviewBitDepth,

@@ -19,11 +19,15 @@ nonisolated struct BrowserSettings: Codable, Equatable, Sendable {
     var thumbnailSizeFullSize = 8700
     var rawPreviewBitDepth: RAWPreviewBitDepth = .eightBit
     var clipModelPath: String?
+    // Preserved in Codable settings for security-scoped model bookmarks.
+    // periphery:ignore
     var clipModelBookmarkData: Data?
     var selectedCLIPModel = CLIPManagedModel.defaultSelection
     var semanticSearchLimit = 50
     var lastIndexedDirectoryPath: String?
     var sam3ModelPath: String?
+    // Preserved in Codable settings for security-scoped model bookmarks.
+    // periphery:ignore
     var sam3ModelBookmarkData: Data?
 
     enum CodingKeys: String, CodingKey {

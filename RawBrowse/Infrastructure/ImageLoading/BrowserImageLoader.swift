@@ -6,7 +6,11 @@ actor BrowserImageLoader {
     static let shared = BrowserImageLoader()
 
     private struct ImageTaskKey: Hashable {
+        // Used by synthesized Hashable and Equatable to identify shared image tasks.
+        // periphery:ignore
         let url: URL
+        // Used by synthesized Hashable and Equatable to identify shared image tasks.
+        // periphery:ignore
         let maxPixelSize: Int
     }
 

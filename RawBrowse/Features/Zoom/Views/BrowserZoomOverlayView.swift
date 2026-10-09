@@ -34,8 +34,14 @@ struct BrowserZoomOverlayView: View {
     }
 
     private struct SubjectOutlineTaskID: Hashable {
+        // Used by synthesized Hashable and Equatable to restart the subject outline task.
+        // periphery:ignore
         let fileID: BrowserFileItem.ID?
+        // Used by synthesized Hashable and Equatable to restart the subject outline task.
+        // periphery:ignore
         let prompt: String?
+        // Used by synthesized Hashable and Equatable to restart the subject outline task.
+        // periphery:ignore
         let isPresented: Bool
     }
 

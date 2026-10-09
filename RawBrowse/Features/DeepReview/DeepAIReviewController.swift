@@ -41,10 +41,6 @@ final class DeepAIReviewController {
         !feature.availability.isAvailable || feature.isRunning
     }
 
-    func result(for signature: BurstGroupSignature) -> DeepAIReviewResult? {
-        feature.result(for: signature)
-    }
-
     func maskCandidate(for fileID: UUID) -> DeepAIReviewCandidate? {
         feature.maskCandidate(for: fileID)
     }

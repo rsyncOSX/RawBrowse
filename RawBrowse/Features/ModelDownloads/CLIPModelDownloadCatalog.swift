@@ -61,15 +61,27 @@ nonisolated struct CLIPModelDownloadDescriptor: Equatable, Identifiable, Sendabl
     let purpose: LocalizedStringResource
     let publisher: String
     let modelVersion: String
+    // Retained as application-owned model distribution and provenance metadata.
+    // periphery:ignore
     let upstreamRevision: String?
+    // Retained as application-owned model distribution and provenance metadata.
+    // periphery:ignore
     let resourceName: String
     let assetPackID: String
     let assetPackModelPath: String
+    // Retained as application-owned model distribution and provenance metadata.
+    // periphery:ignore
     let upstreamSourceURL: URL
     let modelCardURL: URL
+    // Retained as application-owned model distribution and provenance metadata.
+    // periphery:ignore
     let conversionInformationURL: URL?
+    // Retained as application-owned model distribution and provenance metadata.
+    // periphery:ignore
     let expectedArchiveSHA256: String?
     let downloadByteCount: Int64?
+    // Retained as application-owned model distribution and provenance metadata.
+    // periphery:ignore
     let installedByteCount: Int64?
     let licence: RawBrowseAIModelLicenceDescriptor
     let releaseReadiness: RawBrowseAIModelReleaseReadiness

@@ -17,6 +17,8 @@ nonisolated enum RawBrowseAICapabilityStatus: Equatable, Sendable {
 }
 
 nonisolated struct BurstGroupSignature: Codable, Hashable, Sendable {
+    // Used by synthesized Codable, Hashable, and Equatable for burst identity.
+    // periphery:ignore
     let memberKeys: [String]
 
     init(memberKeys: [String]) {

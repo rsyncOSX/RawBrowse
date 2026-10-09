@@ -26,7 +26,6 @@ nonisolated enum CLIPFeatureError: Error, CustomStringConvertible, Sendable {
 
 nonisolated struct CLIPIndexSummary: Equatable, Sendable {
     let discovered: Int
-    let reused: Int
     let indexed: Int
     let failures: [String]
 }
@@ -79,6 +78,8 @@ nonisolated enum CLIPIndexStatus: Equatable, Sendable {
 
 nonisolated struct CLIPSearchResult: Equatable, Identifiable, Sendable {
     let rank: Int
+    // Retained as part of search result evidence and synthesized equality.
+    // periphery:ignore
     let score: Float
     let fileName: String
     let path: String
@@ -243,7 +244,6 @@ final nonisolated class CLIPSearchEngine: Sendable {
             ))
             return CLIPIndexSummary(
                 discovered: sources.count,
-                reused: sources.count - pendingSources.count,
                 indexed: result.artifacts.count,
                 failures: result.failures.map { "\($0.source.displayName): \($0.message)" },
             )
@@ -255,7 +255,6 @@ final nonisolated class CLIPSearchEngine: Sendable {
         ))
         return CLIPIndexSummary(
             discovered: sources.count,
-            reused: entries.count,
             indexed: 0,
             failures: [],
         )
