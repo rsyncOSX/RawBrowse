@@ -14,6 +14,8 @@ final class ZoomModel {
     var zoomImage: CGImage?
     var zoomExifInfo: RawImageMetadata?
     var isZoomExifInfoLoaded = false
+    private(set) var isApplyingRAW9 = false
+    @ObservationIgnored private var renderOperationID = UUID()
     @ObservationIgnored private var zoomTask: Task<Void, Never>?
     var rawPreviewBitDepth: RAWPreviewBitDepth {
         get { settingsModel.values.rawPreviewBitDepth }
@@ -49,6 +51,9 @@ final class ZoomModel {
         let shouldLoadSidecar = raw9.prepare(for: selectedFile.url)
         let initialAdjustments = raw9.raw9Adjustments
         zoomTask?.cancel()
+        let operationID = UUID()
+        renderOperationID = operationID
+        isApplyingRAW9 = useDevelopedRAW
         if !preserveViewport {
             zoomImage = nil
         }
@@ -65,7 +70,10 @@ final class ZoomModel {
         let previewSize = settingsModel.values.thumbnailSizeFullSize
         let access = CatalogAccess.shared.lease(for: selectedFile.url)
         zoomTask = Task {
-            defer { withExtendedLifetime(access) {} }
+            defer {
+                withExtendedLifetime(access) {}
+                if renderOperationID == operationID { isApplyingRAW9 = false }
+            }
             guard !Task.isCancelled else { return }
             async let exifInfo = BrowserImageLoader.shared.metadata(for: selectedFile.url)
             do {
@@ -110,9 +118,15 @@ final class ZoomModel {
         let adjustments = raw9.raw9Adjustments
         let bitDepth = settingsModel.values.rawPreviewBitDepth
         zoomTask?.cancel()
+        let operationID = UUID()
+        renderOperationID = operationID
+        isApplyingRAW9 = true
         let access = CatalogAccess.shared.lease(for: url)
         zoomTask = Task {
-            defer { withExtendedLifetime(access) {} }
+            defer {
+                withExtendedLifetime(access) {}
+                if renderOperationID == operationID { isApplyingRAW9 = false }
+            }
             do {
                 let image = try await raw9.render(url: url, adjustments: adjustments, bitDepth: bitDepth)
                 guard !Task.isCancelled, file?.url == url, useDevelopedRAW else { return }
@@ -130,6 +144,8 @@ final class ZoomModel {
         file = nil
         zoomTask?.cancel()
         zoomTask = nil
+        renderOperationID = UUID()
+        isApplyingRAW9 = false
         presentation.zoomOverlayVisible = false
         zoomImage = nil
         zoomImageError = nil

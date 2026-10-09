@@ -57,6 +57,7 @@ struct BrowserZoomOverlayView: View {
     @State private var toneDefaults = RAW9ToneDefaults()
     @State private var raw9SupportedURL: URL?
     @State private var isEditingRAWAdjustment = false
+    @State private var isRAWAdjustmentRefreshPending = false
     @State private var adjustmentRefreshTask: Task<Void, Never>?
     @State private var lastScale: CGFloat = 1.0
     @State private var lastOffset: CGSize = .zero
@@ -306,6 +307,8 @@ struct BrowserZoomOverlayView: View {
         }
         .onDisappear {
             adjustmentRefreshTask?.cancel()
+            isRAWAdjustmentRefreshPending = false
+            isEditingRAWAdjustment = false
             whiteBalanceTask?.cancel()
             removeKeyMonitor()
             NSCursor.arrow.set()
@@ -314,6 +317,8 @@ struct BrowserZoomOverlayView: View {
         }
         .task(id: selection.selectedFile?.url) {
             adjustmentRefreshTask?.cancel()
+            isRAWAdjustmentRefreshPending = false
+            isEditingRAWAdjustment = false
             whiteBalanceTask?.cancel()
             isPickingWhiteBalance = false
             isSamplingWhiteBalance = false
@@ -351,10 +356,12 @@ struct BrowserZoomOverlayView: View {
         adjustmentRefreshTask?.cancel()
         guard zoom.useDevelopedRAW,
               raw9SupportedURL == selection.selectedFile?.url, raw9SupportedURL != nil else { return }
+        isRAWAdjustmentRefreshPending = true
         adjustmentRefreshTask = Task {
             do { try await Task.sleep(for: .milliseconds(200)) } catch { return }
             guard !Task.isCancelled else { return }
             zoom.refreshRAW9Preview()
+            isRAWAdjustmentRefreshPending = false
         }
     }
 
@@ -417,15 +424,8 @@ struct BrowserZoomOverlayView: View {
             }
             rawControlGroup {
                 Button { prepareCrop() } label: {
-                    if isPreparingCrop {
-                        HStack(spacing: 4) {
-                            ProgressView()
-                                .controlSize(.mini)
-                            Text("Preparing crop…")
-                        }
-                    } else {
-                        Label("Crop", systemImage: "crop")
-                    }
+                    Label("Crop", systemImage: "crop")
+                        .fixedSize(horizontal: true, vertical: false)
                 }
                 .disabled(isPreparingCrop)
                 .sheet(item: $cropSource) { source in
@@ -469,13 +469,25 @@ struct BrowserZoomOverlayView: View {
                     raw9.raw9Adjustments = RAW9Adjustments()
                 }
                 .disabled(raw9.raw9Adjustments == RAW9Adjustments())
+                ProgressView()
+                    .controlSize(.mini)
+                    .frame(width: 16, height: 16)
+                    .opacity(isRAW9ControlBusy ? 1 : 0)
+                    .accessibilityLabel("Applying RAW 9 changes")
+                    .accessibilityHidden(!isRAW9ControlBusy)
             }
+            .fixedSize(horizontal: true, vertical: false)
         }
         .controlSize(.mini)
         .font(.caption2)
         .foregroundStyle(.secondary)
         .tint(.white.opacity(0.65))
         .help("RAW 9 adjustments are saved automatically to a sidecar beside the original. Noise, sharpness and contrast are offsets from camera defaults.")
+    }
+
+    private var isRAW9ControlBusy: Bool {
+        isEditingRAWAdjustment || isRAWAdjustmentRefreshPending || zoom.isApplyingRAW9
+            || isPreparingCrop || isSamplingWhiteBalance || exportQueue.outstandingCount > 0
     }
 
     private func rawControlGroup(@ViewBuilder content: () -> some View) -> some View {
@@ -539,6 +551,7 @@ struct BrowserZoomOverlayView: View {
             Slider(value: value, in: range) { editing in
                 isEditingRAWAdjustment = editing
                 adjustmentRefreshTask?.cancel()
+                isRAWAdjustmentRefreshPending = false
                 if !editing {
                     scheduleRAWAdjustmentRefresh()
                 }
