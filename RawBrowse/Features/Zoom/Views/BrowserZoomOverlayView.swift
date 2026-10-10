@@ -405,15 +405,30 @@ struct BrowserZoomOverlayView: View {
                 .help("Click a neutral white or gray area to set white balance")
             }
             rawControlGroup {
-                adjustmentSlider("Exposure", value: $raw9.raw9Adjustments.exposure, range: -3 ... 3)
+                adjustmentSlider("Exposure", value: $raw9.raw9Adjustments.exposure, range: -5 ... 5)
                     .help("Exposure compensation in stops. Zero preserves the default; move left to darken or right to brighten.")
             }
             rawControlGroup {
-                adjustmentSlider("Noise", value: $raw9.raw9Adjustments.noiseReduction, range: -1 ... 1)
-                adjustmentSlider("Sharpness", value: $raw9.raw9Adjustments.sharpness, range: -1 ... 1)
+                adjustmentSlider("Noise", value: decoderOffsetBinding($raw9.raw9Adjustments.noiseReduction, defaultValue: toneDefaults.noiseReduction),
+                                 range: -toneDefaults.noiseReduction ... (1 - toneDefaults.noiseReduction))
+                adjustmentSlider("Sharpness", value: decoderOffsetBinding($raw9.raw9Adjustments.sharpness, defaultValue: toneDefaults.sharpness),
+                                 range: -toneDefaults.sharpness ... (1 - toneDefaults.sharpness))
             }
             rawControlGroup {
-                adjustmentSlider("Contrast", value: $raw9.raw9Adjustments.contrast, range: -1 ... 1)
+                adjustmentSlider("Detail contrast", value: decoderOffsetBinding($raw9.raw9Adjustments.contrast, defaultValue: toneDefaults.detailContrast),
+                                 range: -toneDefaults.detailContrast ... (1 - toneDefaults.detailContrast))
+                adjustmentSlider("Contrast", value: Binding(
+                    get: { raw9.raw9Adjustments.overallContrast ?? 1 },
+                    set: { raw9.raw9Adjustments.overallContrast = $0 }
+                ), range: 0 ... 2)
+                adjustmentSlider("Saturation", value: Binding(
+                    get: { raw9.raw9Adjustments.saturation ?? 1 },
+                    set: { raw9.raw9Adjustments.saturation = $0 }
+                ), range: 0 ... 2)
+                adjustmentSlider("Vibrance", value: Binding(
+                    get: { raw9.raw9Adjustments.vibrance ?? 0 },
+                    set: { raw9.raw9Adjustments.vibrance = $0 }
+                ), range: -1 ... 1)
                 adjustmentSlider("Shadows", value: Binding(
                     get: { raw9.raw9Adjustments.shadowBoost ?? toneDefaults.shadowBoost },
                     set: { raw9.raw9Adjustments.shadowBoost = $0 },
@@ -486,7 +501,7 @@ struct BrowserZoomOverlayView: View {
         .font(.caption2)
         .foregroundStyle(.secondary)
         .tint(.white.opacity(0.65))
-        .help("RAW 9 adjustments are saved automatically to a sidecar beside the original. Noise, sharpness and contrast are offsets from camera defaults.")
+        .help("RAW 9 adjustments are saved automatically to a sidecar beside the original. Noise, sharpness and detail contrast are offsets from camera defaults.")
     }
 
     private var isRAW9ControlBusy: Bool {
@@ -542,6 +557,13 @@ struct BrowserZoomOverlayView: View {
                 type: type.identifier, heif10: heif10, sourceAccessURL: sourceAccessURL,
             ))
         }
+    }
+
+    // Older sidecars can store offsets beyond the decoder's limits. Display their
+    // effective value without rewriting the saved adjustment until the user edits it.
+    private func decoderOffsetBinding(_ value: Binding<Double>, defaultValue: Double) -> Binding<Double> {
+        Binding(get: { min(1 - defaultValue, max(-defaultValue, value.wrappedValue)) },
+                set: { value.wrappedValue = $0 })
     }
 
     private func adjustmentSlider(_ title: String, value: Binding<Double>, range: ClosedRange<Double>, fractionDigits: Int = 1) -> some View {

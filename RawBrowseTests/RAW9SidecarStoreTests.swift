@@ -74,6 +74,75 @@ struct RAW9SidecarStoreTests {
         #expect(try FileManager.default.contentsOfDirectory(atPath: raw.deletingLastPathComponent().path) == ["export"])
     }
 
+    @Test func `zero saturation renders gray and neutral controls preserve pixels`() throws {
+        let input = CIImage(color: CIColor(red: 0.2, green: 0.5, blue: 0.8))
+            .cropped(to: CGRect(x: 0, y: 0, width: 1, height: 1))
+        let context = CIContext()
+        func pixel(_ adjustments: RAW9Adjustments) -> [UInt8] {
+            var bytes = [UInt8](repeating: 0, count: 4)
+            let output = RAW9PreviewRenderer.applyColorAdjustments(to: input, adjustments: adjustments)
+            bytes.withUnsafeMutableBytes { buffer in
+                context.render(output, toBitmap: buffer.baseAddress!, rowBytes: 4, bounds: input.extent,
+                               format: .RGBA8, colorSpace: CGColorSpace(name: CGColorSpace.sRGB)!)
+            }
+            return bytes
+        }
+        #expect(pixel(RAW9Adjustments()) == pixel(RAW9Adjustments(overallContrast: 1, saturation: 1, vibrance: 0)))
+        let gray = pixel(RAW9Adjustments(saturation: 0))
+        #expect(abs(Int(gray[0]) - Int(gray[1])) <= 1)
+        #expect(abs(Int(gray[1]) - Int(gray[2])) <= 1)
+        #expect(pixel(RAW9Adjustments(vibrance: 1)) != pixel(RAW9Adjustments()))
+        #expect(pixel(RAW9Adjustments(overallContrast: 1.8)) != pixel(RAW9Adjustments()))
+    }
+
+    @Test func `new color controls round trip and legacy values stay neutral`() async throws {
+        let raw = try temporaryRAW()
+        defer { try? FileManager.default.removeItem(at: raw.deletingLastPathComponent()) }
+        let store = RAW9SidecarStore()
+        let adjustments = RAW9Adjustments(exposure: 5, overallContrast: 1.6, saturation: 1.8, vibrance: -0.4)
+        try await store.save(adjustments, for: raw)
+        #expect(try await store.load(for: raw) == adjustments)
+        let legacy = try JSONDecoder().decode(RAW9Adjustments.self, from: Data(
+            #"{"exposure":0,"noiseReduction":0,"sharpness":0,"contrast":0}"#.utf8))
+        #expect(legacy == RAW9Adjustments())
+    }
+
+    @Test(arguments: ["public.jpeg", "public.tiff", "public.heic", "heif10"])
+    func `exports preserve capture metadata and update geometry`(type: String) async throws {
+        let raw = try temporaryRAW()
+        defer { try? FileManager.default.removeItem(at: raw.deletingLastPathComponent()) }
+        let input = CIImage(color: CIColor(red: 0.2, green: 0.5, blue: 0.8))
+            .cropped(to: CGRect(x: 0, y: 0, width: 32, height: 24))
+        let image = try #require(CIContext().createCGImage(input, from: input.extent))
+        let writer = try #require(CGImageDestinationCreateWithURL(raw as CFURL, "public.tiff" as CFString, 1, nil))
+        CGImageDestinationAddImage(writer, image, [
+            kCGImagePropertyOrientation: 6,
+            kCGImagePropertyTIFFDictionary: [kCGImagePropertyTIFFMake: "Test Camera"],
+            kCGImagePropertyExifDictionary: [kCGImagePropertyExifExposureTime: 0.008,
+                                            kCGImagePropertyExifDateTimeOriginal: "2026:10:10 12:00:00"],
+            kCGImagePropertyGPSDictionary: [kCGImagePropertyGPSLatitude: 59.9,
+                                           kCGImagePropertyGPSLatitudeRef: "N"],
+        ] as CFDictionary)
+        #expect(CGImageDestinationFinalize(writer))
+        let destination = raw.deletingLastPathComponent().appendingPathComponent("export")
+        try await RAW9PreviewRenderer().writeExport(image: image, destination: destination,
+            type: type == "heif10" ? "public.heic" : type, heif10: type == "heif10", sourceURL: raw)
+        let source = try #require(CGImageSourceCreateWithURL(destination as CFURL, nil))
+        let properties = try #require(CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [String: Any])
+        let exif = try #require(properties[kCGImagePropertyExifDictionary as String] as? [String: Any])
+        #expect(exif[kCGImagePropertyExifDateTimeOriginal as String] as? String == "2026:10:10 12:00:00")
+        #expect(exif[kCGImagePropertyExifExposureTime as String] as? Double == 0.008)
+        #expect(properties[kCGImagePropertyOrientation as String] as? Int == 1)
+        #expect(properties[kCGImagePropertyPixelWidth as String] as? Int == 32)
+        let tiff = try #require(properties[kCGImagePropertyTIFFDictionary as String] as? [String: Any])
+        #expect(tiff[kCGImagePropertyTIFFMake as String] as? String == "Test Camera")
+        if type == "heif10" {
+            #expect(properties[kCGImagePropertyDepth as String] as? Int == 10)
+        }
+        let gps = try #require(properties[kCGImagePropertyGPSDictionary as String] as? [String: Any])
+        #expect(gps[kCGImagePropertyGPSLatitude as String] as? Double == 59.9)
+    }
+
     @Test func `picker maps displayed coordinates into unrotated RAW pixels`() {
         let extent = CGRect(x: 0, y: 0, width: 400, height: 300)
         let landscape = RAW9Support.neutralLocation(normalizedPoint: CGPoint(x: 0.25, y: 0.75), extent: extent, orientation: .up)
@@ -111,6 +180,9 @@ struct RAW9SidecarStoreTests {
     }
 
     @Test(arguments: [
+        RAW9Adjustments(overallContrast: 2.1), RAW9Adjustments(saturation: -0.1),
+        RAW9Adjustments(vibrance: .infinity), RAW9Adjustments(vibrance: 1.1),
+        RAW9Adjustments(exposure: 5.1),
         RAW9Adjustments(shadowBoost: -0.1), RAW9Adjustments(shadowBoost: 2.1),
         RAW9Adjustments(globalToneMap: 1.1),
         RAW9Adjustments(shadowBoost: .infinity)

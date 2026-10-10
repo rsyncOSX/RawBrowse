@@ -40,7 +40,7 @@ nonisolated enum RAW9Support {
     }
 }
 
-/// Preview-only adjustments; zero offsets and nil white balance preserve camera defaults.
+/// Shared preview and export adjustments; zero offsets and nil white balance preserve camera defaults.
 nonisolated struct RAW9Adjustments: Equatable, Sendable, Codable {
     var exposure: Double = 0
     var noiseReduction: Double = 0
@@ -51,6 +51,9 @@ nonisolated struct RAW9Adjustments: Equatable, Sendable, Codable {
     var crop: RAW9Crop?
     var shadowBoost: Double?
     var globalToneMap: Double?
+    var overallContrast: Double?
+    var saturation: Double?
+    var vibrance: Double?
 }
 
 /// Normalized coordinates in the oriented image, measured from the top left.
@@ -79,6 +82,9 @@ nonisolated struct RAW9Crop: Codable, Equatable, Sendable {
 nonisolated struct RAW9ToneDefaults: Sendable {
     var shadowBoost: Double = 1
     var globalToneMap: Double = 1
+    var noiseReduction: Double = 0
+    var sharpness: Double = 0
+    var detailContrast: Double = 0
 }
 
 /// Keeps the filter and its intermediate render cache off the main actor.
@@ -139,7 +145,10 @@ actor RAW9PreviewRenderer {
 
     private static func toneSettings(filter: CIRAWFilter) -> RAW9ToneDefaults {
         RAW9ToneDefaults(shadowBoost: Double(filter.boostShadowAmount),
-                         globalToneMap: Double(filter.boostAmount))
+                         globalToneMap: Double(filter.boostAmount),
+                         noiseReduction: Double(filter.luminanceNoiseReductionAmount),
+                         sharpness: Double(filter.sharpnessAmount),
+                         detailContrast: Double(filter.contrastAmount))
     }
 
     nonisolated static func previewScale(nativeSize: CGSize, maximumDimension: CGFloat?) -> Float {
@@ -188,6 +197,7 @@ actor RAW9PreviewRenderer {
         // Finish the expensive RAW render on this actor. A deferred CGImage can
         // perform that work when SwiftUI draws it, blocking the main thread.
         guard var output = filter.outputImage else { throw CocoaError(.fileReadUnknown) }
+        output = Self.applyColorAdjustments(to: output, adjustments: adjustments)
         if let crop = adjustments.crop {
             guard crop.isValid else { throw CocoaError(.fileReadCorruptFile) }
             output = output.cropped(to: crop.rect(in: output.extent))
@@ -204,6 +214,52 @@ actor RAW9PreviewRenderer {
         return image
     }
 
+    nonisolated static func applyColorAdjustments(to image: CIImage, adjustments: RAW9Adjustments) -> CIImage {
+        var output = image
+        if (adjustments.overallContrast ?? 1) != 1 || (adjustments.saturation ?? 1) != 1 {
+            output = output.applyingFilter("CIColorControls", parameters: [
+                kCIInputContrastKey: adjustments.overallContrast ?? 1,
+                kCIInputSaturationKey: adjustments.saturation ?? 1,
+            ])
+        }
+        if let vibrance = adjustments.vibrance, vibrance != 0 {
+            output = output.applyingFilter("CIVibrance", parameters: ["inputAmount": vibrance])
+        }
+        return output
+    }
+
+    /// Copy capture metadata, replacing geometry that no longer describes the rendered pixels.
+    nonisolated static func exportProperties(sourceURL: URL?, image: CGImage) -> [String: Any] {
+        var properties: [String: Any] = [:]
+        if let sourceURL, let source = CGImageSourceCreateWithURL(sourceURL as CFURL, nil),
+           let original = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [String: Any] {
+            for key in [kCGImagePropertyExifDictionary, kCGImagePropertyExifAuxDictionary,
+                        kCGImagePropertyTIFFDictionary, kCGImagePropertyGPSDictionary,
+                        kCGImagePropertyIPTCDictionary] {
+                properties[key as String] = original[key as String]
+            }
+        }
+        var exif = properties[kCGImagePropertyExifDictionary as String] as? [String: Any] ?? [:]
+        exif[kCGImagePropertyExifColorSpace as String] = 1 // Export pixels are sRGB.
+        exif[kCGImagePropertyExifPixelXDimension as String] = image.width
+        exif[kCGImagePropertyExifPixelYDimension as String] = image.height
+        // A source MakerNote can contain offsets and RAW-specific geometry.
+        exif.removeValue(forKey: kCGImagePropertyExifMakerNote as String)
+        properties[kCGImagePropertyExifDictionary as String] = exif
+        var tiff = properties[kCGImagePropertyTIFFDictionary as String] as? [String: Any] ?? [:]
+        let retainedTIFFKeys = [kCGImagePropertyTIFFMake, kCGImagePropertyTIFFModel,
+                                kCGImagePropertyTIFFSoftware, kCGImagePropertyTIFFDateTime,
+                                kCGImagePropertyTIFFArtist, kCGImagePropertyTIFFCopyright,
+                                kCGImagePropertyTIFFImageDescription].map { $0 as String }
+        tiff = tiff.filter { retainedTIFFKeys.contains($0.key) }
+        tiff[kCGImagePropertyTIFFOrientation as String] = 1
+        properties[kCGImagePropertyTIFFDictionary as String] = tiff
+        properties[kCGImagePropertyOrientation as String] = 1
+        properties[kCGImagePropertyPixelWidth as String] = image.width
+        properties[kCGImagePropertyPixelHeight as String] = image.height
+        return properties
+    }
+
     /// ImageIO supplies the writable formats installed on this Mac.
     nonisolated static var exportTypes: [String] {
         (CGImageDestinationCopyTypeIdentifiers() as? [String] ?? []).sorted()
@@ -211,11 +267,12 @@ actor RAW9PreviewRenderer {
 
     func export(url: URL, adjustments: RAW9Adjustments, destination: URL, type: String, heif10: Bool = false) throws {
         let image = try render(url: url, adjustments: adjustments, bitDepth: .sixteenBit)
-        try writeExport(image: image, destination: destination, type: type, heif10: heif10)
+        try writeExport(image: image, destination: destination, type: type, heif10: heif10, sourceURL: url)
     }
 
-    func writeExport(image: CGImage, destination: URL, type: String, heif10: Bool = false) throws {
-        let ciImage = CIImage(cgImage: image)
+    func writeExport(image: CGImage, destination: URL, type: String, heif10: Bool = false, sourceURL: URL? = nil) throws {
+        var properties = Self.exportProperties(sourceURL: sourceURL, image: image)
+        let ciImage = CIImage(cgImage: image).settingProperties(properties)
         let highDepth = type == "public.png" || type == "public.tiff"
         guard let encodedImage = context.createCGImage(ciImage, from: ciImage.extent,
                                                        format: highDepth ? .RGBA16 : .RGBA8,
@@ -238,7 +295,8 @@ actor RAW9PreviewRenderer {
         } else {
             guard let writer = CGImageDestinationCreateWithURL(temporary as CFURL, type as CFString, 1, nil)
             else { throw CocoaError(.fileWriteUnknown) }
-            CGImageDestinationAddImage(writer, encodedImage, [kCGImageDestinationLossyCompressionQuality: 1.0] as CFDictionary)
+            properties[kCGImageDestinationLossyCompressionQuality as String] = 1.0
+            CGImageDestinationAddImage(writer, encodedImage, properties as CFDictionary)
             guard CGImageDestinationFinalize(writer) else { throw CocoaError(.fileWriteUnknown) }
         }
         if FileManager.default.fileExists(atPath: destination.path) {
@@ -284,12 +342,15 @@ actor RAW9SidecarStore {
     }
 
     private nonisolated static func isValid(_ value: RAW9Adjustments) -> Bool {
-        (value.crop.map(\.isValid) ?? true)
+        (value.overallContrast.map { $0.isFinite && (0 ... 2).contains($0) } ?? true)
+            && (value.saturation.map { $0.isFinite && (0 ... 2).contains($0) } ?? true)
+            && (value.vibrance.map { $0.isFinite && (-1 ... 1).contains($0) } ?? true)
+            && (value.crop.map(\.isValid) ?? true)
             && (value.temperature.map { $0.isFinite && (2000 ... 50000).contains($0) } ?? true)
             && (value.tint.map { $0.isFinite && (-150 ... 150).contains($0) } ?? true)
             && (value.shadowBoost.map { $0.isFinite && (0 ... 2).contains($0) } ?? true)
             && (value.globalToneMap.map { $0.isFinite && (0 ... 1).contains($0) } ?? true)
-            && value.exposure.isFinite && (-3 ... 3).contains(value.exposure)
+            && value.exposure.isFinite && (-5 ... 5).contains(value.exposure)
             && value.noiseReduction.isFinite && (-1 ... 1).contains(value.noiseReduction)
             && value.sharpness.isFinite && (-1 ... 1).contains(value.sharpness)
             && value.contrast.isFinite && (-1 ... 1).contains(value.contrast)
