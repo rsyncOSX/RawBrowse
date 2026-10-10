@@ -81,8 +81,7 @@ actor BrowserImageLoader {
                 guard values?.isRegularFile == true, values?.isHidden != true else { return nil }
                 return BrowserFileItem(url: url)
             }
-            let renderedImageFiles = files.filter { SupportedFileType.isRenderedImage($0.url) }
-            return (renderedImageFiles.isEmpty ? files : renderedImageFiles)
+            return files
                 .sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
         }.value
     }
@@ -377,8 +376,7 @@ actor BrowserImageLoader {
             let values = try? url.resourceValues(forKeys: [.isRegularFileKey])
             return values?.isRegularFile == true
         }
-        let renderedImageCount = supportedFiles.count(where: SupportedFileType.isRenderedImage)
-        return renderedImageCount > 0 ? renderedImageCount : supportedFiles.count
+        return supportedFiles.count
     }
 
     private nonisolated static func folderItem(at folderURL: URL) -> BrowserFolderItem {
