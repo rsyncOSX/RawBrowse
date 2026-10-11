@@ -390,11 +390,11 @@ struct BrowserZoomOverlayView: View {
                 adjustmentSlider("Temp K", value: Binding(
                     get: { raw9.raw9Adjustments.temperature ?? cameraTemperature },
                     set: { raw9.raw9Adjustments.temperature = $0 },
-                ), range: 2000 ... 50000, fractionDigits: 0)
+                ), range: 2000 ... 50000, fractionDigits: 0, reset: { raw9.raw9Adjustments.temperature = nil })
                 adjustmentSlider("Tint", value: Binding(
                     get: { raw9.raw9Adjustments.tint ?? cameraTint },
                     set: { raw9.raw9Adjustments.tint = $0 },
-                ), range: -150 ... 150)
+                ), range: -150 ... 150, reset: { raw9.raw9Adjustments.tint = nil })
                 Button {
                     isPickingWhiteBalance.toggle()
                 } label: {
@@ -407,7 +407,7 @@ struct BrowserZoomOverlayView: View {
                 .help("Click a neutral white or gray area to set white balance")
             }
             rawControlGroup("Light") {
-                adjustmentSlider("Exposure", value: $raw9.raw9Adjustments.exposure, range: -5 ... 5)
+                adjustmentSlider("Exposure", value: $raw9.raw9Adjustments.exposure, range: -5 ... 5, reset: { raw9.raw9Adjustments.exposure = 0 })
                     .help("Exposure compensation in stops. Zero preserves the default; move left to darken or right to brighten.")
                 adjustmentSlider("Contrast", value: Binding(
                     get: {
@@ -417,40 +417,40 @@ struct BrowserZoomOverlayView: View {
                     // Give small changes near neutral more slider travel.
                     set: { raw9.raw9Adjustments.overallContrast = 1 + $0 * abs($0) }
                 ), range: -1 ... 1, fractionDigits: 2,
-                   displayedValue: raw9.raw9Adjustments.overallContrast ?? 1)
+                   displayedValue: raw9.raw9Adjustments.overallContrast ?? 1, reset: { raw9.raw9Adjustments.overallContrast = nil })
                     .help("Contrast: 1 is neutral. Fine adjustment near the center; the full range is 0 to 2.")
                 adjustmentSlider("Shadows", value: Binding(
                     get: { raw9.raw9Adjustments.shadowBoost ?? toneDefaults.shadowBoost },
                     set: { raw9.raw9Adjustments.shadowBoost = $0 },
-                ), range: 0 ... 2)
+                ), range: 0 ... 2, reset: { raw9.raw9Adjustments.shadowBoost = nil })
                     .disabled((raw9.raw9Adjustments.globalToneMap ?? toneDefaults.globalToneMap) == 0)
                     .help("Shadow amount starts at the photo’s decoder default. Lower values darken shadows; higher values lighten them. Requires a nonzero tone curve.")
                 adjustmentSlider("Tone curve", value: Binding(
                     get: { raw9.raw9Adjustments.globalToneMap ?? toneDefaults.globalToneMap },
                     set: { raw9.raw9Adjustments.globalToneMap = $0 },
-                ), range: 0 ... 1)
+                ), range: 0 ... 1, reset: { raw9.raw9Adjustments.globalToneMap = nil })
                     .help("RAW tone curve: 0 is linear; 1 is the full default curve. This is an amount, not a centered adjustment.")
             }
             rawControlGroup("Color") {
                 adjustmentSlider("Saturation", value: Binding(
                     get: { raw9.raw9Adjustments.saturation ?? 1 },
                     set: { raw9.raw9Adjustments.saturation = $0 }
-                ), range: 0 ... 2)
+                ), range: 0 ... 2, reset: { raw9.raw9Adjustments.saturation = nil })
                 adjustmentSlider("Vibrance", value: Binding(
                     get: { raw9.raw9Adjustments.vibrance ?? 0 },
                     set: { raw9.raw9Adjustments.vibrance = $0 }
-                ), range: -1 ... 1)
+                ), range: -1 ... 1, reset: { raw9.raw9Adjustments.vibrance = nil })
             }
             rawControlGroup("Detail") {
                 adjustmentSlider("Noise", value: decoderOffsetBinding($raw9.raw9Adjustments.noiseReduction, defaultValue: toneDefaults.noiseReduction),
-                                 range: -toneDefaults.noiseReduction ... (1 - toneDefaults.noiseReduction))
+                                 range: -toneDefaults.noiseReduction ... (1 - toneDefaults.noiseReduction), reset: { raw9.raw9Adjustments.noiseReduction = 0 })
                 adjustmentSlider("Sharpness", value: Binding(
                     get: { min(1, max(0, toneDefaults.sharpness + raw9.raw9Adjustments.sharpness)) },
                     set: { raw9.raw9Adjustments.sharpness = $0 - toneDefaults.sharpness }
-                ), range: 0 ... 1, fractionDigits: 2)
+                ), range: 0 ... 1, fractionDigits: 2, reset: { raw9.raw9Adjustments.sharpness = 0 })
                     .help("RAW sharpness amount: 0 disables sharpening; 1 is the maximum. Starts at the photo’s decoder default.")
                 adjustmentSlider("Detail contrast", value: decoderOffsetBinding($raw9.raw9Adjustments.contrast, defaultValue: toneDefaults.detailContrast),
-                                 range: -toneDefaults.detailContrast ... (1 - toneDefaults.detailContrast))
+                                 range: -toneDefaults.detailContrast ... (1 - toneDefaults.detailContrast), reset: { raw9.raw9Adjustments.contrast = 0 })
             }
         }
         .controlSize(.small)
@@ -625,7 +625,7 @@ struct BrowserZoomOverlayView: View {
     }
 
     private func adjustmentSlider(_ title: String, value: Binding<Double>, range: ClosedRange<Double>, fractionDigits: Int = 1,
-                                  displayedValue: Double? = nil) -> some View {
+                                  displayedValue: Double? = nil, reset: @escaping () -> Void) -> some View {
         VStack(spacing: 0) {
             HStack(spacing: 3) {
                 Text(title)
@@ -642,6 +642,9 @@ struct BrowserZoomOverlayView: View {
                     scheduleRAWAdjustmentRefresh()
                 }
             }
+            .simultaneousGesture(TapGesture(count: 2).onEnded { reset() })
+            .help("Double-click to reset to the default value")
+            .accessibilityAction(named: Text("Reset to default"), reset)
             .accessibilityLabel(title)
             .accessibilityValue((displayedValue ?? value.wrappedValue).formatted(.number.precision(.fractionLength(fractionDigits))))
         }

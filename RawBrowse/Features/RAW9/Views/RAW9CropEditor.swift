@@ -71,6 +71,8 @@ struct RAW9CropEditor: View {
             HStack {
                 Text("Width")
                 Slider(value: Binding(get: { crop.width }, set: { resize(width: $0) }), in: 0.01 ... 1)
+                    .simultaneousGesture(TapGesture(count: 2).onEnded { resize(width: 1) })
+                    .help("Double-click to reset to the maximum width")
                 Text(crop.width, format: .percent.precision(.fractionLength(0))).frame(width: 45)
             }
             if crop.aspectRatio == nil {
@@ -80,6 +82,11 @@ struct RAW9CropEditor: View {
                         crop.height = $0
                         crop.y = min(crop.y, 1 - crop.height)
                     }), in: 0.01 ... 1)
+                        .simultaneousGesture(TapGesture(count: 2).onEnded {
+                            crop.height = 1
+                            crop.y = 0
+                        })
+                        .help("Double-click to reset to the full height")
                     Text(crop.height, format: .percent.precision(.fractionLength(0))).frame(width: 45)
                 }
             }
