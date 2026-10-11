@@ -258,7 +258,7 @@ struct BrowserZoomOverlayView: View {
         .safeAreaInset(edge: .trailing, spacing: 0) {
             if zoom.useDevelopedRAW, supportsRAW9 {
                 rawAdjustmentPanel
-                    .frame(width: isImageOnlyPreview ? 0 : (isRAWPanelCollapsed ? 44 : 260))
+                    .frame(width: isImageOnlyPreview ? 0 : (isRAWPanelCollapsed ? 60 : 220))
                     .clipped()
                     .opacity(isImageOnlyPreview ? 0 : 1)
                     .allowsHitTesting(!isImageOnlyPreview)
@@ -479,8 +479,9 @@ struct BrowserZoomOverlayView: View {
         }
         .padding(12)
         .frame(maxHeight: .infinity, alignment: .top)
-        .background(ZoomBadgeStyle.fill)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
         .buttonStyle(.borderless)
+        .padding(8)
     }
 
     private var rawEditingActions: some View {
@@ -569,7 +570,7 @@ struct BrowserZoomOverlayView: View {
         }
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.white.opacity(0.04), in: RoundedRectangle(cornerRadius: 10))
+        .background(.white.opacity(0.04), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
 
     private func prepareCrop() {
