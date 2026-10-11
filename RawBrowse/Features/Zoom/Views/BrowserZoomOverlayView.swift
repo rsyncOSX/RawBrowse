@@ -410,9 +410,15 @@ struct BrowserZoomOverlayView: View {
                 adjustmentSlider("Exposure", value: $raw9.raw9Adjustments.exposure, range: -5 ... 5)
                     .help("Exposure compensation in stops. Zero preserves the default; move left to darken or right to brighten.")
                 adjustmentSlider("Contrast", value: Binding(
-                    get: { raw9.raw9Adjustments.overallContrast ?? 1 },
-                    set: { raw9.raw9Adjustments.overallContrast = $0 }
-                ), range: 0 ... 2)
+                    get: {
+                        let offset = min(2, max(0, raw9.raw9Adjustments.overallContrast ?? 1)) - 1
+                        return offset < 0 ? -sqrt(-offset) : sqrt(offset)
+                    },
+                    // Give small changes near neutral more slider travel.
+                    set: { raw9.raw9Adjustments.overallContrast = 1 + $0 * abs($0) }
+                ), range: -1 ... 1, fractionDigits: 2,
+                   displayedValue: raw9.raw9Adjustments.overallContrast ?? 1)
+                    .help("Contrast: 1 is neutral. Fine adjustment near the center; the full range is 0 to 2.")
                 adjustmentSlider("Shadows", value: Binding(
                     get: { raw9.raw9Adjustments.shadowBoost ?? toneDefaults.shadowBoost },
                     set: { raw9.raw9Adjustments.shadowBoost = $0 },
@@ -618,12 +624,13 @@ struct BrowserZoomOverlayView: View {
                 set: { value.wrappedValue = $0 })
     }
 
-    private func adjustmentSlider(_ title: String, value: Binding<Double>, range: ClosedRange<Double>, fractionDigits: Int = 1) -> some View {
+    private func adjustmentSlider(_ title: String, value: Binding<Double>, range: ClosedRange<Double>, fractionDigits: Int = 1,
+                                  displayedValue: Double? = nil) -> some View {
         VStack(spacing: 0) {
             HStack(spacing: 3) {
                 Text(title)
                 Spacer(minLength: 8)
-                Text(value.wrappedValue, format: .number.precision(.fractionLength(fractionDigits)))
+                Text(displayedValue ?? value.wrappedValue, format: .number.precision(.fractionLength(fractionDigits)))
                     .monospacedDigit()
             }
             .font(.caption)
@@ -636,6 +643,7 @@ struct BrowserZoomOverlayView: View {
                 }
             }
             .accessibilityLabel(title)
+            .accessibilityValue((displayedValue ?? value.wrappedValue).formatted(.number.precision(.fractionLength(fractionDigits))))
         }
         .frame(maxWidth: .infinity)
     }
