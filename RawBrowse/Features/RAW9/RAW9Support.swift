@@ -6,6 +6,14 @@ import RawParserKit
 
 /// Checks the installed decoder's capabilities without rendering sensor data.
 nonisolated enum RAW9Support {
+    /// Query the installed decoder so camera support follows macOS updates.
+    @concurrent
+    static func supportedSonyCameraModels() async -> [String] {
+        Array(Set(CIRAWFilter.supportedCameraModels(with: .version9)
+            .filter { $0.lowercased().hasPrefix("sony ") }))
+            .sorted { $0.localizedStandardCompare($1) == .orderedAscending }
+    }
+
     static func preferredVersion(in versions: [CIRAWDecoderVersion]) -> CIRAWDecoderVersion? {
         if versions.contains(.version9) {
             return .version9
