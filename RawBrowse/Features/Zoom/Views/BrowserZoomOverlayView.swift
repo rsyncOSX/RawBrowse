@@ -411,8 +411,11 @@ struct BrowserZoomOverlayView: View {
             rawControlGroup {
                 adjustmentSlider("Noise", value: decoderOffsetBinding($raw9.raw9Adjustments.noiseReduction, defaultValue: toneDefaults.noiseReduction),
                                  range: -toneDefaults.noiseReduction ... (1 - toneDefaults.noiseReduction))
-                adjustmentSlider("Sharpness", value: decoderOffsetBinding($raw9.raw9Adjustments.sharpness, defaultValue: toneDefaults.sharpness),
-                                 range: -toneDefaults.sharpness ... (1 - toneDefaults.sharpness))
+                adjustmentSlider("Sharpness", value: Binding(
+                    get: { min(1, max(0, toneDefaults.sharpness + raw9.raw9Adjustments.sharpness)) },
+                    set: { raw9.raw9Adjustments.sharpness = $0 - toneDefaults.sharpness }
+                ), range: 0 ... 1, fractionDigits: 2)
+                    .help("RAW sharpness amount: 0 disables sharpening; 1 is the maximum. Starts at the photo’s decoder default.")
             }
             rawControlGroup {
                 adjustmentSlider("Detail contrast", value: decoderOffsetBinding($raw9.raw9Adjustments.contrast, defaultValue: toneDefaults.detailContrast),
@@ -501,7 +504,7 @@ struct BrowserZoomOverlayView: View {
         .font(.caption2)
         .foregroundStyle(.secondary)
         .tint(.white.opacity(0.65))
-        .help("RAW 9 adjustments are saved automatically to a sidecar beside the original. Noise, sharpness and detail contrast are offsets from camera defaults.")
+        .help("RAW 9 adjustments are saved automatically to a sidecar beside the original. Noise and detail contrast are offsets from camera defaults; sharpness shows the decoder amount.")
     }
 
     private var isRAW9ControlBusy: Bool {

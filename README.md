@@ -68,7 +68,7 @@ RawBrowse stores one model-specific index at `.clipbench/clip-<model-hash>.clipi
 
 In zoom view, switch from **JPG** to **RAW 9** when the installed Core Image decoder supports the photo. Adjust white balance, exposure, noise reduction, sharpness, detail contrast, overall contrast, saturation, vibrance, shadows, and tone, or apply a crop. You can copy and paste adjustments between supported photos.
 
-Exposure spans −5 to +5 stops. Noise reduction, sharpness, and detail contrast use the decoder's available range around each photo's default. Overall contrast and saturation run from 0 to 2 (neutral at 1); vibrance runs from −1 to +1 (neutral at 0).
+Exposure spans −5 to +5 stops. Noise reduction and detail contrast use the decoder's available range around each photo's default. Sharpness runs from 0 to 1 and starts at the photo's decoder default. Overall contrast and saturation run from 0 to 2 (neutral at 1); vibrance runs from −1 to +1 (neutral at 0).
 
 Exports preserve supported capture metadata, including EXIF, camera/lens information, and GPS where the output format supports it. Dimensions and orientation are updated for the rendered image; proprietary MakerNotes are omitted.
 
