@@ -101,7 +101,7 @@ struct BrowserZoomOverlayView: View {
                             .scaledToFit()
                             .frame(width: geometry.size.width, height: geometry.size.height)
 
-                        if !isImageOnlyPreview, showSubjectOutline, !zoom.useDevelopedRAW || raw9.raw9Adjustments.crop == nil, let subjectOutline {
+                        if !isImageOnlyPreview, showSubjectOutline, !zoom.useDevelopedRAW || (raw9.raw9Adjustments.crop == nil && (raw9.raw9Adjustments.straightenAngle ?? 0) == 0), let subjectOutline {
                             Image(decorative: subjectOutline, scale: 1, orientation: .up)
                                 .resizable()
                                 .scaledToFit()
@@ -584,13 +584,14 @@ struct BrowserZoomOverlayView: View {
         isPickingWhiteBalance = false
         var adjustments = raw9.raw9Adjustments
         adjustments.crop = nil
+        adjustments.straightenAngle = nil
         isPreparingCrop = true
         Task {
             defer { isPreparingCrop = false }
             do {
                 let image = try await RAW9PreviewRenderer().render(url: url, adjustments: adjustments, maximumDimension: 1280)
                 guard selection.selectedFile?.url == url else { return }
-                cropSource = RAW9CropSource(url: url, image: image, crop: raw9.raw9Adjustments.crop)
+                cropSource = RAW9CropSource(url: url, image: image, crop: raw9.raw9Adjustments.crop, straightenAngle: raw9.raw9Adjustments.straightenAngle)
             } catch { rawExportError = error.localizedDescription }
         }
     }
@@ -741,6 +742,11 @@ struct BrowserZoomOverlayView: View {
         if let crop = raw9.raw9Adjustments.crop {
             point = CGPoint(x: crop.x + point.x * crop.width, y: crop.y + point.y * crop.height)
         }
+        let crop = raw9.raw9Adjustments.crop
+        point = RAW9Straightening.sourcePoint(point, imageSize: CGSize(
+            width: Double(image.width) / (crop?.width ?? 1),
+            height: Double(image.height) / (crop?.height ?? 1)
+        ), degrees: raw9.raw9Adjustments.straightenAngle ?? 0)
         isPickingWhiteBalance = false
         isSamplingWhiteBalance = true
         let originalAdjustments = raw9.raw9Adjustments
@@ -865,9 +871,17 @@ struct BrowserZoomOverlayView: View {
 
     private var normalizedFocusPoint: CGPoint? {
         guard let focusPoint = zoom.zoomExifInfo?.focusPoint else { return nil }
+        var point = CGPoint(x: CGFloat(focusPoint.normalizedX), y: CGFloat(focusPoint.normalizedY))
+        if zoom.useDevelopedRAW, let image = zoom.zoomImage {
+            let crop = raw9.raw9Adjustments.crop
+            point = RAW9Straightening.displayedPoint(point, imageSize: CGSize(
+                width: Double(image.width) / (crop?.width ?? 1),
+                height: Double(image.height) / (crop?.height ?? 1)
+            ), degrees: raw9.raw9Adjustments.straightenAngle ?? 0)
+        }
+        guard (0 ... 1).contains(point.x), (0 ... 1).contains(point.y) else { return nil }
         return BrowserZoomViewportMath.displayedFocusPoint(
-            CGPoint(x: CGFloat(focusPoint.normalizedX), y: CGFloat(focusPoint.normalizedY)),
-            crop: zoom.useDevelopedRAW ? raw9.raw9Adjustments.crop : nil,
+            point, crop: zoom.useDevelopedRAW ? raw9.raw9Adjustments.crop : nil,
         )
     }
 

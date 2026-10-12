@@ -32,11 +32,47 @@ struct RAW9SidecarStoreTests {
         let raw = try temporaryRAW()
         defer { try? FileManager.default.removeItem(at: raw.deletingLastPathComponent()) }
         let crop = RAW9Crop(x: 0.1, y: 0.2, width: 0.5, height: 0.5, aspectRatio: 4.0 / 3)
-        let adjustments = RAW9Adjustments(crop: crop)
+        let adjustments = RAW9Adjustments(crop: crop, straightenAngle: 3.5)
         let store = RAW9SidecarStore()
         try await store.save(adjustments, for: raw)
         #expect(try await store.load(for: raw) == adjustments)
         #expect(crop.rect(in: CGRect(x: 10, y: 20, width: 400, height: 300)) == CGRect(x: 50, y: 110, width: 200, height: 150))
+    }
+
+    @Test(arguments: [Double.nan, .infinity, -15.1, 15.1])
+    func `rejects invalid straighten angles`(angle: Double) async throws {
+        let raw = try temporaryRAW()
+        defer { try? FileManager.default.removeItem(at: raw.deletingLastPathComponent()) }
+        let store = RAW9SidecarStore()
+        await #expect(throws: (any Error).self) {
+            try await store.save(RAW9Adjustments(straightenAngle: angle), for: raw)
+        }
+    }
+
+    @Test(arguments: [-15.0, 0, 15.0])
+    func `straighten preserves dimensions and maps white balance samples`(angle: Double) throws {
+        let extent = CGRect(x: 0, y: 0, width: 240, height: 160)
+        // A horizontal red gradient makes the rendered source coordinate measurable.
+        let gradient = try #require(CIFilter(name: "CILinearGradient", parameters: [
+            "inputPoint0": CIVector(x: 0, y: 0),
+            "inputPoint1": CIVector(x: extent.width, y: 0),
+            "inputColor0": CIColor(red: 0, green: 0, blue: 0),
+            "inputColor1": CIColor(red: 1, green: 0, blue: 0),
+        ])?.outputImage).cropped(to: extent)
+        let output = RAW9Straightening.apply(to: gradient, degrees: angle)
+        #expect(output.extent == extent)
+        let pixel = CGPoint(x: 150, y: 60)
+        let source = RAW9Straightening.sourcePoint(
+            CGPoint(x: (pixel.x + 0.5) / extent.width, y: 1 - (pixel.y + 0.5) / extent.height),
+            imageSize: extent.size, degrees: angle
+        )
+        var rgba = [Float](repeating: 0, count: 4)
+        rgba.withUnsafeMutableBytes { bytes in
+            CIContext().render(output, toBitmap: bytes.baseAddress!, rowBytes: 16,
+                               bounds: CGRect(origin: pixel, size: CGSize(width: 1, height: 1)),
+                               format: .RGBAf, colorSpace: CGColorSpace(name: CGColorSpace.linearSRGB)!)
+        }
+        #expect(abs(Double(rgba[0]) - Double(source.x)) < 0.02)
     }
 
     @Test(arguments: [
@@ -164,6 +200,7 @@ struct RAW9SidecarStoreTests {
         #expect(adjustments.temperature == nil)
         #expect(adjustments.tint == nil)
         #expect(adjustments.crop == nil)
+        #expect(adjustments.straightenAngle == nil)
         #expect(adjustments.shadowBoost == nil)
         #expect(adjustments.globalToneMap == nil)
     }

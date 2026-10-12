@@ -57,11 +57,62 @@ nonisolated struct RAW9Adjustments: Equatable, Sendable, Codable {
     var temperature: Double?
     var tint: Double?
     var crop: RAW9Crop?
+    /// Degrees; nil preserves legacy sidecars and the original geometry.
+    var straightenAngle: Double?
     var shadowBoost: Double?
     var globalToneMap: Double?
     var overallContrast: Double?
     var saturation: Double?
     var vibrance: Double?
+}
+
+/// Shared Core Image geometry for the crop draft, developed previews, and exports.
+nonisolated enum RAW9Straightening {
+    private static let context = CIContext()
+
+    static func apply(to image: CIImage, degrees: Double) -> CIImage {
+        guard degrees != 0 else { return image }
+        return image.applyingFilter("CIStraightenFilter", parameters: [
+            kCIInputAngleKey: degrees * .pi / 180,
+        ])
+    }
+
+    @concurrent
+    static func preview(image: CGImage, degrees: Double) async -> CGImage? {
+        guard !Task.isCancelled else { return nil }
+        guard degrees != 0 else { return image }
+        let output = apply(to: CIImage(cgImage: image), degrees: degrees)
+        return context.createCGImage(output, from: output.extent)
+    }
+
+    static func displayedPoint(_ point: CGPoint, imageSize: CGSize, degrees: Double) -> CGPoint {
+        guard degrees != 0, imageSize.width > 0, imageSize.height > 0 else { return point }
+        let angle = degrees * .pi / 180
+        let c = cos(angle)
+        let s = sin(angle)
+        let width = Double(imageSize.width)
+        let height = Double(imageSize.height)
+        let scale = max(abs(c) + abs(s) * height / width, abs(c) + abs(s) * width / height)
+        let x = (Double(point.x) - 0.5) * width
+        let y = (0.5 - Double(point.y)) * height
+        return CGPoint(x: scale * (c * x - s * y) / width + 0.5,
+                       y: 0.5 - scale * (s * x + c * y) / height)
+    }
+
+    /// Undo the filter's centered rotation and fill scale for the white balance picker.
+    static func sourcePoint(_ point: CGPoint, imageSize: CGSize, degrees: Double) -> CGPoint {
+        guard degrees != 0, imageSize.width > 0, imageSize.height > 0 else { return point }
+        let angle = degrees * .pi / 180
+        let c = cos(angle)
+        let s = sin(angle)
+        let width = Double(imageSize.width)
+        let height = Double(imageSize.height)
+        let scale = max(abs(c) + abs(s) * height / width, abs(c) + abs(s) * width / height)
+        let x = (Double(point.x) - 0.5) * width / scale
+        let y = (0.5 - Double(point.y)) * height / scale
+        return CGPoint(x: (c * x + s * y) / width + 0.5,
+                       y: 0.5 - (-s * x + c * y) / height)
+    }
 }
 
 /// Normalized coordinates in the oriented image, measured from the top left.
@@ -206,6 +257,7 @@ actor RAW9PreviewRenderer {
         // perform that work when SwiftUI draws it, blocking the main thread.
         guard var output = filter.outputImage else { throw CocoaError(.fileReadUnknown) }
         output = Self.applyColorAdjustments(to: output, adjustments: adjustments)
+        output = RAW9Straightening.apply(to: output, degrees: adjustments.straightenAngle ?? 0)
         if let crop = adjustments.crop {
             guard crop.isValid else { throw CocoaError(.fileReadCorruptFile) }
             output = output.cropped(to: crop.rect(in: output.extent))
@@ -353,6 +405,7 @@ actor RAW9SidecarStore {
         (value.overallContrast.map { $0.isFinite && (0 ... 2).contains($0) } ?? true)
             && (value.saturation.map { $0.isFinite && (0 ... 2).contains($0) } ?? true)
             && (value.vibrance.map { $0.isFinite && (-1 ... 1).contains($0) } ?? true)
+            && (value.straightenAngle.map { $0.isFinite && (-15 ... 15).contains($0) } ?? true)
             && (value.crop.map(\.isValid) ?? true)
             && (value.temperature.map { $0.isFinite && (2000 ... 50000).contains($0) } ?? true)
             && (value.tint.map { $0.isFinite && (-150 ... 150).contains($0) } ?? true)
