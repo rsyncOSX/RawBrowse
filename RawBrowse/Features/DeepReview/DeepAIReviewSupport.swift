@@ -32,16 +32,10 @@ nonisolated struct BurstGroupSignature: Codable, Hashable, Sendable {
         self.init(memberKeys: keys)
     }
 
-    static func memberKey(for file: BrowserFileItem, catalog: URL?) -> String {
-        guard let catalog else { return file.name }
-
-        let catalogPath = catalog.standardizedFileURL.path
-        let filePath = file.url.standardizedFileURL.path
-        let prefix = catalogPath.hasSuffix("/") ? catalogPath : catalogPath + "/"
-
-        guard filePath.hasPrefix(prefix) else { return file.name }
-        let relativePath = String(filePath.dropFirst(prefix.count))
-        return relativePath.isEmpty ? file.name : relativePath
+    static func memberKey(for file: BrowserFileItem, catalog _: URL?) -> String {
+        // Absolute source identity prevents cross-catalog collisions. Include the display
+        // identity so results never retain UUIDs belonging to an earlier scan.
+        "\(file.id.uuidString):\(ImageSourceFingerprint.key(for: file.url))"
     }
 }
 

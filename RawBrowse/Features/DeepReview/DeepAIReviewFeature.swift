@@ -189,8 +189,12 @@ nonisolated protocol DeepAIReviewMaskLoading: Sendable {
 
 @Observable @MainActor
 final class DeepAIReviewFeature {
-    var preset: DeepAIReviewPreset = .auto
-    var scope: DeepAIReviewScope = .automatic
+    var preset: DeepAIReviewPreset = .auto {
+        didSet { if preset != oldValue { clearResults() } }
+    }
+    var scope: DeepAIReviewScope = .automatic {
+        didSet { if scope != oldValue { clearResults() } }
+    }
     private(set) var state: DeepAIReviewState = .idle
     private(set) var availability: RawBrowseAICapabilityStatus
     private(set) var results: [BurstGroupSignature: DeepAIReviewResult] = [:]
@@ -217,6 +221,12 @@ final class DeepAIReviewFeature {
         state.isRunning
     }
 
+    private func clearResults() {
+        results.removeAll()
+        maskCandidatesByFileID.removeAll()
+        if !isRunning { state = .idle }
+    }
+
     func result(for signature: BurstGroupSignature) -> DeepAIReviewResult? {
         results[signature]
     }
@@ -230,6 +240,7 @@ final class DeepAIReviewFeature {
         maskLoader: (any DeepAIReviewMaskLoading)?,
         availability: RawBrowseAICapabilityStatus,
     ) {
+        clearResults()
         self.service = service
         self.maskLoader = maskLoader
         self.availability = availability

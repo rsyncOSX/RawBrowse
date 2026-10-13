@@ -46,7 +46,7 @@ struct BrowserAIWorkspaceView: View {
 
     private var subjectReview: some View {
         let files = reviewSignature == nil ? selection.selectedFiles : reviewFiles
-        let signature = reviewSignature ?? BurstGroupSignature(files: files, catalog: contents.selectedFolder?.url)
+        let signature = BurstGroupSignature(files: files, catalog: contents.selectedFolder?.url)
 
         return VStack(alignment: .leading, spacing: 12) {
             Text("Subject Detail").font(.headline)

@@ -40,6 +40,25 @@ struct DeepAIReviewEnhancementTests {
         #expect(prompts.first == expectedPrompt)
     }
 
+    @Test
+    func `Review signatures distinguish catalogs revisions and rescanned file IDs`() throws {
+        let root = URL.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let a = root.appending(path: "a")
+        let b = root.appending(path: "b")
+        try FileManager.default.createDirectory(at: a, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: b, withIntermediateDirectories: true)
+        let file = BrowserFileItem(url: a.appending(path: "photo.jpg"))
+        try Data([1]).write(to: file.url)
+        let first = BurstGroupSignature(files: [file], catalog: a)
+        let other = BrowserFileItem(url: b.appending(path: "photo.jpg"))
+        #expect(first != BurstGroupSignature(files: [other], catalog: b))
+        #expect(first != BurstGroupSignature(files: [BrowserFileItem(url: file.url)], catalog: a))
+        try Data([1, 2]).write(to: file.url)
+        #expect(first != BurstGroupSignature(files: [file], catalog: a))
+        #expect(BurstGroupSignature(files: [file], catalog: a) == BurstGroupSignature(files: [file], catalog: nil))
+    }
+
     private func makeCandidate(rank: Int) -> DeepAIReviewInputCandidate {
         DeepAIReviewInputCandidate(
             fileID: UUID(),
