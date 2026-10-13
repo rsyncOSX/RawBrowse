@@ -28,6 +28,47 @@ struct FeatureOwnershipTests {
     }
 
     @Test
+    func `Failed settings load never persists defaults`() async {
+        var writes = 0
+        let model = SettingsModel(load: { throw CocoaError(.fileReadNoPermission) }, save: { _ in writes += 1 })
+        await model.loadSettings()
+        await model.persistSettings().value
+        #expect(writes == 0)
+        #expect(model.settingsError != nil)
+    }
+
+    @Test
+    func `Malformed settings remain untouched after load`() async throws {
+        let root = URL.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        let url = root.appending(path: "settings.json")
+        let original = Data("{invalid settings".utf8)
+        try original.write(to: url)
+        let model = SettingsModel(load: { try await BrowserSettingsStore.load(from: url) },
+                                  save: { try await BrowserSettingsStore.save($0, to: url) })
+        await model.loadSettings()
+        await model.persistSettings().value
+        #expect(try Data(contentsOf: url) == original)
+        #expect(model.settingsError != nil)
+    }
+
+    @Test
+    func `Failed settings save reports unsaved preferences and can retry`() async {
+        var shouldFail = true
+        let model = SettingsModel(save: { _ in
+            if shouldFail { throw CocoaError(.fileWriteNoPermission) }
+        })
+        await model.persistSettings().value
+        #expect(model.settingsError != nil)
+        #expect(model.hasUnsavedChanges)
+        shouldFail = false
+        await model.retryPersistence()
+        #expect(model.settingsError == nil)
+        #expect(!model.hasUnsavedChanges)
+    }
+
+    @Test
     func `CLIP replacement rejects a non-cooperative result`() async {
         let clip = CLIPFeatureModel(settings: SettingsModel())
         let started = FeatureGate()

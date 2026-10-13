@@ -120,6 +120,11 @@ final class FileBrowserViewModel {
         isShuttingDown = true
         await raw9.finishSaving()
         await exports.waitUntilFinished()
+        await settingsModel.finishSaving()
+        if settingsModel.hasUnsavedChanges {
+            isShuttingDown = false
+            return settingsModel.settingsError ?? "Some settings could not be saved."
+        }
         if raw9.hasUnsavedChanges {
             isShuttingDown = false
             return raw9.raw9SidecarError ?? "Some image adjustments could not be saved."

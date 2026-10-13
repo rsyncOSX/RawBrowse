@@ -1,43 +1,31 @@
 import Foundation
 
 enum BrowserSettingsStore {
-    static func load() async -> BrowserSettings {
-        let url = settingsURL
-        guard FileManager.default.fileExists(atPath: url.path) else {
-            return BrowserSettings()
-        }
-
+    static func load(from url: URL = settingsURL) async throws -> BrowserSettings {
+        let data: Data
         do {
-            let data = try await Task.detached(priority: .utility) {
+            data = try await Task.detached(priority: .utility) {
                 try Data(contentsOf: url)
             }.value
-            return try JSONDecoder().decode(BrowserSettings.self, from: data)
-        } catch {
+        } catch let error as CocoaError where error.code == .fileReadNoSuchFile {
             return BrowserSettings()
         }
+        return try JSONDecoder().decode(BrowserSettings.self, from: data)
     }
 
-    static func save(_ settings: BrowserSettings) async {
-        let url = settingsURL
-
-        do {
-            let data = try JSONEncoder().encode(settings)
-            try await Task.detached(priority: .utility) {
-                try FileManager.default.createDirectory(
-                    at: url.deletingLastPathComponent(),
-                    withIntermediateDirectories: true,
-                )
-                try data.write(to: url, options: .atomic)
-            }.value
-        } catch {
-            return
-        }
+    static func save(_ settings: BrowserSettings, to url: URL = settingsURL) async throws {
+        let data = try JSONEncoder().encode(settings)
+        try await Task.detached(priority: .utility) {
+            try FileManager.default.createDirectory(
+                at: url.deletingLastPathComponent(), withIntermediateDirectories: true,
+            )
+            try data.write(to: url, options: .atomic)
+        }.value
     }
 
     private static var settingsURL: URL {
         let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-        return appSupport
-            .appendingPathComponent("RawBrowse", isDirectory: true)
+        return appSupport.appendingPathComponent("RawBrowse", isDirectory: true)
             .appendingPathComponent("settings.json")
     }
 }
