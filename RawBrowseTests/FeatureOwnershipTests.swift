@@ -67,6 +67,37 @@ struct FeatureOwnershipTests {
     }
 
     @Test
+    func `Deep Review owns preparation and drains cancellation before another run`() async {
+        let started = FeatureGate()
+        let release = FeatureGate()
+        let feature = DeepAIReviewFeature(availability: .available(location: nil), service: NeverReviewService())
+        let signature = BurstGroupSignature(memberKeys: ["photo"])
+        let original = Task {
+            await feature.startPreparing(groupID: 1, totalCount: 1) {
+                started.open()
+                await release.wait() // Deliberately ignores cancellation.
+                return DeepAIReviewRequest(groupID: 1, groupSignature: signature, candidates: [],
+                                           preset: .auto, scope: .full, scoringSource: .embeddedPreview)
+            }
+        }
+        await started.wait()
+        #expect(feature.isRunning)
+        #expect(feature.state == .preparing(groupID: 1, totalCount: 1))
+        feature.cancel()
+        var replacementPrepared = false
+        await feature.startPreparing(groupID: 2, totalCount: 1) {
+            replacementPrepared = true
+            throw DeepAIReviewFailure.noCandidates
+        }
+        #expect(!replacementPrepared)
+        release.open()
+        await original.value
+        #expect(!feature.isRunning)
+        #expect(feature.state == .cancelled(groupID: 1))
+        #expect(feature.result(for: signature) == nil)
+    }
+
+    @Test
     func `User edits back to defaults supersede a pending sidecar read`() async throws {
         let started = FeatureGate()
         let release = FeatureGate()
@@ -249,5 +280,13 @@ private final class FeatureGate {
         let pending = waiters
         waiters = []
         pending.forEach { $0.resume() }
+    }
+}
+
+private nonisolated struct NeverReviewService: DeepAIReviewServicing {
+    func review(_ request: DeepAIReviewRequest,
+                progress: nonisolated(nonsending) @escaping @Sendable (DeepAIReviewProgress) async -> Void) async throws -> DeepAIReviewResult {
+        Issue.record("Cancelled preparation must not invoke inference")
+        throw DeepAIReviewFailure.noCandidates
     }
 }

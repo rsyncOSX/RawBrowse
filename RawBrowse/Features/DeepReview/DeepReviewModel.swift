@@ -37,42 +37,37 @@ final class DeepReviewModel {
         groupID: Int,
         groupSignature: BurstGroupSignature,
         files: [BrowserFileItem],
-        labels: [URL: String],
+        classify: @escaping @MainActor ([URL]) async -> [URL: String],
     ) async {
         let access = files.compactMap { CatalogAccess.shared.lease(for: $0.url) }
         defer { withExtendedLifetime(access) {} }
-        let preparationFiles = deepAIReviewController.scope == .fast
-            ? Array(files.prefix(8))
-            : files
-        var candidates: [DeepAIReviewInputCandidate] = []
-        candidates.reserveCapacity(preparationFiles.count)
-
-        for (index, file) in preparationFiles.enumerated() {
-            guard !Task.isCancelled else { return }
-            async let metadata = BrowserImageLoader.shared.metadata(for: file.url)
-            async let thumbnail = BrowserImageLoader.shared.thumbnail(for: file.url, targetSize: 1024)
-            let (loadedMetadata, loadedThumbnail) = await (metadata, thumbnail)
-            let focusPoint = loadedMetadata?.focusPoint.map {
-                CGPoint(x: CGFloat($0.normalizedX), y: CGFloat($0.normalizedY))
+        await deepAIReviewController.prepareAndStart(
+            groupID: groupID, groupSignature: groupSignature, totalCount: files.count,
+        ) { scope in
+            let preparationFiles = scope == .fast ? Array(files.prefix(8)) : files
+            let labels = await classify(preparationFiles.map(\.url))
+            try Task.checkCancellation()
+            var candidates: [DeepAIReviewInputCandidate] = []
+            candidates.reserveCapacity(preparationFiles.count)
+            for (index, file) in preparationFiles.enumerated() {
+                try Task.checkCancellation()
+                async let metadata = BrowserImageLoader.shared.metadata(for: file.url)
+                async let thumbnail = BrowserImageLoader.shared.thumbnail(for: file.url, targetSize: 1024)
+                let (loadedMetadata, loadedThumbnail) = await (metadata, thumbnail)
+                try Task.checkCancellation()
+                let focusPoint = loadedMetadata?.focusPoint.map {
+                    CGPoint(x: CGFloat($0.normalizedX), y: CGFloat($0.normalizedY))
+                }
+                let sharpness = loadedThumbnail.flatMap {
+                    $0.cgImage(forProposedRect: nil, context: nil, hints: nil)
+                }.flatMap(WholeImageSharpnessScorer.score)
+                candidates.append(DeepAIReviewInputCandidate(
+                    fileID: file.id, fileName: file.name, url: file.url, burstRank: index + 1,
+                    normalSharpnessScore: sharpness, subjectLabel: labels[file.url.standardizedFileURL],
+                    normalizedAFPoint: focusPoint,
+                ))
             }
-            let sharpness = loadedThumbnail.flatMap {
-                $0.cgImage(forProposedRect: nil, context: nil, hints: nil)
-            }.flatMap(WholeImageSharpnessScorer.score)
-            candidates.append(DeepAIReviewInputCandidate(
-                fileID: file.id,
-                fileName: file.name,
-                url: file.url,
-                burstRank: index + 1,
-                normalSharpnessScore: sharpness,
-                subjectLabel: labels[file.url.standardizedFileURL],
-                normalizedAFPoint: focusPoint,
-            ))
+            return candidates
         }
-
-        await deepAIReviewController.start(
-            groupID: groupID,
-            groupSignature: groupSignature,
-            candidates: candidates,
-        )
     }
 }

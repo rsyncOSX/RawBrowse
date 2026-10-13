@@ -145,6 +145,22 @@ final class DeepAIReviewController {
         await feature.start(request)
     }
 
+    func prepareAndStart(
+        groupID: Int,
+        groupSignature: BurstGroupSignature,
+        totalCount: Int,
+        prepare: @escaping @MainActor (DeepAIReviewScope) async throws -> [DeepAIReviewInputCandidate],
+    ) async {
+        let selectedPreset = preset
+        let selectedScope = scope
+        await feature.startPreparing(groupID: groupID, totalCount: totalCount) {
+            let candidates = try await prepare(selectedScope)
+            return DeepAIReviewRequest(groupID: groupID, groupSignature: groupSignature,
+                                       candidates: candidates, preset: selectedPreset,
+                                       scope: selectedScope, scoringSource: .embeddedPreview)
+        }
+    }
+
     func cancel() {
         feature.cancel()
     }

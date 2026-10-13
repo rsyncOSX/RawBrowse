@@ -130,12 +130,11 @@ final class FileBrowserViewModel {
     }
 
     func startDeepReview(groupID: Int, groupSignature: BurstGroupSignature, files: [BrowserFileItem]) async {
-        let preparation = deepReview.deepAIReviewController.scope == .fast ? Array(files.prefix(8)) : files
         let access = files.compactMap { catalog.lease(for: $0.url) }
         defer { withExtendedLifetime(access) {} }
-        let labels = await clip.classifySubjects(in: preparation.map(\.url))
-        guard !Task.isCancelled else { return }
-        await deepReview.startDeepReview(groupID: groupID, groupSignature: groupSignature, files: files, labels: labels)
+        await deepReview.startDeepReview(groupID: groupID, groupSignature: groupSignature, files: files) { [clip] urls in
+            await clip.classifySubjects(in: urls)
+        }
     }
 
     func openZoom(for file: BrowserFileItem? = nil, initialZoomMode: BrowserZoomInitialMode = .fit,

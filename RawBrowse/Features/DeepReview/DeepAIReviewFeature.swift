@@ -218,7 +218,7 @@ final class DeepAIReviewFeature {
     }
 
     var isRunning: Bool {
-        state.isRunning
+        state.isRunning || task != nil
     }
 
     private func clearResults() {
@@ -275,73 +275,54 @@ final class DeepAIReviewFeature {
     }
 
     func start(_ request: DeepAIReviewRequest) async {
-        guard !isRunning else { return }
-        guard availability.isAvailable, let service else {
-            state = .failed(
-                groupID: request.groupID,
-                failure: .modelUnavailable(Self.unavailableReason(for: availability)),
-            )
-            return
-        }
-        guard !request.candidates.isEmpty else {
-            state = .failed(groupID: request.groupID, failure: .noCandidates)
-            return
-        }
+        await startPreparing(groupID: request.groupID, totalCount: request.candidates.count) { request }
+    }
 
+    func startPreparing(
+        groupID: Int,
+        totalCount: Int,
+        prepare: @escaping @MainActor () async throws -> DeepAIReviewRequest,
+    ) async {
+        guard task == nil, !isRunning else { return }
+        guard availability.isAvailable, let service else {
+            state = .failed(groupID: groupID, failure: .modelUnavailable(Self.unavailableReason(for: availability)))
+            return
+        }
         generation &+= 1
         let runGeneration = generation
-        state = .preparing(
-            groupID: request.groupID,
-            totalCount: RawBrowseDeepAIReviewPipeline.selectedCandidateCount(
-                from: request.candidates.count,
-                scope: request.scope,
-            ),
-        )
-
-        let feature = self
-        let task = Task.detached(priority: .userInitiated) {
+        state = .preparing(groupID: groupID, totalCount: totalCount)
+        let task = Task { [self] in
             do {
+                let request = try await prepare()
+                try Task.checkCancellation()
+                guard !request.candidates.isEmpty else { throw DeepAIReviewFailure.noCandidates }
                 let result = try await service.review(request) { progress in
-                    await feature.receive(progress, generation: runGeneration)
+                    await self.receive(progress, generation: runGeneration)
                 }
                 try Task.checkCancellation()
-                await feature.receive(result, generation: runGeneration)
+                receive(result, generation: runGeneration)
             } catch is CancellationError {
-                await feature.receiveCancellation(
-                    groupID: request.groupID,
-                    generation: runGeneration,
-                )
+                receiveCancellation(groupID: groupID, generation: runGeneration)
             } catch let failure as DeepAIReviewFailure {
-                await feature.receiveFailure(
-                    failure,
-                    groupID: request.groupID,
-                    generation: runGeneration,
-                )
+                receiveFailure(failure, groupID: groupID, generation: runGeneration)
             } catch {
-                await feature.receiveFailure(
-                    .pipelineFailed(String(describing: error)),
-                    groupID: request.groupID,
-                    generation: runGeneration,
-                )
+                receiveFailure(.pipelineFailed(String(describing: error)), groupID: groupID, generation: runGeneration)
             }
         }
         self.task = task
-
         await withTaskCancellationHandler {
             await task.value
         } onCancel: {
             task.cancel()
         }
-        if generation == runGeneration {
-            self.task = nil
-        }
+        // No replacement is admitted while preparation or inference is still draining.
+        self.task = nil
     }
 
     func cancel() {
         let activeGroupID = state.activeGroupID
         generation &+= 1
         task?.cancel()
-        task = nil
         if state.isRunning, let activeGroupID {
             state = .cancelled(groupID: activeGroupID)
         }
