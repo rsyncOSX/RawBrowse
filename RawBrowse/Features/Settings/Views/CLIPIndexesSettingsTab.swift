@@ -16,6 +16,7 @@ struct CLIPIndexesSettingsTab: View {
                 status: clip.clipIndexStatus,
                 isIndexing: clip.isIndexing,
                 progress: clip.indexingProgress,
+                indexingDirectory: clip.indexingDirectoryURL,
             )
 
             CLIPIndexReasonSection(
@@ -98,6 +99,7 @@ private struct CLIPIndexStatusSection: View {
     let status: CLIPIndexStatus
     let isIndexing: Bool
     let progress: CLIPIndexingProgress?
+    let indexingDirectory: URL?
 
     var body: some View {
         Section("Index Status") {
@@ -111,7 +113,7 @@ private struct CLIPIndexStatusSection: View {
 
     private var indexingStatus: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Label("Indexing catalog…", systemImage: "square.stack.3d.up.fill")
+            Label("Indexing \(indexingDirectory?.lastPathComponent ?? "catalog")…", systemImage: "square.stack.3d.up.fill")
                 .foregroundStyle(.blue)
 
             if let progress {

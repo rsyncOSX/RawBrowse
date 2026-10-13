@@ -22,6 +22,20 @@ struct CLIPFeatureTests {
         #expect(viewModel.clip.catalogURL == nil)
     }
 
+    @Test @MainActor
+    func `Index summary remains attributed to its original catalog`() {
+        let clip = CLIPFeatureModel(settings: SettingsModel(save: { _ in }))
+        let first = URL(filePath: "/tmp/catalog-a")
+        let second = URL(filePath: "/tmp/catalog-b")
+        let summary = CLIPIndexSummary(discovered: 4, indexed: 4, failures: [])
+        clip.selectCatalog(first)
+        clip.selectCatalog(second)
+        clip.recordIndexSummary(summary, for: first)
+        #expect(clip.lastIndexSummary == nil)
+        clip.selectCatalog(first)
+        #expect(clip.lastIndexSummary == summary)
+    }
+
     @Test
     func `Managed AI catalog contains CLIP and SAM 3 models`() {
         let catalog = CLIPModelDownloadCatalog.production

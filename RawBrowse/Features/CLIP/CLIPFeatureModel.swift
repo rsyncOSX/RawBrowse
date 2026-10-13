@@ -13,7 +13,11 @@ final class CLIPFeatureModel {
     var clipIndexStatus: CLIPIndexStatus = .noFolderSelected
     var isIndexing = false
     var indexingProgress: CLIPIndexingProgress?
-    var lastIndexSummary: CLIPIndexSummary?
+    private(set) var indexingDirectoryURL: URL?
+    private var indexSummaries: [URL: CLIPIndexSummary] = [:]
+    var lastIndexSummary: CLIPIndexSummary? {
+        catalogURL.flatMap { indexSummaries[$0] }
+    }
     var semanticSearchQuery = ""
     var semanticSearchResults: [CLIPSearchResult] = []
     var semanticSearchActive = false
@@ -84,6 +88,7 @@ final class CLIPFeatureModel {
     func removeCatalog(at url: URL) {
         catalogIndexValidationTasks.removeValue(forKey: url)?.cancel()
         catalogCLIPIndexes.removeValue(forKey: url)
+        indexSummaries.removeValue(forKey: url)
         catalogURLs.removeAll { $0 == url }
     }
 
@@ -142,7 +147,7 @@ final class CLIPFeatureModel {
         clipIndexStatus = .checking(directory)
         isIndexing = true
         indexingProgress = nil
-        lastIndexSummary = nil
+        indexingDirectoryURL = directory
         clipFeatureError = nil
         clearSemanticSearchResults(keepingQuery: true)
 
@@ -155,9 +160,7 @@ final class CLIPFeatureModel {
                 }
                 try Task.checkCancellation()
                 guard self.indexingID == operationID else { return }
-                self.lastIndexSummary = summary
-                self.settingsModel.values.lastIndexedDirectoryPath = directory.path
-                self.settingsModel.persistSettings()
+                self.recordIndexSummary(summary, for: directory)
             } catch is CancellationError {
                 // Cancellation is user initiated or caused by a replacement index operation.
             } catch {
@@ -168,8 +171,15 @@ final class CLIPFeatureModel {
             self.isIndexing = false
             self.indexingProgress = nil
             self.indexingTask = nil
-            self.validateSelectedFolderCLIPIndex()
+            self.indexingDirectoryURL = nil
+            self.validateCatalogCLIPIndex(at: directory)
         }
+    }
+
+    func recordIndexSummary(_ summary: CLIPIndexSummary, for directory: URL) {
+        indexSummaries[directory.standardizedFileURL] = summary
+        settingsModel.values.lastIndexedDirectoryPath = directory.path
+        settingsModel.persistSettings()
     }
 
     func cancelIndexing() {
@@ -434,7 +444,7 @@ final class CLIPFeatureModel {
         _ progress: CLIPIndexingProgress,
         operationID: UUID,
     ) {
-        guard indexingID == operationID else { return }
+        guard indexingID == operationID, indexingTask?.isCancelled == false else { return }
         indexingProgress = progress
     }
 
