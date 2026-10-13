@@ -59,7 +59,17 @@ struct BrowserGridView: View {
         }
         .overlay {
             if selection.displayedFiles.isEmpty, !contents.isScanning, !clip.isSearching {
-                if clip.isShowingSimilarityResults {
+                if let error = contents.scanError {
+                    ContentUnavailableView {
+                        Label("Couldn’t Read Folder", systemImage: "exclamationmark.triangle")
+                    } description: {
+                        Text(error)
+                    } actions: {
+                        Button("Retry") {
+                            if let folder = contents.selectedFolder { viewModel.selectFolder(folder) }
+                        }
+                    }
+                } else if clip.isShowingSimilarityResults {
                     ContentUnavailableView(
                         "No Similar Images",
                         systemImage: "photo.stack",

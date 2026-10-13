@@ -63,17 +63,17 @@ actor BrowserImageLoader {
         }.value
     }
 
-    func discoverSupportedFiles(at folderURL: URL) async -> [BrowserFileItem] {
+    func discoverSupportedFiles(at folderURL: URL) async throws -> [BrowserFileItem] {
         let access = await CatalogAccess.shared.lease(for: folderURL)
         defer { withExtendedLifetime(access) {} }
-        return await Task.detached(priority: .utility) {
+        return try await Task.detached(priority: .utility) {
             let supported = RawFormatRegistry.allExtensions.union(SupportedFileType.renderedImageExtensions)
             let keys: Set<URLResourceKey> = [.isRegularFileKey, .isHiddenKey]
-            guard let children = try? FileManager.default.contentsOfDirectory(
+            let children = try FileManager.default.contentsOfDirectory(
                 at: folderURL,
                 includingPropertiesForKeys: Array(keys),
                 options: [.skipsHiddenFiles, .skipsPackageDescendants],
-            ) else { return [] }
+            )
 
             let files = children.compactMap { url -> BrowserFileItem? in
                 guard supported.contains(url.pathExtension.lowercased()) else { return nil }
