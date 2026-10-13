@@ -195,6 +195,27 @@ struct CLIPFeatureTests {
     }
 
     @Test
+    func `Cancelled index save preserves the existing index`() async throws {
+        let root = URL.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let store = CLIPIndexStore(fileURL: root.appending(path: "index.clipindex"))
+        let original = CLIPPersistedIndex(backend: testBackend, entries: [])
+        try await store.save(original)
+        let replacement = CLIPPersistedIndex(backend: testBackend, entries: [], updatedAt: .distantFuture)
+        let save = Task {
+            withUnsafeCurrentTask { $0?.cancel() }
+            try await store.save(replacement)
+        }
+        do {
+            try await save.value
+            Issue.record("Cancelled save should throw")
+        } catch {
+            #expect(error is CancellationError)
+        }
+        #expect(try await store.load(compatibleWith: testBackend) == original)
+    }
+
+    @Test
     func `Local CLIP bundle returns semantic search results`() async throws {
         guard let bundlePath = ProcessInfo.processInfo.environment["CLIP_COREAI_BUNDLE"] else {
             return

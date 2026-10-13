@@ -51,7 +51,17 @@ actor CLIPIndexStore {
         return index
     }
 
-    func save(_ index: CLIPPersistedIndex) throws {
+    // All store instances share the writer, including replacement operations for one path.
+    private static let writer = CLIPIndexWriter()
+
+    func save(_ index: CLIPPersistedIndex) async throws {
+        try await Self.writer.save(index, to: fileURL)
+    }
+}
+
+private actor CLIPIndexWriter {
+    func save(_ index: CLIPPersistedIndex, to fileURL: URL) throws {
+        try Task.checkCancellation()
         let directory = fileURL.deletingLastPathComponent()
         try FileManager.default.createDirectory(
             at: directory,
@@ -59,7 +69,9 @@ actor CLIPIndexStore {
         )
         let encoder = PropertyListEncoder()
         encoder.outputFormat = .binary
-        try encoder.encode(index).write(to: fileURL, options: .atomic)
+        let data = try encoder.encode(index)
+        try Task.checkCancellation()
+        try data.write(to: fileURL, options: .atomic)
     }
 }
 

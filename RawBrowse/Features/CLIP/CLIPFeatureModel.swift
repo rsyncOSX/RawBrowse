@@ -118,6 +118,7 @@ final class CLIPFeatureModel {
     }
 
     func startIndexingSelectedFolder() {
+        guard !isIndexing else { return }
         guard let directory = catalogURL,
               let provider = clipProvider
         else {
@@ -172,12 +173,9 @@ final class CLIPFeatureModel {
     }
 
     func cancelIndexing() {
-        indexingID = UUID()
+        // Keep ownership until the worker exits, including non-cooperative inference.
         indexingTask?.cancel()
-        indexingTask = nil
-        isIndexing = false
         indexingProgress = nil
-        validateSelectedFolderCLIPIndex()
     }
 
     func validateSelectedFolderCLIPIndex() {

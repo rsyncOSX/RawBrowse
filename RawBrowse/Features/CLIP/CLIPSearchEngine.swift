@@ -238,6 +238,7 @@ final nonisolated class CLIPSearchEngine: Sendable {
                 ))
             }
             entries.sort { $0.source.url.path.localizedStandardCompare($1.source.url.path) == .orderedAscending }
+            try Task.checkCancellation()
             try await indexStore.save(CLIPPersistedIndex(
                 backend: provider.backendDescriptor,
                 entries: entries,
@@ -249,6 +250,7 @@ final nonisolated class CLIPSearchEngine: Sendable {
             )
         }
 
+        try Task.checkCancellation()
         try await indexStore.save(CLIPPersistedIndex(
             backend: provider.backendDescriptor,
             entries: entries,
