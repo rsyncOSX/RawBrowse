@@ -349,7 +349,7 @@ final class CLIPFeatureModel {
         let id = UUID()
         let task = Task { [self] in
             defer { runtimeTasks[id] = nil }
-            guard !Task.isCancelled else { return }
+            // The operation must enter its cleanup path even if cancelled before it starts.
             await operation()
         }
         runtimeTasks[id] = task
@@ -410,6 +410,7 @@ final class CLIPFeatureModel {
         clearSemanticSearchResults()
 
         modelValidationTask = trackRuntimeTask { [self] in
+            guard !Task.isCancelled, activeCLIPModelURL == url else { return }
             let load = await self.clipModelManager.load(url: url)
             guard !Task.isCancelled, self.activeCLIPModelURL == url else { return }
             self.clipModelStatus = load.status
