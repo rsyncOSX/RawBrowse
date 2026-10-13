@@ -106,6 +106,39 @@ struct FullSizeJPGDiskCacheTests {
     }
 
     @Test
+    func `In-place edits with preserved size and mtime invalidate every image cache`() async throws {
+        let root = try makeTestRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let source = root.appendingPathComponent("preserved.jpg")
+        try Data([1, 2, 3]).write(to: source)
+        let date = Date(timeIntervalSince1970: 100)
+        try FileManager.default.setAttributes([.modificationDate: date], ofItemAtPath: source.path)
+        let initial = ImageSourceFingerprint.key(for: source)
+        let item = BrowserFileItem(url: source)
+        let signature = BurstGroupSignature(files: [item], catalog: root)
+        let image = try makeTestImage(width: 40, height: 20)
+        let jpeg = try #require(ThumbnailDiskCache.jpegData(from: image))
+        let thumbs = ThumbnailDiskCache(cacheDirectory: root.appendingPathComponent("thumbs"))
+        let full = FullSizeJPGDiskCache(cacheDirectory: root.appendingPathComponent("full"))
+        await thumbs.save(jpeg, for: source, maxPixelSize: 200)
+        await full.save(jpeg, for: source)
+        let loaded = try #require(await thumbs.load(for: source, maxPixelSize: 200))
+        await MemoryImageCache.shared.storeThumbnail(loaded, for: source, maxPixelSize: 200)
+        let handle = try FileHandle(forWritingTo: source)
+        try handle.write(contentsOf: Data([4, 5, 6]))
+        try handle.close()
+        try FileManager.default.setAttributes([.modificationDate: date], ofItemAtPath: source.path)
+        let attributes = try FileManager.default.attributesOfItem(atPath: source.path)
+        #expect(attributes[.modificationDate] as? Date == date)
+        #expect((attributes[.size] as? NSNumber)?.intValue == 3)
+        #expect(ImageSourceFingerprint.key(for: source) != initial)
+        #expect(BurstGroupSignature(files: [item], catalog: root) != signature)
+        #expect(await thumbs.load(for: source, maxPixelSize: 200) == nil)
+        #expect(await full.load(for: source) == nil)
+        #expect(await MemoryImageCache.shared.thumbnail(for: source, maxPixelSize: 200) == nil)
+    }
+
+    @Test
     func `disk caches enforce byte limits including oversized entries`() async throws {
         let root = try makeTestRoot()
         defer { try? FileManager.default.removeItem(at: root) }

@@ -37,14 +37,9 @@ actor FullSizeJPGDiskCache {
     }
 
     private func cacheURL(for sourceURL: URL, variant: Variant) -> URL {
-        let standardizedPath = sourceURL.standardized.path
-        let attributes = try? FileManager.default.attributesOfItem(atPath: standardizedPath)
-        let fileSize = (attributes?[.size] as? NSNumber)?.int64Value ?? -1
-        let modificationTime = (attributes?[.modificationDate] as? Date)?.timeIntervalSince1970 ?? -1
+        let sourceKey = ImageSourceFingerprint.key(for: sourceURL)
         let variantKey = variant == .embeddedJPG ? "" : ":\(variant.rawValue):raw9"
-        let data = Data(
-            "\(Self.cacheKeyVersion):\(standardizedPath):\(fileSize):\(modificationTime)\(variantKey)".utf8,
-        )
+        let data = Data("\(Self.cacheKeyVersion):\(sourceKey)\(variantKey)".utf8)
         let digest = Insecure.MD5.hash(data: data)
         let hash = digest.map { String(format: "%02x", $0) }.joined()
         return cacheDirectory.appendingPathComponent(hash).appendingPathExtension("jpg")

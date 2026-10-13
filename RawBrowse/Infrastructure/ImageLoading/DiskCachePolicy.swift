@@ -1,3 +1,4 @@
+import Darwin
 import Foundation
 
 /// Owned by a disk-cache actor. File modification dates persist recency across launches.
@@ -65,9 +66,14 @@ nonisolated struct DiskCachePolicy {
 nonisolated enum ImageSourceFingerprint {
     static func key(for url: URL) -> String {
         let path = url.standardizedFileURL.path
-        let attributes = try? FileManager.default.attributesOfItem(atPath: path)
-        let size = (attributes?[.size] as? NSNumber)?.int64Value ?? -1
-        let modified = (attributes?[.modificationDate] as? Date)?.timeIntervalSince1970 ?? -1
-        return "\(path):\(size):\(modified)"
+        var info = stat()
+        guard path.withCString({ fstatat(AT_FDCWD, $0, &info, 0) }) == 0 else {
+            return "\(path):unavailable"
+        }
+        // ctime changes on in-place writes even when an editor restores mtime and size.
+        // Device/inode also distinguish replacement files with preserved metadata.
+        return "v2:\(path):\(info.st_dev):\(info.st_ino):\(info.st_size):"
+            + "\(info.st_mtimespec.tv_sec).\(info.st_mtimespec.tv_nsec):"
+            + "\(info.st_ctimespec.tv_sec).\(info.st_ctimespec.tv_nsec)"
     }
 }
