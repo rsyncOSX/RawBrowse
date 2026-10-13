@@ -25,6 +25,8 @@ final class CLIPFeatureModel {
     var isSearching = false
     var hasCompatibleCLIPIndex = false
     var clipFeatureError: String?
+    private var isRuntimeSuspended = false
+    @ObservationIgnored private var runtimeTasks: [UUID: Task<Void, Never>] = [:]
     @ObservationIgnored private var activeCLIPModelURL: URL?
     @ObservationIgnored private let clipModelManager = CLIPModelManager()
     @ObservationIgnored private var clipProvider: CoreAICLIPProvider?
@@ -59,14 +61,14 @@ final class CLIPFeatureModel {
     }
 
     var canIndexSelectedFolder: Bool {
-        catalogURL != nil
+        !isRuntimeSuspended && catalogURL != nil
             && clipProvider != nil
             && !isIndexing
             && !isSearching
     }
 
     var canSearch: Bool {
-        hasCompatibleCLIPIndex
+        !isRuntimeSuspended && hasCompatibleCLIPIndex
             && clipEngine != nil
             && !isIndexing
             && !isSearching
@@ -93,10 +95,17 @@ final class CLIPFeatureModel {
     }
 
     func classifySubjects(in urls: [URL]) async -> [URL: String] {
-        await (try? clipEngine?.classifySubjects(in: urls)) ?? [:]
+        guard !isRuntimeSuspended, let engine = clipEngine else { return [:] }
+        var labels: [URL: String] = [:]
+        let task = trackRuntimeTask {
+            labels = await (try? engine.classifySubjects(in: urls)) ?? [:]
+        }
+        await withTaskCancellationHandler { await task.value } onCancel: { task.cancel() }
+        return Task.isCancelled ? [:] : labels
     }
 
     func activateModel(at selectedURL: URL?) {
+        isRuntimeSuspended = false
         guard let modelURL = selectedURL else {
             deactivateCLIPModelRuntime()
             return
@@ -123,7 +132,7 @@ final class CLIPFeatureModel {
     }
 
     func startIndexingSelectedFolder() {
-        guard !isIndexing else { return }
+        guard !isRuntimeSuspended, !isIndexing else { return }
         guard let directory = catalogURL,
               let provider = clipProvider
         else {
@@ -152,7 +161,7 @@ final class CLIPFeatureModel {
         clearSemanticSearchResults(keepingQuery: true)
 
         let access = CatalogAccess.shared.lease(for: directory)
-        indexingTask = Task { [self] in
+        indexingTask = trackRuntimeTask { [self] in
             defer { withExtendedLifetime(access) {} }
             do {
                 let summary = try await engine.synchronize(directory: directory) { [weak self] progress in
@@ -212,7 +221,7 @@ final class CLIPFeatureModel {
             useCatalogCLIPIndex(at: directory)
         }
         let access = CatalogAccess.shared.lease(for: directory)
-        let task = Task { [weak self] in
+        let task = trackRuntimeTask { [weak self] in
             defer { withExtendedLifetime(access) {} }
             let status = await engine.validateIndex(directory: directory)
             guard let self, !Task.isCancelled else { return }
@@ -336,6 +345,26 @@ final class CLIPFeatureModel {
         displayedFilesChanged?()
     }
 
+    private func trackRuntimeTask(_ operation: @escaping @MainActor () async -> Void) -> Task<Void, Never> {
+        let id = UUID()
+        let task = Task { [self] in
+            defer { runtimeTasks[id] = nil }
+            guard !Task.isCancelled else { return }
+            await operation()
+        }
+        runtimeTasks[id] = task
+        return task
+    }
+
+    func deactivateAndWait() async {
+        isRuntimeSuspended = true
+        let pending = Array(runtimeTasks.values)
+        pending.forEach { $0.cancel() }
+        deactivateCLIPModelRuntime()
+        await searchRunner.cancelAndWait()
+        for task in pending { await task.value }
+    }
+
     private func deactivateCLIPModelRuntime() {
         clearCatalogCLIPIndexes()
         activeCLIPModelURL = nil
@@ -380,7 +409,7 @@ final class CLIPFeatureModel {
         clipFeatureError = nil
         clearSemanticSearchResults()
 
-        modelValidationTask = Task { [self] in
+        modelValidationTask = trackRuntimeTask { [self] in
             let load = await self.clipModelManager.load(url: url)
             guard !Task.isCancelled, self.activeCLIPModelURL == url else { return }
             self.clipModelStatus = load.status

@@ -48,6 +48,31 @@ struct FeatureOwnershipTests {
     }
 
     @Test
+    func `Runtime shutdown awaits an already replaced non-cooperative search`() async {
+        let clip = CLIPFeatureModel(settings: SettingsModel())
+        let started = FeatureGate()
+        let release = FeatureGate()
+        let old = clip.startSearch(anchorName: nil) { _ in
+            started.open()
+            await release.wait()
+            return []
+        }
+        await started.wait()
+        await clip.startSearch(anchorName: nil) { _ in [] }.value
+        var drained = false
+        let shutdown = Task {
+            await clip.deactivateAndWait()
+            drained = true
+        }
+        await Task.yield()
+        #expect(!drained)
+        release.open()
+        await old.value
+        await shutdown.value
+        #expect(drained)
+    }
+
+    @Test
     func `CLIP clearing invalidates a suspended search`() async {
         let clip = CLIPFeatureModel(settings: SettingsModel())
         let started = FeatureGate()

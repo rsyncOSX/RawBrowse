@@ -9,6 +9,8 @@ final class ModelDownloadsModel {
     @ObservationIgnored private let clipModelDownloadCoordinator: CLIPModelDownloadCoordinator
     @ObservationIgnored private var clipModelDownloadTasks: [CLIPModelDownloadID: Task<Void, Never>] = [:]
     @ObservationIgnored private var clipModelRefreshGeneration = 0
+    @ObservationIgnored var prepareForRemoval: (@MainActor (CLIPModelDownloadID) async -> Void)?
+    @ObservationIgnored private var removingModels: Set<CLIPModelDownloadID> = []
     @ObservationIgnored var locationsChanged: (@MainActor ([CLIPModelDownloadID: URL]) -> Void)?
 
     init(coordinator: CLIPModelDownloadCoordinator = CLIPModelDownloadCoordinator()) {
@@ -16,10 +18,11 @@ final class ModelDownloadsModel {
     }
 
     func refreshCLIPModels(allowCancelled: Bool = false) async {
+        guard removingModels.isEmpty else { return }
         clipModelRefreshGeneration &+= 1
         let generation = clipModelRefreshGeneration
         let snapshot = await clipModelDownloadCoordinator.snapshot()
-        guard !Task.isCancelled || allowCancelled, clipModelRefreshGeneration == generation else { return }
+        guard !Task.isCancelled || allowCancelled, clipModelRefreshGeneration == generation, removingModels.isEmpty else { return }
         managedCLIPModelLocations = snapshot.managedModelLocations
         clipModelDownloadStates = snapshot.states
         locationsChanged?(managedCLIPModelLocations)
@@ -53,16 +56,23 @@ final class ModelDownloadsModel {
     }
 
     func removeManagedCLIPModel(_ id: CLIPModelDownloadID) async {
-        guard clipModelDownloadTasks[id] == nil else { return }
+        guard clipModelDownloadTasks[id] == nil, removingModels.insert(id).inserted else { return }
+        clipModelRefreshGeneration &+= 1
         clipModelDownloadStates[id] = .removing
+        await prepareForRemoval?(id)
         do {
+            try Task.checkCancellation()
             try await clipModelDownloadCoordinator.remove(id)
             managedCLIPModelLocations[id] = nil
+            removingModels.remove(id)
             await refreshCLIPModels()
         } catch is CancellationError {
+            removingModels.remove(id)
             await refreshCLIPModels(allowCancelled: true)
             return
         } catch {
+            removingModels.remove(id)
+            await refreshCLIPModels(allowCancelled: true)
             clipModelDownloadStates[id] = .failed(message: error.localizedDescription)
         }
     }

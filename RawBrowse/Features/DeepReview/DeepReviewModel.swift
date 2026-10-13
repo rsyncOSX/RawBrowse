@@ -23,6 +23,7 @@ final class DeepReviewModel {
         sam3ModelStatus = .checking(expectedLocations: standardizedURL.map { [$0] } ?? [])
 
         sam3ValidationTask = Task { [self] in
+            guard !Task.isCancelled, activeSAM3ModelURL == standardizedURL else { return }
             let status = await deepAIReviewRuntime.activateSAM3(
                 at: standardizedURL,
                 controller: deepAIReviewController,
@@ -31,6 +32,20 @@ final class DeepReviewModel {
             sam3ModelStatus = status
             sam3ValidationTask = nil
         }
+    }
+
+    func cancelAndWait() async {
+        await deepAIReviewController.cancelAndWait()
+    }
+
+    func deactivateAndWait() async {
+        let validation = sam3ValidationTask
+        validation?.cancel()
+        await deepAIReviewController.cancelAndWait()
+        await validation?.value
+        activeSAM3ModelURL = nil
+        sam3ModelStatus = await deepAIReviewRuntime.activateSAM3(at: nil, controller: deepAIReviewController)
+        sam3ValidationTask = nil
     }
 
     func startDeepReview(

@@ -35,6 +35,28 @@ struct AIModelDownloadTests {
     }
 
     @Test @MainActor
+    func `Removal waits for runtime preparation and rejects duplicate removal`() async {
+        let service = ObservedRemovalService()
+        let model = ModelDownloadsModel(coordinator: CLIPModelDownloadCoordinator(service: service))
+        var release: CheckedContinuation<Void, Never>?
+        let entered = AsyncStream<Void>.makeStream()
+        model.prepareForRemoval = { _ in
+            entered.continuation.yield(())
+            await withCheckedContinuation { release = $0 }
+        }
+        let removal = Task { await model.removeManagedCLIPModel(.clipDataComp) }
+        var iterator = entered.stream.makeAsyncIterator()
+        _ = await iterator.next()
+        #expect(await service.removalCount == 0)
+        await model.removeManagedCLIPModel(.clipDataComp)
+        #expect(await service.removalCount == 0)
+        release?.resume()
+        await removal.value
+        #expect(await service.removalCount == 1)
+        entered.continuation.finish()
+    }
+
+    @Test @MainActor
     func `cancelled removal refreshes state`() async {
         let coordinator = CLIPModelDownloadCoordinator(service: CancelledRemovalService())
         let model = ModelDownloadsModel(coordinator: coordinator)
@@ -74,4 +96,13 @@ private actor CancelledRemovalService: CLIPModelDownloadServicing {
     func remove(_: CLIPModelDownloadDescriptor) throws {
         throw CancellationError()
     }
+}
+
+private actor ObservedRemovalService: CLIPModelDownloadServicing {
+    var removalCount = 0
+    func state(for _: CLIPModelDownloadDescriptor) -> CLIPModelDownloadState { .ready }
+    func download(_: CLIPModelDownloadDescriptor, progress _: @escaping @MainActor @Sendable (Double) -> Void) -> URL {
+        URL(filePath: "/tmp/model")
+    }
+    func remove(_: CLIPModelDownloadDescriptor) { removalCount += 1 }
 }

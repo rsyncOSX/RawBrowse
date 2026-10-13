@@ -150,6 +150,14 @@ final class DeepAIReviewRuntime {
         controller: DeepAIReviewController,
         availability: RawBrowseAICapabilityStatus,
     ) {
+        let provider = UnavailableSegmentationProvider()
+        let repository = SubjectMaskRepository(
+            configuration: SubjectMaskRepositoryConfiguration(defaultPrompt: .subject,
+                modelIdentity: provider.modelIdentity, inputMaxSide: inputMaxSide), stores: subjectMaskStores,
+        )
+        subjectMaskRepository = repository
+        subjectMaskSelector = SubjectMaskSelector(repository: repository,
+            segmentationService: SegmentationService(provider: provider, stores: subjectMaskStores, maxSide: inputMaxSide))
         activeModelIdentity = nil
         controller.install(
             service: nil,

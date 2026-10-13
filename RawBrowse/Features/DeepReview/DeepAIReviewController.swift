@@ -161,6 +161,10 @@ final class DeepAIReviewController {
         }
     }
 
+    func cancelAndWait() async {
+        await feature.cancelAndWait()
+    }
+
     func cancel() {
         feature.cancel()
     }

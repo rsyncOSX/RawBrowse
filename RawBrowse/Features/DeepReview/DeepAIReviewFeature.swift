@@ -328,6 +328,12 @@ final class DeepAIReviewFeature {
         }
     }
 
+    func cancelAndWait() async {
+        let pending = task
+        cancel()
+        await pending?.value
+    }
+
     private func receive(_ progress: DeepAIReviewProgress, generation: Int) {
         guard self.generation == generation, !Task.isCancelled else { return }
         state = .running(progress)

@@ -56,6 +56,16 @@ final class FileBrowserViewModel {
                 contents?.selectedFolder = folder
             }
         }
+        downloads.prepareForRemoval = { [weak self] id in
+            guard let self else { return }
+            switch id {
+            case .clipDataComp:
+                await deepReview.cancelAndWait()
+                await clip.deactivateAndWait()
+            case .sam3:
+                await deepReview.deactivateAndWait()
+            }
+        }
         downloads.locationsChanged = { [weak self] locations in
             guard let self else { return }
             clip.activateModel(at: locations[settingsModel.values.selectedCLIPModel.downloadID])
