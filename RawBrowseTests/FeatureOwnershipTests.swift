@@ -107,6 +107,31 @@ struct FeatureOwnershipTests {
     }
 
     @Test
+    func `Starting a scan removes previous images from display and selection`() async {
+        let release = FeatureGate()
+        let started = FeatureGate()
+        let contents = BrowserContentsModel(discover: { _ in
+            started.open()
+            await release.wait()
+            return ([], [])
+        })
+        let model = FileBrowserViewModel(contents: contents)
+        let old = BrowserFileItem(url: URL(filePath: "/tmp/old/photo.jpg"))
+        contents.files = [old]
+        model.selection.selectOnlyFile(old)
+        let scan = contents.scan(BrowserFolderItem(url: URL(filePath: "/tmp/new")), access: nil)
+        await started.wait()
+        #expect(contents.isScanning)
+        #expect(contents.files.isEmpty)
+        #expect(model.selection.displayedFiles.isEmpty)
+        #expect(model.selection.selectedFile == nil)
+        model.openZoom()
+        #expect(!model.zoom.presentation.zoomOverlayVisible)
+        release.open()
+        await scan.value
+    }
+
+    @Test
     func `Scan replacement rejects stale discovery and clears progress`() async {
         let started = FeatureGate()
         let release = FeatureGate()

@@ -31,6 +31,7 @@ final class BrowserContentsModel {
     @discardableResult
     func scan(_ folder: BrowserFolderItem, access: CatalogAccessLease?) -> Task<Void, Never> {
         selectedFolder = folder
+        files = []
         isCreatingThumbnails = false
         isScanning = true
         return scanRunner.start { [self] token in
