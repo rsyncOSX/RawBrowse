@@ -4,12 +4,12 @@ import Testing
 
 @Suite("Zoom focus point crop mapping")
 struct ZoomFocusPointCropTests {
-    @Test func uncroppedPointKeepsItsPosition() {
+    @Test func `uncropped point keeps its position`() {
         let point = CGPoint(x: 0.6, y: 0.4)
         #expect(BrowserZoomViewportMath.displayedFocusPoint(point, crop: nil) == point)
     }
 
-    @Test func focusPointMapsIntoOffCenterCrop() throws {
+    @Test func `focus point maps into off center crop`() throws {
         let crop = RAW9Crop(x: 0.25, y: 0.125, width: 0.5, height: 0.25)
         let point = try #require(BrowserZoomViewportMath.displayedFocusPoint(
             CGPoint(x: 0.625, y: 0.1875), crop: crop,
@@ -19,14 +19,14 @@ struct ZoomFocusPointCropTests {
 
     @Test(arguments: [
         CGPoint(x: 0.125, y: 0.25), CGPoint(x: 0.875, y: 0.25),
-        CGPoint(x: 0.5, y: 0.0625), CGPoint(x: 0.5, y: 0.5),
+        CGPoint(x: 0.5, y: 0.0625), CGPoint(x: 0.5, y: 0.5)
     ])
-    func pointsOutsideCropAreHidden(point: CGPoint) {
+    func `points outside crop are hidden`(point: CGPoint) {
         let crop = RAW9Crop(x: 0.25, y: 0.125, width: 0.5, height: 0.25)
         #expect(BrowserZoomViewportMath.displayedFocusPoint(point, crop: crop) == nil)
     }
 
-    @Test func cropCornersRemainVisible() {
+    @Test func `crop corners remain visible`() {
         let crop = RAW9Crop(x: 0.25, y: 0.125, width: 0.5, height: 0.25)
         #expect(BrowserZoomViewportMath.displayedFocusPoint(
             CGPoint(x: 0.25, y: 0.125), crop: crop,

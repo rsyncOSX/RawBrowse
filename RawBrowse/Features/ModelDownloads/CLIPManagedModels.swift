@@ -343,7 +343,9 @@ final nonisolated class GitHubModelDownloadProgress: NSObject, URLSessionDownloa
                     // Cancellation must not complete the task before its continuation is installed.
                     state.task = task
                     task.resume()
-                    if state.cancelled { task.cancel() }
+                    if state.cancelled {
+                        task.cancel()
+                    }
                 }
             }
         } onCancel: {

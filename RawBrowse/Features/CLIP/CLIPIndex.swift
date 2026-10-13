@@ -51,7 +51,7 @@ actor CLIPIndexStore {
         return index
     }
 
-    // All store instances share the writer, including replacement operations for one path.
+    /// All store instances share the writer, including replacement operations for one path.
     private static let writer = CLIPIndexWriter()
 
     func save(_ index: CLIPPersistedIndex) async throws {

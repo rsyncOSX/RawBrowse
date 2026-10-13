@@ -13,7 +13,10 @@ final class RAW9EditingSession {
     var copiedRAW9Adjustments: RAW9Adjustments?
     var raw9SidecarError: String?
     private var unsavedRevisions: [URL: UUID] = [:]
-    var hasUnsavedChanges: Bool { !unsavedRevisions.isEmpty }
+    var hasUnsavedChanges: Bool {
+        !unsavedRevisions.isEmpty
+    }
+
     @ObservationIgnored private var raw9SidecarSaveTask: Task<Void, Never>?
     @ObservationIgnored private var raw9SidecarSaveURL: URL?
     private var raw9AdjustmentURL: URL?
@@ -133,7 +136,9 @@ final class RAW9EditingSession {
                 await previousSave?.value
                 try Task.checkCancellation()
                 try await save(adjustments, url)
-                if unsavedRevisions[url] == revision { unsavedRevisions[url] = nil }
+                if unsavedRevisions[url] == revision {
+                    unsavedRevisions[url] = nil
+                }
                 if raw9AdjustmentURL == url {
                     raw9SidecarError = nil
                 }

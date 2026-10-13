@@ -10,7 +10,7 @@ nonisolated enum RAW9Support {
     @concurrent
     static func supportedSonyCameraModels() async -> [String] {
         Array(Set(CIRAWFilter.supportedCameraModels(with: .version9)
-            .filter { $0.lowercased().hasPrefix("sony ") }))
+                .filter { $0.lowercased().hasPrefix("sony ") }))
             .sorted { $0.localizedStandardCompare($1) == .orderedAscending }
     }
 
@@ -73,7 +73,7 @@ nonisolated enum RAW9Straightening {
     static func apply(to image: CIImage, degrees: Double) -> CIImage {
         guard degrees != 0 else { return image }
         return image.applyingFilter("CIStraightenFilter", parameters: [
-            kCIInputAngleKey: degrees * .pi / 180,
+            kCIInputAngleKey: degrees * .pi / 180
         ])
     }
 
@@ -279,7 +279,7 @@ actor RAW9PreviewRenderer {
         if (adjustments.overallContrast ?? 1) != 1 || (adjustments.saturation ?? 1) != 1 {
             output = output.applyingFilter("CIColorControls", parameters: [
                 kCIInputContrastKey: adjustments.overallContrast ?? 1,
-                kCIInputSaturationKey: adjustments.saturation ?? 1,
+                kCIInputSaturationKey: adjustments.saturation ?? 1
             ])
         }
         if let vibrance = adjustments.vibrance, vibrance != 0 {

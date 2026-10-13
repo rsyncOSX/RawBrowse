@@ -66,7 +66,9 @@ struct BrowserGridView: View {
                         Text(error)
                     } actions: {
                         Button("Retry") {
-                            if let folder = contents.selectedFolder { viewModel.selectFolder(folder) }
+                            if let folder = contents.selectedFolder {
+                                viewModel.selectFolder(folder)
+                            }
                         }
                     }
                 } else if clip.isShowingSimilarityResults {

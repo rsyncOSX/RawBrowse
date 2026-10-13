@@ -72,7 +72,9 @@ final class ZoomModel {
         zoomTask = Task {
             defer {
                 withExtendedLifetime(access) {}
-                if renderOperationID == operationID { isApplyingRAW9 = false }
+                if renderOperationID == operationID {
+                    isApplyingRAW9 = false
+                }
             }
             guard !Task.isCancelled else { return }
             async let exifInfo = BrowserImageLoader.shared.metadata(for: selectedFile.url)
@@ -125,7 +127,9 @@ final class ZoomModel {
         zoomTask = Task {
             defer {
                 withExtendedLifetime(access) {}
-                if renderOperationID == operationID { isApplyingRAW9 = false }
+                if renderOperationID == operationID {
+                    isApplyingRAW9 = false
+                }
             }
             do {
                 let image = try await raw9.render(url: url, adjustments: adjustments, bitDepth: bitDepth)

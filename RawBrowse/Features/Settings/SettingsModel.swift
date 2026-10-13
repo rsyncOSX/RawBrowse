@@ -41,11 +41,16 @@ final class SettingsModel {
     }
 
     func retryPersistence() async {
-        if canPersist { await persistSettings().value }
-        else { await loadSettings() }
+        if canPersist {
+            await persistSettings().value
+        } else {
+            await loadSettings()
+        }
     }
 
-    func finishSaving() async { await saveTask?.value }
+    func finishSaving() async {
+        await saveTask?.value
+    }
 
     @discardableResult
     func persistSettings() -> Task<Void, Never> {

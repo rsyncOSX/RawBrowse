@@ -63,6 +63,7 @@ final class FileBrowserViewModel {
             case .clipDataComp:
                 await deepReview.cancelAndWait()
                 await clip.deactivateAndWait()
+
             case .sam3:
                 await deepReview.deactivateAndWait()
             }

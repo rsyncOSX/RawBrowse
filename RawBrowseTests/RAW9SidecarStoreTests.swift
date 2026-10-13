@@ -57,14 +57,14 @@ struct RAW9SidecarStoreTests {
             "inputPoint0": CIVector(x: 0, y: 0),
             "inputPoint1": CIVector(x: extent.width, y: 0),
             "inputColor0": CIColor(red: 0, green: 0, blue: 0),
-            "inputColor1": CIColor(red: 1, green: 0, blue: 0),
+            "inputColor1": CIColor(red: 1, green: 0, blue: 0)
         ])?.outputImage).cropped(to: extent)
         let output = RAW9Straightening.apply(to: gradient, degrees: angle)
         #expect(output.extent == extent)
         let pixel = CGPoint(x: 150, y: 60)
         let source = RAW9Straightening.sourcePoint(
             CGPoint(x: (pixel.x + 0.5) / extent.width, y: 1 - (pixel.y + 0.5) / extent.height),
-            imageSize: extent.size, degrees: angle
+            imageSize: extent.size, degrees: angle,
         )
         var rgba = [Float](repeating: 0, count: 4)
         rgba.withUnsafeMutableBytes { bytes in
@@ -110,7 +110,7 @@ struct RAW9SidecarStoreTests {
         #expect(try FileManager.default.contentsOfDirectory(atPath: raw.deletingLastPathComponent().path) == ["export"])
     }
 
-    @Test func `zero saturation renders gray and neutral controls preserve pixels`() throws {
+    @Test func `zero saturation renders gray and neutral controls preserve pixels`() {
         let input = CIImage(color: CIColor(red: 0.2, green: 0.5, blue: 0.8))
             .cropped(to: CGRect(x: 0, y: 0, width: 1, height: 1))
         let context = CIContext()
@@ -139,7 +139,8 @@ struct RAW9SidecarStoreTests {
         try await store.save(adjustments, for: raw)
         #expect(try await store.load(for: raw) == adjustments)
         let legacy = try JSONDecoder().decode(RAW9Adjustments.self, from: Data(
-            #"{"exposure":0,"noiseReduction":0,"sharpness":0,"contrast":0}"#.utf8))
+            #"{"exposure":0,"noiseReduction":0,"sharpness":0,"contrast":0}"#.utf8,
+        ))
         #expect(legacy == RAW9Adjustments())
     }
 
@@ -155,14 +156,14 @@ struct RAW9SidecarStoreTests {
             kCGImagePropertyOrientation: 6,
             kCGImagePropertyTIFFDictionary: [kCGImagePropertyTIFFMake: "Test Camera"],
             kCGImagePropertyExifDictionary: [kCGImagePropertyExifExposureTime: 0.008,
-                                            kCGImagePropertyExifDateTimeOriginal: "2026:10:10 12:00:00"],
+                                             kCGImagePropertyExifDateTimeOriginal: "2026:10:10 12:00:00"],
             kCGImagePropertyGPSDictionary: [kCGImagePropertyGPSLatitude: 59.9,
-                                           kCGImagePropertyGPSLatitudeRef: "N"],
+                                            kCGImagePropertyGPSLatitudeRef: "N"]
         ] as CFDictionary)
         #expect(CGImageDestinationFinalize(writer))
         let destination = raw.deletingLastPathComponent().appendingPathComponent("export")
         try await RAW9PreviewRenderer().writeExport(image: image, destination: destination,
-            type: type == "heif10" ? "public.heic" : type, heif10: type == "heif10", sourceURL: raw)
+                                                    type: type == "heif10" ? "public.heic" : type, heif10: type == "heif10", sourceURL: raw)
         let source = try #require(CGImageSourceCreateWithURL(destination as CFURL, nil))
         let properties = try #require(CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [String: Any])
         let exif = try #require(properties[kCGImagePropertyExifDictionary as String] as? [String: Any])

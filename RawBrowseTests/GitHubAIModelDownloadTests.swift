@@ -56,14 +56,14 @@ struct GitHubAIModelDownloadTests {
     }
 
     @Test @MainActor
-    func `download progress includes bytes from previous files`() async {
+    func `download progress includes bytes from previous files`() async throws {
         let updates = AsyncStream<Double>.makeStream()
         let delegate = GitHubModelDownloadProgress(completed: 100, total: 400) {
             updates.continuation.yield($0)
         }
         let session = URLSession(configuration: .ephemeral)
         defer { session.invalidateAndCancel() }
-        let task = session.downloadTask(with: URL(string: "https://example.com/model")!)
+        let task = try session.downloadTask(with: #require(URL(string: "https://example.com/model")))
         delegate.urlSession(session, downloadTask: task, didWriteData: 100,
                             totalBytesWritten: 100, totalBytesExpectedToWrite: 300)
         var iterator = updates.stream.makeAsyncIterator()
@@ -78,7 +78,7 @@ struct GitHubAIModelDownloadTests {
         let delegate = GitHubModelDownloadProgress(completed: 0, total: 100) { _ in }
         let gate = AsyncStream<Void>.makeStream()
         let download = Task {
-            for await _ in gate.stream { }
+            for await _ in gate.stream {}
             return try await delegate.download(from: URL(string: "http://127.0.0.1:1/model")!, session: session)
         }
         download.cancel()

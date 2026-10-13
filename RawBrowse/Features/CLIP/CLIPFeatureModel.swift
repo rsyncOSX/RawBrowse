@@ -18,6 +18,7 @@ final class CLIPFeatureModel {
     var lastIndexSummary: CLIPIndexSummary? {
         catalogURL.flatMap { indexSummaries[$0] }
     }
+
     var semanticSearchQuery = ""
     var semanticSearchResults: [CLIPSearchResult] = []
     var semanticSearchActive = false
@@ -362,7 +363,9 @@ final class CLIPFeatureModel {
         pending.forEach { $0.cancel() }
         deactivateCLIPModelRuntime()
         await searchRunner.cancelAndWait()
-        for task in pending { await task.value }
+        for task in pending {
+            await task.value
+        }
     }
 
     private func deactivateCLIPModelRuntime() {

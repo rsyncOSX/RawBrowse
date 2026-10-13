@@ -25,6 +25,7 @@ struct BrowserFileDiscoveryTests {
         let folder = await loader.folderItem(at: root)
         #expect(folder.supportedFileCount == 7)
     }
+
     @Test
     func `Missing directory is a scan error rather than an empty folder`() async {
         let folder = BrowserFolderItem(url: URL.temporaryDirectory.appending(path: UUID().uuidString))
@@ -47,5 +48,4 @@ struct BrowserFileDiscoveryTests {
         #expect(contents.scanError == nil)
         #expect(contents.files.isEmpty)
     }
-
 }

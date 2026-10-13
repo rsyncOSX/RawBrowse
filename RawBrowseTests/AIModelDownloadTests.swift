@@ -100,9 +100,15 @@ private actor CancelledRemovalService: CLIPModelDownloadServicing {
 
 private actor ObservedRemovalService: CLIPModelDownloadServicing {
     var removalCount = 0
-    func state(for _: CLIPModelDownloadDescriptor) -> CLIPModelDownloadState { .ready }
+    func state(for _: CLIPModelDownloadDescriptor) -> CLIPModelDownloadState {
+        .ready
+    }
+
     func download(_: CLIPModelDownloadDescriptor, progress _: @escaping @MainActor @Sendable (Double) -> Void) -> URL {
         URL(filePath: "/tmp/model")
     }
-    func remove(_: CLIPModelDownloadDescriptor) { removalCount += 1 }
+
+    func remove(_: CLIPModelDownloadDescriptor) {
+        removalCount += 1
+    }
 }

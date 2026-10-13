@@ -57,7 +57,9 @@ struct FeatureOwnershipTests {
     func `Failed settings save reports unsaved preferences and can retry`() async {
         var shouldFail = true
         let model = SettingsModel(save: { _ in
-            if shouldFail { throw CocoaError(.fileWriteNoPermission) }
+            if shouldFail {
+                throw CocoaError(.fileWriteNoPermission)
+            }
         })
         await model.persistSettings().value
         #expect(model.settingsError != nil)
@@ -198,7 +200,7 @@ struct FeatureOwnershipTests {
             await release.wait()
         }, startAccess: { _ in false }, stopAccess: { _ in })
         exports.enqueue(RAW9ExportJob(source: URL(filePath: "/tmp/quit.nef"), adjustments: RAW9Adjustments(),
-                                     destination: URL(filePath: "/tmp/quit.jpg"), type: "public.jpeg"))
+                                      destination: URL(filePath: "/tmp/quit.jpg"), type: "public.jpeg"))
         await started.wait()
         let model = FileBrowserViewModel(raw9: raw9)
         var finished = false
@@ -393,8 +395,8 @@ private final class FeatureGate {
 }
 
 private nonisolated struct NeverReviewService: DeepAIReviewServicing {
-    func review(_ request: DeepAIReviewRequest,
-                progress: nonisolated(nonsending) @escaping @Sendable (DeepAIReviewProgress) async -> Void) async throws -> DeepAIReviewResult {
+    func review(_: DeepAIReviewRequest,
+                progress _: nonisolated(nonsending) @escaping @Sendable (DeepAIReviewProgress) async -> Void) async throws -> DeepAIReviewResult {
         Issue.record("Cancelled preparation must not invoke inference")
         throw DeepAIReviewFailure.noCandidates
     }

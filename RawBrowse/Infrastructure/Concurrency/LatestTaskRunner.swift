@@ -22,7 +22,9 @@ final class LatestTaskRunner {
         cancel()
         let pending = Array(outstanding.values)
         pending.forEach { $0.cancel() }
-        for task in pending { await task.value }
+        for task in pending {
+            await task.value
+        }
     }
 
     @discardableResult

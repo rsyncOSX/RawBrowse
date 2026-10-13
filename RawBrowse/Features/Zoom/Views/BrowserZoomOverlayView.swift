@@ -415,9 +415,9 @@ struct BrowserZoomOverlayView: View {
                         return offset < 0 ? -sqrt(-offset) : sqrt(offset)
                     },
                     // Give small changes near neutral more slider travel.
-                    set: { raw9.raw9Adjustments.overallContrast = 1 + $0 * abs($0) }
+                    set: { raw9.raw9Adjustments.overallContrast = 1 + $0 * abs($0) },
                 ), range: -1 ... 1, fractionDigits: 2,
-                   displayedValue: raw9.raw9Adjustments.overallContrast ?? 1, reset: { raw9.raw9Adjustments.overallContrast = nil })
+                displayedValue: raw9.raw9Adjustments.overallContrast ?? 1, reset: { raw9.raw9Adjustments.overallContrast = nil })
                     .help("Contrast: 1 is neutral. Fine adjustment near the center; the full range is 0 to 2.")
                 adjustmentSlider("Shadows", value: Binding(
                     get: { raw9.raw9Adjustments.shadowBoost ?? toneDefaults.shadowBoost },
@@ -434,11 +434,11 @@ struct BrowserZoomOverlayView: View {
             rawControlGroup("Color") {
                 adjustmentSlider("Saturation", value: Binding(
                     get: { raw9.raw9Adjustments.saturation ?? 1 },
-                    set: { raw9.raw9Adjustments.saturation = $0 }
+                    set: { raw9.raw9Adjustments.saturation = $0 },
                 ), range: 0 ... 2, reset: { raw9.raw9Adjustments.saturation = nil })
                 adjustmentSlider("Vibrance", value: Binding(
                     get: { raw9.raw9Adjustments.vibrance ?? 0 },
-                    set: { raw9.raw9Adjustments.vibrance = $0 }
+                    set: { raw9.raw9Adjustments.vibrance = $0 },
                 ), range: -1 ... 1, reset: { raw9.raw9Adjustments.vibrance = nil })
             }
             rawControlGroup("Detail") {
@@ -446,7 +446,7 @@ struct BrowserZoomOverlayView: View {
                                  range: -toneDefaults.noiseReduction ... (1 - toneDefaults.noiseReduction), reset: { raw9.raw9Adjustments.noiseReduction = 0 })
                 adjustmentSlider("Sharpness", value: Binding(
                     get: { min(1, max(0, toneDefaults.sharpness + raw9.raw9Adjustments.sharpness)) },
-                    set: { raw9.raw9Adjustments.sharpness = $0 - toneDefaults.sharpness }
+                    set: { raw9.raw9Adjustments.sharpness = $0 - toneDefaults.sharpness },
                 ), range: 0 ... 1, fractionDigits: 2, reset: { raw9.raw9Adjustments.sharpness = 0 })
                     .help("RAW sharpness amount: 0 disables sharpening; 1 is the maximum. Starts at the photo’s decoder default.")
                 adjustmentSlider("Detail contrast", value: decoderOffsetBinding($raw9.raw9Adjustments.contrast, defaultValue: toneDefaults.detailContrast),
@@ -618,8 +618,8 @@ struct BrowserZoomOverlayView: View {
         }
     }
 
-    // Older sidecars can store offsets beyond the decoder's limits. Display their
-    // effective value without rewriting the saved adjustment until the user edits it.
+    /// Older sidecars can store offsets beyond the decoder's limits. Display their
+    /// effective value without rewriting the saved adjustment until the user edits it.
     private func decoderOffsetBinding(_ value: Binding<Double>, defaultValue: Double) -> Binding<Double> {
         Binding(get: { min(1 - defaultValue, max(-defaultValue, value.wrappedValue)) },
                 set: { value.wrappedValue = $0 })
@@ -745,7 +745,7 @@ struct BrowserZoomOverlayView: View {
         let crop = raw9.raw9Adjustments.crop
         point = RAW9Straightening.sourcePoint(point, imageSize: CGSize(
             width: Double(image.width) / (crop?.width ?? 1),
-            height: Double(image.height) / (crop?.height ?? 1)
+            height: Double(image.height) / (crop?.height ?? 1),
         ), degrees: raw9.raw9Adjustments.straightenAngle ?? 0)
         isPickingWhiteBalance = false
         isSamplingWhiteBalance = true
@@ -876,7 +876,7 @@ struct BrowserZoomOverlayView: View {
             let crop = raw9.raw9Adjustments.crop
             point = RAW9Straightening.displayedPoint(point, imageSize: CGSize(
                 width: Double(image.width) / (crop?.width ?? 1),
-                height: Double(image.height) / (crop?.height ?? 1)
+                height: Double(image.height) / (crop?.height ?? 1),
             ), degrees: raw9.raw9Adjustments.straightenAngle ?? 0)
         }
         guard (0 ... 1).contains(point.x), (0 ... 1).contains(point.y) else { return nil }
