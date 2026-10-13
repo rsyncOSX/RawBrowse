@@ -145,6 +145,49 @@ struct FeatureOwnershipTests {
     }
 
     @Test
+    func `Termination waits for final edits and queued exports`() async {
+        let started = FeatureGate()
+        let release = FeatureGate()
+        var saved = false
+        let raw9 = RAW9EditingSession(save: { _, _ in saved = true })
+        _ = raw9.prepare(for: URL(filePath: "/tmp/quit.nef"))
+        raw9.raw9Adjustments.exposure = 1
+        let exports = RAW9ExportQueue(operation: { _ in
+            await started.open()
+            await release.wait()
+        }, startAccess: { _ in false }, stopAccess: { _ in })
+        exports.enqueue(RAW9ExportJob(source: URL(filePath: "/tmp/quit.nef"), adjustments: RAW9Adjustments(),
+                                     destination: URL(filePath: "/tmp/quit.jpg"), type: "public.jpeg"))
+        await started.wait()
+        let model = FileBrowserViewModel(raw9: raw9)
+        var finished = false
+        let quit = Task {
+            let failure = await model.prepareForTermination(exports: exports)
+            #expect(failure == nil)
+            finished = true
+        }
+        await raw9.finishSaving()
+        #expect(saved)
+        #expect(!finished)
+        release.open()
+        await quit.value
+        #expect(exports.outstandingCount == 0)
+        #expect(!raw9.hasUnsavedChanges)
+    }
+
+    @Test
+    func `Termination is cancelled when final edits fail to save`() async {
+        let raw9 = RAW9EditingSession(save: { _, _ in throw CocoaError(.fileWriteNoPermission) })
+        _ = raw9.prepare(for: URL(filePath: "/tmp/quit-failure.nef"))
+        raw9.raw9Adjustments.exposure = 1
+        let model = FileBrowserViewModel(raw9: raw9)
+        let exports = RAW9ExportQueue(operation: { _ in }, startAccess: { _ in false }, stopAccess: { _ in })
+        #expect(await model.prepareForTermination(exports: exports) != nil)
+        #expect(raw9.hasUnsavedChanges)
+        #expect(!model.isShuttingDown)
+    }
+
+    @Test
     func `Sidecar writes finish in order after changing files and closing`() async {
         var saved: [(URL, Double)] = []
         let session = RAW9EditingSession(save: { adjustments, url in

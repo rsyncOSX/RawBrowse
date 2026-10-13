@@ -4,6 +4,7 @@ import Observation
 /// App-owned composition and cross-feature transitions shared by all scenes.
 @Observable @MainActor
 final class FileBrowserViewModel {
+    private(set) var isShuttingDown = false
     let settingsModel: SettingsModel
     let downloads: ModelDownloadsModel
     let clip: CLIPFeatureModel
@@ -113,6 +114,17 @@ final class FileBrowserViewModel {
         }
         workspaceTask = task
         await task.value
+    }
+
+    func prepareForTermination(exports: RAW9ExportQueue = .shared) async -> String? {
+        isShuttingDown = true
+        await raw9.finishSaving()
+        await exports.waitUntilFinished()
+        if raw9.hasUnsavedChanges {
+            isShuttingDown = false
+            return raw9.raw9SidecarError ?? "Some image adjustments could not be saved."
+        }
+        return nil
     }
 
     func addRootFolder(_ url: URL) {

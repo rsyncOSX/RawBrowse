@@ -10,8 +10,12 @@ struct RawBrowseApp: App {
         Window("RawBrowse", id: "main-window") {
             FileBrowserView()
                 .browserWorkspace(viewModel)
+                .disabled(viewModel.isShuttingDown)
                 .background(.windowBackground)
-                .task { await viewModel.loadIfNeeded() }
+                .task {
+                    appDelegate.prepareForTermination = { await viewModel.prepareForTermination() }
+                    await viewModel.loadIfNeeded()
+                }
         }
         .defaultSize(width: 1100, height: 760)
         .windowToolbarStyle(.unified)
@@ -23,6 +27,7 @@ struct RawBrowseApp: App {
         Window("AI Workspace", id: "ai-workspace") {
             BrowserAIWorkspaceView()
                 .browserWorkspace(viewModel)
+                .disabled(viewModel.isShuttingDown)
         }
         .defaultSize(width: 1200, height: 780)
         .windowToolbarStyle(.unified)
@@ -30,6 +35,7 @@ struct RawBrowseApp: App {
         Settings {
             SettingsView()
                 .browserWorkspace(viewModel)
+                .disabled(viewModel.isShuttingDown)
         }
 
         Window("About RawBrowse", id: "about-window") {
