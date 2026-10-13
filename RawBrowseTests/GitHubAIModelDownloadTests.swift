@@ -55,6 +55,42 @@ struct GitHubAIModelDownloadTests {
         #expect(!FileManager.default.fileExists(atPath: root.path))
     }
 
+    @Test @MainActor
+    func `download progress includes bytes from previous files`() async {
+        let updates = AsyncStream<Double>.makeStream()
+        let delegate = GitHubModelDownloadProgress(completed: 100, total: 400) {
+            updates.continuation.yield($0)
+        }
+        let session = URLSession(configuration: .ephemeral)
+        defer { session.invalidateAndCancel() }
+        let task = session.downloadTask(with: URL(string: "https://example.com/model")!)
+        delegate.urlSession(session, downloadTask: task, didWriteData: 100,
+                            totalBytesWritten: 100, totalBytesExpectedToWrite: 300)
+        var iterator = updates.stream.makeAsyncIterator()
+        #expect(await iterator.next() == 0.5)
+        updates.continuation.finish()
+    }
+
+    @Test
+    func `cancelled download does not start a network request`() async {
+        let session = URLSession(configuration: .ephemeral)
+        defer { session.invalidateAndCancel() }
+        let delegate = GitHubModelDownloadProgress(completed: 0, total: 100) { _ in }
+        let gate = AsyncStream<Void>.makeStream()
+        let download = Task {
+            for await _ in gate.stream { }
+            return try await delegate.download(from: URL(string: "http://127.0.0.1:1/model")!, session: session)
+        }
+        download.cancel()
+        gate.continuation.finish()
+        do {
+            _ = try await download.value
+            Issue.record("A cancelled download must throw CancellationError")
+        } catch {
+            #expect(error is CancellationError)
+        }
+    }
+
     private func makeFile(path: String = "config.json", byteCount: Int64 = 10,
                           sha256: String = String(repeating: "a", count: 64)) -> GitHubAIModelManifest.File {
         .init(path: path, url: URL(string: "https://github.com/rsyncOSX/AI-models/releases/download/v1/config.json")!,

@@ -1,5 +1,6 @@
 import CryptoKit
 import Foundation
+import Synchronization
 
 nonisolated enum CLIPManagedModel: String, CaseIterable, Codable, Hashable, Identifiable, Sendable {
     case dataComp = "data-comp"
@@ -246,7 +247,7 @@ actor GitHubCLIPModelDownloadService: CLIPModelDownloadServicing {
         for file in model.files {
             try Task.checkCancellation()
             let delegate = GitHubModelDownloadProgress(completed: completed, total: total, progress: progress)
-            let (temporary, response) = try await session.download(from: file.url, delegate: delegate)
+            let (temporary, response) = try await delegate.download(from: file.url, session: session)
             defer { try? FileManager.default.removeItem(at: temporary) }
             try Self.checkResponse(response, isManifest: false)
             try Task.checkCancellation()
@@ -314,7 +315,7 @@ actor GitHubCLIPModelDownloadService: CLIPModelDownloadServicing {
     }
 }
 
-/// Immutable delegate fields allow URLSession callbacks to safely report UI progress.
+/// One delegate per file; the mutex protects continuation completion across cancellation and callbacks.
 final nonisolated class GitHubModelDownloadProgress: NSObject, URLSessionDownloadDelegate, Sendable {
     let completed: Double
     let total: Double
@@ -326,6 +327,42 @@ final nonisolated class GitHubModelDownloadProgress: NSObject, URLSessionDownloa
         self.progress = progress
     }
 
+    private let continuation = Mutex<CheckedContinuation<(URL, URLResponse), any Error>?>(nil)
+
+    /// A delegate-driven session delivers byte callbacks; async and completion-handler downloads do not.
+    func download(from url: URL, session: URLSession) async throws -> (URL, URLResponse) {
+        let downloadSession = URLSession(configuration: session.configuration, delegate: self, delegateQueue: nil)
+        defer { downloadSession.invalidateAndCancel() }
+        let task = downloadSession.downloadTask(with: url)
+        let cancellation = Mutex<(task: URLSessionDownloadTask?, cancelled: Bool)>((nil, false))
+        return try await withTaskCancellationHandler {
+            try Task.checkCancellation()
+            return try await withCheckedThrowingContinuation { continuation in
+                self.continuation.withLock { $0 = continuation }
+                cancellation.withLock { state in
+                    // Cancellation must not complete the task before its continuation is installed.
+                    state.task = task
+                    task.resume()
+                    if state.cancelled { task.cancel() }
+                }
+            }
+        } onCancel: {
+            cancellation.withLock { state in
+                state.cancelled = true
+                state.task?.cancel()
+            }
+        }
+    }
+
+    private func finish(_ result: Result<(URL, URLResponse), any Error>) {
+        let pending = continuation.withLock { continuation in
+            let pending = continuation
+            continuation = nil
+            return pending
+        }
+        pending?.resume(with: result)
+    }
+
     func urlSession(_: URLSession, downloadTask _: URLSessionDownloadTask,
                     didWriteData _: Int64, totalBytesWritten: Int64,
                     totalBytesExpectedToWrite _: Int64) {
@@ -333,7 +370,33 @@ final nonisolated class GitHubModelDownloadProgress: NSObject, URLSessionDownloa
         Task { @MainActor [progress] in progress(value) }
     }
 
-    func urlSession(_: URLSession, downloadTask _: URLSessionDownloadTask, didFinishDownloadingTo _: URL) {}
+    func urlSession(_: URLSession, downloadTask: URLSessionDownloadTask, didFinishDownloadingTo location: URL) {
+        guard let response = downloadTask.response else {
+            finish(.failure(URLError(.badServerResponse)))
+            return
+        }
+        // URLSession removes its temporary file when this callback returns.
+        let preserved = URL.temporaryDirectory.appending(path: "rawbrowse-model-\(UUID().uuidString)")
+        do {
+            try FileManager.default.moveItem(at: location, to: preserved)
+            finish(.success((preserved, response)))
+        } catch {
+            finish(.failure(error))
+        }
+    }
+
+    func urlSession(_: URLSession, task _: URLSessionTask, didCompleteWithError error: (any Error)?) {
+        if let error {
+            if (error as? URLError)?.code == .cancelled {
+                finish(.failure(CancellationError()))
+            } else {
+                finish(.failure(error))
+            }
+        } else {
+            // Successful downloads already resumed in didFinishDownloadingTo.
+            finish(.failure(URLError(.badServerResponse)))
+        }
+    }
 }
 
 actor CLIPModelDownloadCoordinator {
