@@ -97,7 +97,9 @@ nonisolated struct DeepAIReviewCandidate: Equatable, Identifiable, Sendable {
     let maskConfidence: Float?
     let maskCoverage: Float?
     let autofocusInsideMask: Bool?
+    /// A usable mask from the requested prompt; does not verify subject anatomy.
     let promptVerified: Bool?
+    var requestedPromptObtained: Bool? { promptVerified }
     let usedFallbackMask: Bool
     let issues: [DeepAIReviewCandidateIssue]
 }

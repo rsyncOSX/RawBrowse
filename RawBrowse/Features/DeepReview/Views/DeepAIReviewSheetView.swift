@@ -413,6 +413,9 @@ private struct DeepAIReviewSummaryView: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
+            Text("Ranking confidence reflects relative detail score separation. Requested masks do not independently verify head or face anatomy.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
             if !explanation.isEmpty {
                 Text(explanation)
                     .font(.caption)
@@ -434,9 +437,9 @@ private struct DeepAIReviewSummaryView: View {
 
     private var confidenceTitle: LocalizedStringResource {
         switch result.confidence {
-        case .high: "High confidence"
-        case .medium: "Medium confidence"
-        case .low: "Low confidence"
+        case .high: "High ranking confidence"
+        case .medium: "Medium ranking confidence"
+        case .low: "Low ranking confidence"
         }
     }
 
@@ -458,9 +461,9 @@ private struct DeepAIReviewSummaryView: View {
 
     private var summaryAccessibilityValue: String {
         let confidence = switch result.confidence {
-        case .high: "High confidence"
-        case .medium: "Medium confidence"
-        case .low: "Low confidence"
+        case .high: "High ranking confidence"
+        case .medium: "Medium ranking confidence"
+        case .low: "Low ranking confidence"
         }
         let preset = switch result.preset {
         case .auto: "Auto target"
@@ -468,9 +471,9 @@ private struct DeepAIReviewSummaryView: View {
         case .headFace: "Head or Face target"
         }
         if explanation.isEmpty {
-            return "\(confidence). \(preset)."
+            return "\(confidence). \(preset). Confidence reflects relative detail score separation. Requested masks do not independently verify head or face anatomy."
         }
-        return "\(confidence). \(preset). \(explanation)"
+        return "\(confidence). \(preset). \(explanation). Confidence reflects relative detail score separation. Requested masks do not independently verify head or face anatomy."
     }
 
     private var explanation: String {
@@ -512,7 +515,7 @@ private struct DeepAIReviewCandidateTable: View {
                 Text(candidate.fileName)
                     .lineLimit(1)
             }
-            TableColumn("Deep") { candidate in
+            TableColumn("Subject detail") { candidate in
                 Text(score(candidate.deepScore))
                     .monospacedDigit()
             }
@@ -526,7 +529,7 @@ private struct DeepAIReviewCandidateTable: View {
             }
             TableColumn("Mask") { candidate in
                 Text(maskStatus(candidate))
-                    .foregroundStyle(maskStatusColor(candidate.promptVerified))
+                    .foregroundStyle(maskStatusColor(candidate.requestedPromptObtained))
             }
             TableColumn("AF") { candidate in
                 Text(candidate.autofocusInsideMask.map { $0 ? "In" : "Out" } ?? "—")
@@ -570,8 +573,8 @@ private struct DeepAIReviewCandidateTable: View {
     }
 
     private func maskStatus(_ candidate: DeepAIReviewCandidate) -> String {
-        guard let verified = candidate.promptVerified else { return "—" }
-        return verified ? "Matched" : "Check"
+        guard let verified = candidate.requestedPromptObtained else { return "—" }
+        return verified ? "Obtained" : "Check"
     }
 
     private func maskStatusColor(_ verified: Bool?) -> Color {

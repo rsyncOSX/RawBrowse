@@ -3,6 +3,12 @@ import Foundation
 import OSLog
 
 nonisolated struct SubjectMaskFocusEvidence: Equatable, Sendable {
+    var scorerVersion: String = "subject-detail-v2"
+    var foregroundCount: Int? = nil
+    var totalPixelCount: Int? = nil
+    var usableForegroundCount: Int? = nil
+    var foregroundBounds: CGRect? = nil
+    var suspectNearFullOccupancy: Bool? = nil
     let finalScore: Float
     let broadSubjectScore: Float?
     let localDetailScore: Float?
@@ -54,11 +60,9 @@ nonisolated struct SubjectMaskFocusScorer: SubjectMaskFocusScoring, Sendable {
         }
         try Task.checkCancellation()
 
-        guard let maskAlpha = Self.maskAlpha(
-            subjectMask,
-            width: width,
-            height: height,
-        ) else { return nil }
+        let foreground = try SubjectMaskForeground.decode(subjectMask, width: width, height: height)
+        guard foreground.foregroundCount > 0 else { throw SubjectMaskDecodingError.emptyForeground }
+        let maskAlpha = foreground.pixels
 
         var subjectSamples: [Float] = []
         subjectSamples.reserveCapacity(pixelCount / 3)
@@ -102,7 +106,7 @@ nonisolated struct SubjectMaskFocusScorer: SubjectMaskFocusScoring, Sendable {
             }
         }
 
-        guard !subjectSamples.isEmpty else { return nil }
+        guard subjectSamples.count >= 64 else { throw SubjectMaskDecodingError.insufficientUsablePixels }
         let coverage = Float(maskedCount) / Float(pixelCount)
         let broad = Self.robustTailScore(subjectSamples)
         let fine = Self.microContrast(subjectSamples)
@@ -125,6 +129,11 @@ nonisolated struct SubjectMaskFocusScorer: SubjectMaskFocusScoring, Sendable {
         }
 
         return SubjectMaskFocusEvidence(
+            foregroundCount: foreground.foregroundCount,
+            totalPixelCount: pixelCount,
+            usableForegroundCount: maskedCount,
+            foregroundBounds: foreground.bounds,
+            suspectNearFullOccupancy: foreground.suspectNearFullOccupancy,
             finalScore: finalScore,
             broadSubjectScore: broad,
             localDetailScore: local,
@@ -136,26 +145,6 @@ nonisolated struct SubjectMaskFocusScorer: SubjectMaskFocusScoring, Sendable {
             usableLocalPatch: local != nil,
             backgroundDominancePenaltyApplied: backgroundDominance,
         )
-    }
-
-    private nonisolated static func maskAlpha(
-        _ mask: CGImage,
-        width: Int,
-        height: Int,
-    ) -> [UInt8]? {
-        var pixels = [UInt8](repeating: 0, count: width * height * 4)
-        guard let context = CGContext(
-            data: &pixels,
-            width: width,
-            height: height,
-            bitsPerComponent: 8,
-            bytesPerRow: width * 4,
-            space: CGColorSpaceCreateDeviceRGB(),
-            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue,
-        ) else { return nil }
-        context.interpolationQuality = .high
-        context.draw(mask, in: CGRect(x: 0, y: 0, width: width, height: height))
-        return stride(from: 3, to: pixels.count, by: 4).map { pixels[$0] }
     }
 
     private nonisolated static func rgbaPixels(
