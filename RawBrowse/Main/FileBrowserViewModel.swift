@@ -25,6 +25,7 @@ final class FileBrowserViewModel {
         catalog: CatalogStore = CatalogStore(),
         contents: BrowserContentsModel = BrowserContentsModel(),
         raw9: RAW9EditingSession = RAW9EditingSession(),
+        deepReview: DeepReviewModel = DeepReviewModel(),
     ) {
         settingsModel = settings
         self.downloads = downloads
@@ -32,7 +33,7 @@ final class FileBrowserViewModel {
         self.contents = contents
         self.raw9 = raw9
         clip = CLIPFeatureModel(settings: settings)
-        deepReview = DeepReviewModel()
+        self.deepReview = deepReview
         zoom = ZoomModel(settings: settings, raw9: raw9)
         selection = SelectionModel()
         sidebar = SidebarPresentationModel(catalog: catalog)
@@ -160,6 +161,7 @@ final class FileBrowserViewModel {
         guard contents.isSidebarSelectionEnabled,
               catalog.startSecurityScopedAccess(for: catalog.securityScopedURL(for: folder.url)) else { return false }
         refreshRunner.cancel()
+        deepReview.deepAIReviewController.cancel()
         zoom.closeZoom()
         zoom.presentation.resetZoomInterfaceState()
         selection.clear()
@@ -179,6 +181,7 @@ final class FileBrowserViewModel {
               catalog.startSecurityScopedAccess(for: catalog.securityScopedURL(for: folder.url)) else { return nil }
         let selectedURLs = Set(selection.selectedFiles.map { $0.url.standardizedFileURL })
         let primaryURL = selection.selectedFile?.url.standardizedFileURL
+        deepReview.deepAIReviewController.cancel()
         zoom.closeZoom()
         clip.clearSemanticSearchResults()
         let scan = contents.scan(folder, access: catalog.lease(for: folder.url))
@@ -226,6 +229,7 @@ final class FileBrowserViewModel {
     }
 
     func clearRememberedCatalogs() async {
+        deepReview.deepAIReviewController.cancel()
         refreshRunner.cancel()
         clip.clearCatalogCLIPIndexes()
         zoom.closeZoom()
@@ -236,6 +240,7 @@ final class FileBrowserViewModel {
     }
 
     func removeRootCatalog(_ folder: BrowserFolderItem) async {
+        deepReview.deepAIReviewController.cancel()
         let url = folder.url.standardizedFileURL
         if contents.selectedFolder?.url.standardizedFileURL.isEqualOrDescendant(of: url) == true {
             refreshRunner.cancel()

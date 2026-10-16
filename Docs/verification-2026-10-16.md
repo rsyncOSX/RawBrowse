@@ -96,3 +96,9 @@ Validation: FeatureOwnershipTests passed in Xcode, including navigation-before-f
 Applied: Refresh Folder is available in the browser toolbar and Workspace menu (Shift-Command-R). It rescans the folder, refreshes its index status, closes stale zoom presentation, and restores only surviving selected URLs. Cancelled/replaced refreshes cannot restore an old selection. Search publication now checks file existence off the main actor, excluding missing files and directories while retaining result order/rank.
 
 Validation: FeatureOwnershipTests and CLIPFeatureTests passed in Xcode, including real temporary-folder refresh with added/deleted files and missing search-result filtering. `git diff --check` passed. Log: `/tmp/RawBrowse-refresh-fix.log`. External disk changes require the explicit refresh command; no watcher or automatic rescan is claimed.
+
+### Update 4 — Deep Review navigation cancellation
+
+Applied: selecting/refreshing a folder, removing a catalog, or clearing remembered catalogs cancels active Deep Review. The existing feature retains preparation/inference ownership until its worker exits, so navigation remains responsive while replacement reviews remain blocked during draining. Added injectable controller composition for isolated transition tests.
+
+Validation: FeatureOwnershipTests and DeepAIReviewEnhancementTests passed in Xcode. Eight controlled cases cover four transitions during both non-cooperative preparation and inference; cancelled work cannot publish or admit a replacement early. `git diff --check` passed. Log: `/tmp/RawBrowse-review-navigation-fix.log`.

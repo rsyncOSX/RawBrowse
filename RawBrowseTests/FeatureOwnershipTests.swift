@@ -88,6 +88,59 @@ struct FeatureOwnershipTests {
         #expect(contents.scanError == nil)
     }
 
+    @Test(arguments: ["select", "refresh", "remove", "clear"], ["preparation", "inference"])
+    func `Navigation cancels Deep Review and retains draining ownership`(transition: String, phase: String) async {
+        let started = FeatureGate()
+        let release = FeatureGate()
+        let feature = DeepAIReviewFeature(availability: .available(location: nil),
+                                          service: NavigationReviewService(started: started, release: release))
+        let review = DeepReviewModel(controller: DeepAIReviewController(feature: feature))
+        let folder = BrowserFolderItem(url: URL(filePath: "/tmp/review-catalog"))
+        let contents = BrowserContentsModel(discover: { _ in ([], []) })
+        contents.selectedFolder = folder
+        let catalog = CatalogStore(save: { _ in }, clear: {}, openAccess: { _ in true },
+                                   closeAccess: { _ in }, lease: { _ in nil })
+        let model = FileBrowserViewModel(settings: SettingsModel(initialValues: BrowserSettings(), save: { _ in }),
+                                         catalog: catalog, contents: contents, deepReview: review)
+        let signature = BurstGroupSignature(memberKeys: ["navigation"])
+        let original = Task {
+            await feature.startPreparing(groupID: 1, totalCount: 1) {
+                if phase == "preparation" {
+                    started.open()
+                    await release.wait()
+                }
+                let candidate = DeepAIReviewInputCandidate(fileID: UUID(), fileName: "photo.jpg",
+                    url: folder.url.appending(path: "photo.jpg"), burstRank: 1,
+                    normalSharpnessScore: nil, subjectLabel: nil, normalizedAFPoint: nil)
+                return DeepAIReviewRequest(groupID: 1, groupSignature: signature, candidates: [candidate],
+                                           preset: .auto, scope: .full, scoringSource: .embeddedPreview)
+            }
+        }
+        await started.wait()
+        switch transition {
+        case "select":
+            #expect(model.selectFolder(BrowserFolderItem(url: URL(filePath: "/tmp/other-review-catalog"))))
+        case "refresh":
+            await model.refreshSelectedFolder()?.value
+        case "remove":
+            await model.removeRootCatalog(folder)
+        default:
+            await model.clearRememberedCatalogs()
+        }
+        #expect(feature.state == .cancelled(groupID: 1))
+        #expect(feature.isRunning)
+        var admitted = false
+        await feature.startPreparing(groupID: 2, totalCount: 1) {
+            admitted = true
+            throw DeepAIReviewFailure.noCandidates
+        }
+        #expect(!admitted)
+        release.open()
+        await original.value
+        #expect(!feature.isRunning)
+        #expect(feature.result(for: signature) == nil)
+    }
+
     @Test
     func `Settings snapshots save in call order`() async {
         let release = FeatureGate()
@@ -608,4 +661,16 @@ private nonisolated struct NeverReviewService: DeepAIReviewServicing {
 private final class SidecarRetryProbe {
     var shouldFail = true
     var saved: [URL: RAW9Adjustments] = [:]
+}
+
+private nonisolated struct NavigationReviewService: DeepAIReviewServicing {
+    let started: FeatureGate
+    let release: FeatureGate
+
+    func review(_: DeepAIReviewRequest,
+                progress _: nonisolated(nonsending) @escaping @Sendable (DeepAIReviewProgress) async -> Void) async throws -> DeepAIReviewResult {
+        await started.open()
+        await release.wait() // Deliberately non-cooperative inference.
+        throw CancellationError()
+    }
 }

@@ -4,11 +4,15 @@ import Observation
 
 @Observable @MainActor
 final class DeepReviewModel {
-    let deepAIReviewController = DeepAIReviewController()
+    let deepAIReviewController: DeepAIReviewController
     @ObservationIgnored private let deepAIReviewRuntime = DeepAIReviewRuntime()
     private(set) var sam3ModelStatus: RawBrowseAICapabilityStatus = .missing(expectedLocations: [])
     @ObservationIgnored private var activeSAM3ModelURL: URL?
     @ObservationIgnored private var sam3ValidationTask: Task<Void, Never>?
+
+    init(controller: DeepAIReviewController = DeepAIReviewController()) {
+        deepAIReviewController = controller
+    }
 
     func activateModel(at selectedURL: URL?) {
         let standardizedURL = selectedURL?.standardizedFileURL
