@@ -120,3 +120,9 @@ Validation: FeatureOwnershipTests and CLIPFeatureTests passed in Xcode, includin
 Applied: failed access admission for selection, refresh or adding a root folder records the attempted path and operation. A browser banner offers Retry, Add Folder Again and Dismiss while preserving the current folder/selection. Retry repeats the intended operation; repeated failure stays visible and success clears it. Clearing/removing the affected catalog clears obsolete failures.
 
 Validation: FeatureOwnershipTests and CLIPFeatureTests passed in Xcode, including denied access, preserved current selection, failed retry and successful retry for all three entry points. An initial test comparison was corrected to compare equivalent directory paths rather than trailing-slash-sensitive URLs. `git diff --check` passed. Log: `/tmp/RawBrowse-folder-access-fix.log`.
+
+### Download follow-up — overlapping final refresh
+
+Final source review identified a remaining overlap: a newer refresh could supersede the finishing worker's refresh while preserving that worker's old progress state. A controlled regression reproduced the failure. Finishing ownership is now shared across refresh calls until the worker exits, allowing every competing refresh to publish the installed state. Cancellation before worker startup also reconciles instead of leaving a stuck downloading state.
+
+Validation: the controlled overlap regression failed before the fix and passed afterwards. AIModelDownloadTests and FeatureOwnershipTests passed together; `git diff --check` passed. Logs: `/tmp/RawBrowse-download-overlap-before.log` and `/tmp/RawBrowse-download-overlap-fix.log`.

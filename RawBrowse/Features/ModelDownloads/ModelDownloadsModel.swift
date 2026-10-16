@@ -9,6 +9,7 @@ final class ModelDownloadsModel {
     @ObservationIgnored private let clipModelDownloadCoordinator: CLIPModelDownloadCoordinator
     @ObservationIgnored private var clipModelDownloadTasks: [CLIPModelDownloadID: Task<Void, Never>] = [:]
     @ObservationIgnored private var clipModelRefreshGeneration = 0
+    @ObservationIgnored private var finishingDownloads: Set<CLIPModelDownloadID> = []
     @ObservationIgnored var prepareForRemoval: (@MainActor (CLIPModelDownloadID) async -> Void)?
     private var isShuttingDown = false
     @ObservationIgnored private var removingModels: Set<CLIPModelDownloadID> = []
@@ -19,6 +20,7 @@ final class ModelDownloadsModel {
     }
 
     func refreshCLIPModels(allowCancelled: Bool = false, finishingDownload: CLIPModelDownloadID? = nil) async {
+        if let finishingDownload { finishingDownloads.insert(finishingDownload) }
         guard !isShuttingDown, removingModels.isEmpty else { return }
         clipModelRefreshGeneration &+= 1
         let generation = clipModelRefreshGeneration
@@ -26,7 +28,7 @@ final class ModelDownloadsModel {
         guard !Task.isCancelled || allowCancelled, clipModelRefreshGeneration == generation, !isShuttingDown, removingModels.isEmpty else { return }
         managedCLIPModelLocations = snapshot.managedModelLocations
         var states = snapshot.states
-        for id in clipModelDownloadTasks.keys where id != finishingDownload {
+        for id in clipModelDownloadTasks.keys where !finishingDownloads.contains(id) {
             switch clipModelDownloadStates[id] {
             case .downloading, .validating:
                 states[id] = clipModelDownloadStates[id]
@@ -66,8 +68,14 @@ final class ModelDownloadsModel {
         guard !isShuttingDown, clipModelDownloadTasks[id] == nil else { return nil }
         clipModelDownloadStates[id] = .downloading(progress: 0)
         let task = Task { [self] in
-            defer { clipModelDownloadTasks[id] = nil }
-            guard !Task.isCancelled else { return }
+            defer {
+                clipModelDownloadTasks[id] = nil
+                finishingDownloads.remove(id)
+            }
+            guard !Task.isCancelled else {
+                await refreshCLIPModels(allowCancelled: true, finishingDownload: id)
+                return
+            }
             await operation()
         }
         clipModelDownloadTasks[id] = task

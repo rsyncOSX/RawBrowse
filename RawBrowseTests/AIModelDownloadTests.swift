@@ -52,12 +52,34 @@ struct AIModelDownloadTests {
         await model.refreshCLIPModels()
         #expect(model.clipModelDownloadStates[.clipDataComp] == .downloading(progress: 0.5))
         model.cancelCLIPModelDownload(.clipDataComp)
+        await service.pauseNextInstalledSnapshot()
         await service.finishInstallation()
-        await task.value
+        await service.waitForPausedSnapshot()
+        // A competing refresh wins while the finishing worker still owns its task.
+        await model.refreshCLIPModels()
         let location = URL(filePath: "/tmp/test-installed-model")
+        #expect(model.clipModelDownloadStates[.clipDataComp] == .installed(location: location))
+        await service.releaseSnapshot()
+        await task.value
         #expect(model.clipModelDownloadStates[.clipDataComp] == .installed(location: location))
         #expect(model.managedCLIPModelLocations[.clipDataComp] == location)
         #expect(activated[.clipDataComp] == location)
+    }
+
+    @Test @MainActor
+    func `Cancelling a download before its worker starts restores a startable state`() async throws {
+        let directory = URL.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let model = ModelDownloadsModel(coordinator: CLIPModelDownloadCoordinator(
+            service: ReadyModelDownloadService(),
+            acceptanceStore: RawBrowseAIModelLicenceAcceptanceFileStore(fileURL: directory.appending(path: "licences.json")),
+        ))
+        await model.refreshCLIPModels()
+        let task = try #require(model.startCLIPModelDownload(.clipDataComp))
+        model.cancelCLIPModelDownload(.clipDataComp)
+        await task.value
+        #expect(model.clipModelDownloadStates[.clipDataComp] == .ready)
+        #expect(model.managedCLIPModelLocations[.clipDataComp] == nil)
     }
 
     @Test @MainActor
@@ -143,10 +165,32 @@ private actor LateInstallService: CLIPModelDownloadServicing {
     private var installed = false
     private var release: CheckedContinuation<Void, Never>?
     private var started: CheckedContinuation<Void, Never>?
+    private var shouldPauseSnapshot = false
+    private var pausedSnapshot: CheckedContinuation<Void, Never>?
+    private var snapshotWaiter: CheckedContinuation<Void, Never>?
 
-    func state(for descriptor: CLIPModelDownloadDescriptor) -> CLIPModelDownloadState {
-        installed && descriptor.id == .clipDataComp
-            ? .installed(location: URL(filePath: "/tmp/test-installed-model")) : .ready
+    func state(for descriptor: CLIPModelDownloadDescriptor) async -> CLIPModelDownloadState {
+        guard installed, descriptor.id == .clipDataComp else { return .ready }
+        if shouldPauseSnapshot {
+            shouldPauseSnapshot = false
+            await withCheckedContinuation {
+                pausedSnapshot = $0
+                snapshotWaiter?.resume()
+                snapshotWaiter = nil
+            }
+        }
+        return .installed(location: URL(filePath: "/tmp/test-installed-model"))
+    }
+
+    func pauseNextInstalledSnapshot() { shouldPauseSnapshot = true }
+
+    func waitForPausedSnapshot() async {
+        if pausedSnapshot == nil { await withCheckedContinuation { snapshotWaiter = $0 } }
+    }
+
+    func releaseSnapshot() {
+        pausedSnapshot?.resume()
+        pausedSnapshot = nil
     }
 
     func download(_: CLIPModelDownloadDescriptor,
