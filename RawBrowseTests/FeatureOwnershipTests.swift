@@ -10,7 +10,7 @@ struct FeatureOwnershipTests {
         let release = FeatureGate()
         let started = FeatureGate()
         var saved: [Int] = []
-        let settings = SettingsModel(save: { snapshot in
+        let settings = SettingsModel(initialValues: BrowserSettings(), save: { snapshot in
             if snapshot.semanticSearchLimit == 10 {
                 started.open()
                 await release.wait()
@@ -56,7 +56,7 @@ struct FeatureOwnershipTests {
     @Test
     func `Failed settings save reports unsaved preferences and can retry`() async {
         var shouldFail = true
-        let model = SettingsModel(save: { _ in
+        let model = SettingsModel(initialValues: BrowserSettings(), save: { _ in
             if shouldFail {
                 throw CocoaError(.fileWriteNoPermission)
             }

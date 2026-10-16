@@ -31,7 +31,11 @@ struct SettingsView: View {
                 CLIPIndexesSettingsTab()
             }
         }
+        .disabled(!settings.isReady)
         .safeAreaInset(edge: .top) {
+            if settings.loadState == .unread || settings.loadState == .loading {
+                ProgressView("Loading settings…").padding()
+            }
             if let error = settings.settingsError {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(error).foregroundStyle(.red)

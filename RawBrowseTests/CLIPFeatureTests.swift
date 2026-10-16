@@ -24,7 +24,7 @@ struct CLIPFeatureTests {
 
     @Test @MainActor
     func `Index summary remains attributed to its original catalog`() {
-        let clip = CLIPFeatureModel(settings: SettingsModel(save: { _ in }))
+        let clip = CLIPFeatureModel(settings: SettingsModel(initialValues: BrowserSettings(), save: { _ in }))
         let first = URL(filePath: "/tmp/catalog-a")
         let second = URL(filePath: "/tmp/catalog-b")
         let summary = CLIPIndexSummary(discovered: 4, indexed: 4, failures: [])
