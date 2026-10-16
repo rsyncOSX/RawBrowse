@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct FileBrowserView: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(BrowserPresentationState.self) private var browserPresentation
 
     @Environment(CatalogStore.self) private var catalog
@@ -36,6 +37,12 @@ struct FileBrowserView: View {
                 BrowserZoomOverlayView()
                     .transition(.opacity)
                     .zIndex(10)
+            }
+        }
+        .transaction { transaction in
+            if reduceMotion {
+                transaction.animation = nil
+                transaction.disablesAnimations = true
             }
         }
         .fileImporter(isPresented: $browserPresentation.isShowingFolderPicker, allowedContentTypes: [.folder]) { result in
