@@ -1,6 +1,26 @@
 # Document-to-code verification
 
-Verified on 2026-10-16 against the current working tree. This is a source and existing-test audit; no application code was changed.
+Initial audit performed on 2026-10-16. No application code was changed during that audit; the subsequent implementation updates and validation are recorded below.
+
+## Current remediation status
+
+All seven fixes in the remaining-fix plan are implemented and committed separately, with an additional download-overlap correction. The original numbered audit table below describes the earlier source state.
+
+| Original finding | Current status |
+| --- | --- |
+| 1. Termination | Drains owned work; export quit choices added in update 5. |
+| 2. Index cancellation/restart | Fixed by the earlier ownership/shutdown work; draining state is explicit in update 6. |
+| 3. Folder switch while indexing | Completion/summary attribution already fixed; source folder and selected catalog status now distinguished in update 6. |
+| 4. Model removal order | Earlier removal/drain fix retained. |
+| 5. Deep Review cancellation | Earlier preparation/ownership and classification guards retained; navigation cancellation added in update 4. |
+| 6. Stale grid and scan/access errors | Scan clearing and visible scan errors retained; access admission failures and retry added in update 7. |
+| 7. Download cancellation/state | Fixed in update 1 and the overlapping-final-refresh follow-up. |
+| 8. Export/sidecar recovery | Retained sidecar snapshots and retry in update 2; queue control and individual export failures/retry in update 5. |
+| 9. Disk changes | Explicit Refresh Folder and off-main missing-result checks added in update 3. |
+
+Final full-suite validation: Xcode reports **142 tests passed (206 executions including parameterized cases), zero failures and zero skips**. Log: `/tmp/RawBrowse-verification-fixes-full-final.log`. Result bundle: `/tmp/RawBrowse-doc-audit/Logs/Test/Test-RawBrowse-2026.10.16_12-09-18-+0200.xcresult`. `git diff --check` passed.
+
+Manual quit-dialog/popover/banner/sidebar interaction, VoiceOver and profiling remain unverified. The lower-severity zoom coalescing, stalled-save timeout and Deep Review cache limits remain follow-up work outside this seven-fix plan. Disk changes use the explicit refresh command; no filesystem watcher was added.
 
 ## Docs/RawCullFixPort.md
 
@@ -15,7 +35,7 @@ All six described implementation changes are present. The historical claims abou
 | Test cache isolation | Applied | `BrowserFileDiscoveryTests` injects a temporary full-size cache; `FullSizeJPGDiskCacheTests` verifies independent injected caches and reopening a cache. |
 | J/R source shortcuts | Applied | `ZoomOverlayKeyAction` resolves J/R; the overlay handles them through both its monitor and SwiftUI key handling. RAW rejects rendered-image inputs, and changing `useDevelopedRAW` follows the existing reload path. Actual RAW switching still needs manual verification. |
 
-## Docs/review.md: numbered findings
+## Docs/review.md: numbered findings (initial audit)
 
 | Finding | Status | Evidence / remaining work |
 | --- | --- | --- |
