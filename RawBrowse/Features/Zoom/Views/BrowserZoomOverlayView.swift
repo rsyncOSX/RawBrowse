@@ -65,6 +65,7 @@ struct BrowserZoomOverlayView: View {
     @State private var lastMetadataOffset: CGSize = .zero
     @FocusState private var isFocused: Bool
 
+    @State private var keyboardScope = ReviewKeyboardScope()
     @State private var keyMonitor: Any?
     @State private var pendingInitialZoomMode: BrowserZoomInitialMode?
     @State private var viewportSize: CGSize = .zero
@@ -308,6 +309,7 @@ struct BrowserZoomOverlayView: View {
                 navigationAxis: zoomPresentation.zoomOverlayNavigationAxis,
             ))
         }
+        .background(ReviewKeyboardScopeReader(scope: keyboardScope))
         .onAppear {
             pendingInitialZoomMode = zoomPresentation.zoomLaunchContext.initialZoomMode
             installKeyMonitor()
@@ -982,7 +984,8 @@ struct BrowserZoomOverlayView: View {
     private func installKeyMonitor() {
         removeKeyMonitor()
         keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
-            guard zoomPresentation.zoomOverlayVisible,
+            guard keyboardScope.accepts(event),
+                  zoomPresentation.zoomOverlayVisible,
                   !(NSApp.keyWindow?.firstResponder is NSText) else { return event }
             let modifiers = event.modifierFlags.intersection([.command, .control, .option, .shift])
             if modifiers == .command, supportsRAW9 {
