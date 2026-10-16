@@ -64,3 +64,17 @@ The two priority findings were addressed after this audit:
 - Added regression tests for four indexing transitions, download drain/admission, and app termination with non-cooperative indexing/download workers.
 
 Validation: focused FeatureOwnershipTests, CLIPFeatureTests and AIModelDownloadTests passed. After the final ownership tightening, the full Xcode suite passed (`TEST SUCCEEDED`), using `/tmp/RawBrowse-doc-audit` as derived data. Swift syntax parsing and `git diff --check` also passed. Full-suite log: `/tmp/RawBrowse-fixes-full-test.log`. The original audit test failure above describes the earlier restricted-network run.
+
+## Remaining-fix plan (2026-10-16)
+
+Apply and commit each update separately, with focused regression coverage:
+
+1. Download reconciliation: refresh installed locations after late cancellation and preserve active download progress during unrelated refreshes.
+2. Sidecar recovery: retain failed adjustment snapshots and per-file errors across navigation; expose retry in the browser.
+3. Disk refresh: add an explicit folder refresh command, reconcile selection, and reject missing search results off the main actor.
+4. Deep Review navigation: cancel preparation/inference on folder changes and catalog removal/clearing while retaining drain ownership.
+5. Export control: allow cancelling active/queued jobs, retain individual failures, and offer wait/cancel-exports/keep-open choices at termination.
+6. Indexing context: identify the indexed folder in sidebar progress even after navigation.
+7. Folder-access failures: present a useful error with retry when security-scoped access cannot start.
+
+The original audit tables above are historical. Completion and validation of each update are recorded below. Manual accessibility checks, Instruments measurements and broader refactoring remain follow-up work.
