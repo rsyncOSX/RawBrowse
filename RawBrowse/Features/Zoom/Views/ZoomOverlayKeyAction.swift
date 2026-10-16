@@ -6,6 +6,8 @@ nonisolated enum ZoomOverlayKeyAction: Equatable {
     case escape
     case zoomIn
     case zoomOut
+    case selectJPG
+    case selectRAW
     case toggleSubjectOutline
     case toggleMetadata
     case togglePreview
@@ -42,6 +44,12 @@ nonisolated enum ZoomOverlayKeyAction: Equatable {
 
         case "-":
             .zoomOut
+
+        case "j", "J":
+            .selectJPG
+
+        case "r", "R":
+            .selectRAW
 
         case "s", "S":
             .toggleSubjectOutline

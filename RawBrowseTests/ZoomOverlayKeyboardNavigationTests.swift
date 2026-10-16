@@ -3,6 +3,20 @@ import Testing
 
 @Suite("Zoom overlay keyboard navigation")
 struct ZoomOverlayKeyboardNavigationTests {
+    @Test(arguments: ["j", "J"])
+    func `J selects the JPG source`(characters: String) {
+        #expect(ZoomOverlayKeyAction.resolve(
+            characters: characters, keyCode: 38, navigationAxis: .horizontal,
+        ) == .selectJPG)
+    }
+
+    @Test(arguments: ["r", "R"])
+    func `R selects the developed RAW source`(characters: String) {
+        #expect(ZoomOverlayKeyAction.resolve(
+            characters: characters, keyCode: 15, navigationAxis: .vertical,
+        ) == .selectRAW)
+    }
+
     @Test(arguments: ["p", "P"])
     func `P toggles the image-only preview`(characters: String) {
         let action = ZoomOverlayKeyAction.resolve(

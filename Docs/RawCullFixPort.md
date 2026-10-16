@@ -9,3 +9,7 @@
 5. Test cache isolation: the discovery test injects a temporary full-size cache instead of initializing the production singleton. A regression proves two injected loader caches cannot see each other’s disk entries and that reopening the same cache preserves its own hit. The complete Xcode suite passed: 127 tests, 176 runs including parameterized cases, zero failures/skips. Diff checks passed.
 
 Allowance was checked before every update. Remaining five-hour/weekly percentages at admission: keyboard 90/57, thumbnails 87/57, settings 86/56, Reduce Motion 84/56, test isolation 83/56. No additional credits were available; ordinary usage remained allowed. No further work was started without a fresh allowance check.
+
+## Zoom source shortcuts follow-up
+
+The JPG/RAW segmented selector was present, but keyboard resolution had no source-selection actions. Added J/JPG and R/RAW to both the local monitor resolver and SwiftUI key handling, using the existing source-change reload path. RAW selection rejects rendered JPEG/TIFF/PNG inputs; source shortcuts remain available in image-only preview. Added a named picker, shortcut help and About documentation. The complete Xcode suite passed; after the final compact-label adjustment, ZoomOverlayKeyboardNavigationTests and ReviewKeyboardScopeTests passed again. Diff checks passed. Manual J/R switching on an actual RAW file remains a UI check. The user's project version edit is excluded from this update.

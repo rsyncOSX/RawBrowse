@@ -7,6 +7,7 @@ struct AboutRawBrowseView: View {
         ShortcutRow(context: "Grid", keys: "Arrow keys / N / P", action: "Select next or previous image"),
         ShortcutRow(context: "Grid", keys: "Return", action: "Open selected image in zoom"),
         ShortcutRow(context: "Zoom", keys: "Arrow keys", action: "Show next or previous image"),
+        ShortcutRow(context: "Zoom", keys: "J / R", action: "Select JPG / developed RAW"),
         ShortcutRow(context: "Zoom", keys: "P", action: "Toggle image-only preview (JPG / RAW)"),
         ShortcutRow(context: "Zoom", keys: "E", action: "Show or hide histogram and EXIF data"),
         ShortcutRow(context: "Zoom", keys: "A", action: "Show or hide focus point"),

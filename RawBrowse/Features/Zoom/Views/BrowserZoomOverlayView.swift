@@ -302,7 +302,7 @@ struct BrowserZoomOverlayView: View {
             dismiss()
             return .handled
         }
-        .onKeyPress(characters: CharacterSet(charactersIn: "+-sSaAeEpPxX")) { press in
+        .onKeyPress(characters: CharacterSet(charactersIn: "+-jJrRsSaAeEpPxX")) { press in
             handleKeyAction(ZoomOverlayKeyAction.resolve(
                 characters: press.characters,
                 keyCode: 0,
@@ -659,14 +659,15 @@ struct BrowserZoomOverlayView: View {
         @Bindable var zoomPresentation = zoomPresentation
 
         return HStack(spacing: 12) {
-            Picker("", selection: $zoom.useDevelopedRAW) {
+            Picker("Image source", selection: $zoom.useDevelopedRAW) {
                 Text("JPG").tag(false)
                 Text(raw9SupportedURL != nil && raw9SupportedURL == selection.selectedFile?.url ? "RAW 9" : "RAW").tag(true)
             }
             .pickerStyle(.segmented)
+            .labelsHidden()
             .frame(width: 130)
             .disabled(selection.selectedFile.map { SupportedFileType.isRenderedImage($0.url) } ?? true)
-            .help("Show the embedded JPEG or develop the full-size RAW image. RAW 9 is preferred when supported.")
+            .help("J: show JPG. R: develop the full-size RAW image. RAW 9 is preferred when supported.")
             .onChange(of: zoom.useDevelopedRAW) {
                 whiteBalanceTask?.cancel()
                 isPickingWhiteBalance = false
@@ -914,6 +915,17 @@ struct BrowserZoomOverlayView: View {
 
         case .zoomOut:
             decreaseZoom()
+            return .handled
+
+        case .selectJPG:
+            guard selection.selectedFile != nil else { return .ignored }
+            zoom.useDevelopedRAW = false
+            return .handled
+
+        case .selectRAW:
+            guard let file = selection.selectedFile,
+                  !SupportedFileType.isRenderedImage(file.url) else { return .ignored }
+            zoom.useDevelopedRAW = true
             return .handled
 
         case .toggleSubjectOutline:
