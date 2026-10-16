@@ -331,6 +331,7 @@ actor RAW9PreviewRenderer {
     }
 
     func writeExport(image: CGImage, destination: URL, type: String, heif10: Bool = false, sourceURL: URL? = nil) throws {
+        try Task.checkCancellation()
         var properties = Self.exportProperties(sourceURL: sourceURL, image: image)
         let ciImage = CIImage(cgImage: image).settingProperties(properties)
         let highDepth = type == "public.png" || type == "public.tiff"
@@ -359,6 +360,8 @@ actor RAW9PreviewRenderer {
             CGImageDestinationAddImage(writer, encodedImage, properties as CFDictionary)
             guard CGImageDestinationFinalize(writer) else { throw CocoaError(.fileWriteUnknown) }
         }
+        // Cancelled encodes discard staging and leave an existing destination intact.
+        try Task.checkCancellation()
         if FileManager.default.fileExists(atPath: destination.path) {
             _ = try FileManager.default.replaceItemAt(destination, withItemAt: temporary)
         } else {

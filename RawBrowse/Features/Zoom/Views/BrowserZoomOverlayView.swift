@@ -519,14 +519,13 @@ struct BrowserZoomOverlayView: View {
             }
             .disabled(isPreparingCrop)
             .help("Exports run in the background in request order, even after Zoom View closes.")
-            .alert("RAW 9", isPresented: Binding(get: { rawExportError != nil || exportQueue.lastError != nil }, set: {
+            .alert("RAW 9", isPresented: Binding(get: { rawExportError != nil }, set: {
                 if !$0 {
                     rawExportError = nil
-                    exportQueue.lastError = nil
                 }
             })) {
-                Button("OK") { rawExportError = nil; exportQueue.lastError = nil }
-            } message: { Text(rawExportError ?? exportQueue.lastError ?? "") }
+                Button("OK") { rawExportError = nil }
+            } message: { Text(rawExportError ?? "") }
             if let error = raw9.raw9SidecarError {
                 Image(systemName: "exclamationmark.triangle.fill")
                     .foregroundStyle(.yellow)

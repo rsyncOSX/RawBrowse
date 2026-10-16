@@ -102,3 +102,9 @@ Validation: FeatureOwnershipTests and CLIPFeatureTests passed in Xcode, includin
 Applied: selecting/refreshing a folder, removing a catalog, or clearing remembered catalogs cancels active Deep Review. The existing feature retains preparation/inference ownership until its worker exits, so navigation remains responsive while replacement reviews remain blocked during draining. Added injectable controller composition for isolated transition tests.
 
 Validation: FeatureOwnershipTests and DeepAIReviewEnhancementTests passed in Xcode. Eight controlled cases cover four transitions during both non-cooperative preparation and inference; cancelled work cannot publish or admit a replacement early. `git diff --check` passed. Log: `/tmp/RawBrowse-review-navigation-fix.log`.
+
+### Update 5 — export controls and failures
+
+Applied: the browser's Exports popover shows active/queued jobs, active cancellation, queued removal and cancel-all. Cancelled active work retains its access grants until it drains; removed jobs release theirs immediately. Individual failures persist with retry/dismiss controls after zoom closes. The renderer checks cancellation before writing and before committing staged output, preserving existing destinations. Quit offers Wait and Quit, Cancel Exports and Quit, or Keep RawBrowse Open; cancellation still drains before process exit.
+
+Validation: RAW9ExportQueueTests and FeatureOwnershipTests passed in Xcode, including active drain, queued removal/cancel-all grant cleanup, independent batch failures/retry, cancelled output preservation and existing termination waiting. `git diff --check` passed. Log: `/tmp/RawBrowse-export-fix.log`. Native quit-dialog and popover interaction remain manual UI checks; synchronous encoding can finish its current stage before cancellation is observed.

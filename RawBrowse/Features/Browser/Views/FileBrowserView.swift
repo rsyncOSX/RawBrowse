@@ -16,6 +16,8 @@ struct FileBrowserView: View {
 
     @Environment(FileBrowserViewModel.self) private var viewModel
     @Environment(\.openWindow) private var openWindow
+    @State private var isExportQueuePresented = false
+    private let exports = RAW9ExportQueue.shared
 
     var body: some View {
         @Bindable var browserPresentation = browserPresentation
@@ -86,6 +88,10 @@ struct FileBrowserView: View {
         }
 
         ToolbarItemGroup {
+            Button("Exports (\(exports.outstandingCount))", systemImage: exports.failures.isEmpty ? "square.and.arrow.up" : "exclamationmark.triangle") {
+                isExportQueuePresented = true
+            }
+            .popover(isPresented: $isExportQueuePresented) { RAW9ExportQueueView(queue: exports) }
             Button("Refresh Folder", systemImage: "arrow.clockwise") { viewModel.refreshSelectedFolder() }
                 .disabled(!viewModel.canRefreshSelectedFolder)
                 .help("Rescan the selected folder for disk changes (Shift-Command-R)")

@@ -133,6 +133,57 @@ struct RAW9ExportQueueTests {
         #expect(queue.lastError != nil)
     }
 
+    @Test(arguments: [false, true]) @MainActor
+    func `Cancellation drains active work and releases removed queue grants`(cancelAll: Bool) async {
+        let probe = ExportProbe()
+        var stopped: [URL] = []
+        let queue = RAW9ExportQueue(operation: { try await probe.run($0) }, startAccess: { _ in true },
+                                    stopAccess: { stopped.append($0) })
+        let first = job("first")
+        let removed = job("removed")
+        let last = job("last")
+        queue.enqueue(first)
+        await probe.waitForStart()
+        queue.enqueue(removed)
+        queue.enqueue(last)
+        queue.removeQueuedJob(removed.id)
+        #expect(stopped.contains(removed.destination))
+        #expect(!stopped.contains(first.destination))
+        if cancelAll { queue.cancelAll() } else { queue.cancelActiveJob() }
+        #expect(queue.isCancellingActiveJob)
+        #expect(queue.activeJob?.id == first.id)
+        #expect(!stopped.contains(first.destination))
+        await probe.release()
+        await queue.waitUntilFinished()
+        #expect(await probe.started == (cancelAll ? ["first"] : ["first", "last"]))
+        #expect(queue.outstandingCount == 0)
+        #expect(queue.failures.isEmpty)
+        #expect(stopped.filter { $0 == first.destination }.count == 1)
+        #expect(stopped.filter { $0 == removed.destination }.count == 1)
+        #expect(stopped.filter { $0 == last.destination }.count == 1)
+        #expect(!queue.isCancellingActiveJob)
+    }
+
+    @Test @MainActor
+    func `Batch failures remain individually available and retry uses the original job`() async {
+        let probe = FailingExportProbe()
+        let queue = RAW9ExportQueue(operation: { try await probe.run($0) },
+                                    startAccess: { _ in false }, stopAccess: { _ in })
+        let first = job("failure-one")
+        let second = job("failure-two")
+        queue.enqueue(first)
+        queue.enqueue(second)
+        await queue.waitUntilFinished()
+        #expect(queue.failures.map(\.id) == [first.id, second.id])
+        await probe.allowSuccess()
+        queue.retryFailure(first.id)
+        await queue.waitUntilFinished()
+        #expect(queue.failures.map(\.id) == [second.id])
+        #expect(await probe.succeeded == [first.destination])
+        queue.dismissFailure(second.id)
+        #expect(queue.lastError == nil)
+    }
+
     @Test func `encoded export creates and replaces the chosen file`() async throws {
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
@@ -151,7 +202,24 @@ struct RAW9ExportQueueTests {
         await #expect(throws: (any Error).self) {
             try await renderer.writeExport(image: image, destination: destination, type: "invalid.format")
         }
+        let cancelled = Task {
+            withUnsafeCurrentTask { $0?.cancel() }
+            try await renderer.writeExport(image: image, destination: destination, type: "public.jpeg")
+        }
+        await #expect(throws: CancellationError.self) { try await cancelled.value }
         #expect(try Data(contentsOf: destination) == original)
         #expect(try FileManager.default.contentsOfDirectory(atPath: directory.path) == ["export.jpeg"])
     }
+}
+
+private actor FailingExportProbe {
+    private var shouldFail = true
+    private(set) var succeeded: [URL] = []
+
+    func run(_ job: RAW9ExportJob) throws {
+        if shouldFail { throw CocoaError(.fileWriteNoPermission) }
+        succeeded.append(job.destination)
+    }
+
+    func allowSuccess() { shouldFail = false }
 }
