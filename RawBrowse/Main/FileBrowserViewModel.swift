@@ -1,10 +1,20 @@
 import Foundation
 import Observation
 
+struct FolderAccessFailure {
+    enum Operation { case select, refresh, addRoot }
+    let folder: BrowserFolderItem
+    let operation: Operation
+    var message: String {
+        "Could not access \(folder.url.path). Reconnect the drive or add the folder again to renew access."
+    }
+}
+
 /// App-owned composition and cross-feature transitions shared by all scenes.
 @Observable @MainActor
 final class FileBrowserViewModel {
     private(set) var isShuttingDown = false
+    private(set) var folderAccessFailure: FolderAccessFailure?
     let settingsModel: SettingsModel
     let downloads: ModelDownloadsModel
     let clip: CLIPFeatureModel
@@ -150,7 +160,12 @@ final class FileBrowserViewModel {
     }
 
     func addRootFolder(_ url: URL) {
-        guard let folder = catalog.addRootFolder(url) else { return }
+        guard !isShuttingDown else { return }
+        guard let folder = catalog.addRootFolder(url) else {
+            folderAccessFailure = FolderAccessFailure(folder: BrowserFolderItem(url: url), operation: .addRoot)
+            return
+        }
+        folderAccessFailure = nil
         clip.removeCatalog(at: url.standardizedFileURL)
         clip.catalogURLs = catalog.rootFolders.map { $0.url.standardizedFileURL }
         selectFolder(folder)
@@ -158,8 +173,8 @@ final class FileBrowserViewModel {
 
     @discardableResult
     func selectFolder(_ folder: BrowserFolderItem) -> Bool {
-        guard contents.isSidebarSelectionEnabled,
-              catalog.startSecurityScopedAccess(for: catalog.securityScopedURL(for: folder.url)) else { return false }
+        guard !isShuttingDown, contents.isSidebarSelectionEnabled,
+              admitFolderAccess(folder, operation: .select) else { return false }
         refreshRunner.cancel()
         deepReview.deepAIReviewController.cancel()
         zoom.closeZoom()
@@ -178,7 +193,7 @@ final class FileBrowserViewModel {
     @discardableResult
     func refreshSelectedFolder() -> Task<Void, Never>? {
         guard canRefreshSelectedFolder, let folder = contents.selectedFolder,
-              catalog.startSecurityScopedAccess(for: catalog.securityScopedURL(for: folder.url)) else { return nil }
+              admitFolderAccess(folder, operation: .refresh) else { return nil }
         let selectedURLs = Set(selection.selectedFiles.map { $0.url.standardizedFileURL })
         let primaryURL = selection.selectedFile?.url.standardizedFileURL
         deepReview.deepAIReviewController.cancel()
@@ -195,6 +210,31 @@ final class FileBrowserViewModel {
             selection.selectedFileIDs = Set(surviving.map(\.id))
             selection.selectedFileID = surviving.first(where: { $0.url.standardizedFileURL == primaryURL })?.id
                 ?? surviving.first?.id
+        }
+    }
+
+    private func admitFolderAccess(_ folder: BrowserFolderItem, operation: FolderAccessFailure.Operation) -> Bool {
+        guard catalog.startSecurityScopedAccess(for: catalog.securityScopedURL(for: folder.url)) else {
+            folderAccessFailure = FolderAccessFailure(folder: folder, operation: operation)
+            return false
+        }
+        folderAccessFailure = nil
+        return true
+    }
+
+    func dismissFolderAccessFailure() {
+        folderAccessFailure = nil
+    }
+
+    func retryFolderAccess() {
+        guard let failure = folderAccessFailure else { return }
+        switch failure.operation {
+        case .addRoot:
+            addRootFolder(failure.folder.url)
+        case .refresh where contents.selectedFolder?.id == failure.folder.id:
+            refreshSelectedFolder()
+        case .select, .refresh:
+            selectFolder(failure.folder)
         }
     }
 
@@ -229,6 +269,7 @@ final class FileBrowserViewModel {
     }
 
     func clearRememberedCatalogs() async {
+        folderAccessFailure = nil
         deepReview.deepAIReviewController.cancel()
         refreshRunner.cancel()
         clip.clearCatalogCLIPIndexes()
@@ -242,6 +283,9 @@ final class FileBrowserViewModel {
     func removeRootCatalog(_ folder: BrowserFolderItem) async {
         deepReview.deepAIReviewController.cancel()
         let url = folder.url.standardizedFileURL
+        if folderAccessFailure?.folder.url.standardizedFileURL.isEqualOrDescendant(of: url) == true {
+            folderAccessFailure = nil
+        }
         if contents.selectedFolder?.url.standardizedFileURL.isEqualOrDescendant(of: url) == true {
             refreshRunner.cancel()
             zoom.closeZoom()

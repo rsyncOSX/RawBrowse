@@ -42,7 +42,10 @@ struct FileBrowserView: View {
             }
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
-            RAW9SaveFailuresView()
+            VStack(spacing: 0) {
+                FolderAccessFailureView()
+                RAW9SaveFailuresView()
+            }
         }
         .transaction { transaction in
             if reduceMotion {
@@ -140,6 +143,31 @@ private struct RAW9SaveFailuresView: View {
                 }
             }
             .padding(12)
+            .background(.bar)
+        }
+    }
+}
+
+private struct FolderAccessFailureView: View {
+    @Environment(FileBrowserViewModel.self) private var viewModel
+    @Environment(BrowserPresentationState.self) private var presentation
+
+    var body: some View {
+        if let failure = viewModel.folderAccessFailure {
+            VStack(alignment: .leading, spacing: 8) {
+                Label(failure.message, systemImage: "exclamationmark.triangle")
+                    .fixedSize(horizontal: false, vertical: true)
+                HStack {
+                    Button("Retry") { viewModel.retryFolderAccess() }
+                    Button("Add Folder Again") {
+                        viewModel.dismissFolderAccessFailure()
+                        presentation.isShowingFolderPicker = true
+                    }
+                    Button("Dismiss") { viewModel.dismissFolderAccessFailure() }
+                }
+            }
+            .padding(12)
+            .frame(maxWidth: .infinity, alignment: .leading)
             .background(.bar)
         }
     }

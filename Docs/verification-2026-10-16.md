@@ -114,3 +114,9 @@ Validation: RAW9ExportQueueTests and FeatureOwnershipTests passed in Xcode, incl
 Applied: active indexing shows its full source folder path even after navigation. When another catalog is selected, its own index status appears separately beneath the active operation. Cancellation has an explicit observable draining state, disables repeated cancellation, and says it is waiting for indexing to stop instead of reverting to “Discovering images”.
 
 Validation: FeatureOwnershipTests and CLIPFeatureTests passed in Xcode, including cancellation-state lifetime for cancel/reset/deactivation/replacement and existing summary attribution. `git diff --check` passed. Log: `/tmp/RawBrowse-index-context-fix.log`. Sidebar layout/VoiceOver remains a manual UI check.
+
+### Update 7 — folder-access failures
+
+Applied: failed access admission for selection, refresh or adding a root folder records the attempted path and operation. A browser banner offers Retry, Add Folder Again and Dismiss while preserving the current folder/selection. Retry repeats the intended operation; repeated failure stays visible and success clears it. Clearing/removing the affected catalog clears obsolete failures.
+
+Validation: FeatureOwnershipTests and CLIPFeatureTests passed in Xcode, including denied access, preserved current selection, failed retry and successful retry for all three entry points. An initial test comparison was corrected to compare equivalent directory paths rather than trailing-slash-sensitive URLs. `git diff --check` passed. Log: `/tmp/RawBrowse-folder-access-fix.log`.

@@ -141,6 +141,51 @@ struct FeatureOwnershipTests {
         #expect(feature.result(for: signature) == nil)
     }
 
+    @Test(arguments: ["select", "refresh", "add"])
+    func `Denied folder access preserves the current view and can retry`(operation: String) async throws {
+        let root = URL.temporaryDirectory.appending(path: UUID().uuidString)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let probe = FolderAccessProbe()
+        let old = BrowserFolderItem(url: root.appending(path: "old"))
+        let target = operation == "refresh" ? old : BrowserFolderItem(url: root)
+        let file = BrowserFileItem(url: old.url.appending(path: "photo.jpg"))
+        let contents = BrowserContentsModel(discover: { _ in
+            probe.scans += 1
+            return ([], [])
+        })
+        contents.selectedFolder = old
+        contents.files = [file]
+        let catalog = CatalogStore(load: { [] }, save: { _ in }, clear: {},
+                                   remember: { RememberedCatalog(path: $0.path, bookmarkData: nil) },
+                                   openAccess: { _ in probe.allowed }, closeAccess: { _ in }, lease: { _ in nil },
+                                   discoverFolders: { _ in [] })
+        let model = FileBrowserViewModel(settings: SettingsModel(initialValues: BrowserSettings(), save: { _ in }),
+                                         catalog: catalog, contents: contents)
+        model.selection.selectOnlyFile(file)
+        switch operation {
+        case "select": #expect(!model.selectFolder(target))
+        case "refresh": #expect(model.refreshSelectedFolder() == nil)
+        default: model.addRootFolder(target.url)
+        }
+        let failure = try #require(model.folderAccessFailure)
+        #expect(failure.folder.id == target.id)
+        #expect(failure.message.contains(target.url.path))
+        #expect(contents.selectedFolder?.id == old.id)
+        #expect(model.selection.selectedFile?.id == file.id)
+        #expect(probe.scans == 0)
+        // A failed retry stays visible.
+        model.retryFolderAccess()
+        #expect(model.folderAccessFailure != nil)
+        probe.allowed = true
+        model.retryFolderAccess()
+        #expect(model.folderAccessFailure == nil)
+        #expect(contents.selectedFolder?.url.path == target.url.path)
+        // Drain asynchronous scan/catalog work before the temporary root is removed.
+        while contents.isScanning { await Task.yield() }
+        await model.clearRememberedCatalogs()
+    }
+
     @Test
     func `Settings snapshots save in call order`() async {
         let release = FeatureGate()
@@ -675,4 +720,10 @@ private nonisolated struct NavigationReviewService: DeepAIReviewServicing {
         await release.wait() // Deliberately non-cooperative inference.
         throw CancellationError()
     }
+}
+
+@MainActor
+private final class FolderAccessProbe {
+    var allowed = false
+    var scans = 0
 }
