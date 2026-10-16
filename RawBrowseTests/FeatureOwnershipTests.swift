@@ -275,6 +275,7 @@ struct FeatureOwnershipTests {
         default: clip.cancelIndexing()
         }
         #expect(writer.isCancelled)
+        #expect(clip.isCancellingIndex)
         #expect(clip.isIndexing)
         #expect(clip.indexingDirectoryURL == directory)
         #expect(clip.beginIndexing(directory: directory) {
@@ -284,6 +285,7 @@ struct FeatureOwnershipTests {
         release.open()
         await writer.value
         #expect(!clip.isIndexing)
+        #expect(!clip.isCancellingIndex)
         #expect(clip.indexingDirectoryURL == nil)
         #expect(clip.lastIndexSummary == nil)
         await clip.deactivateAndWait()

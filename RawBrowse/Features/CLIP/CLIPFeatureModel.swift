@@ -12,6 +12,7 @@ final class CLIPFeatureModel {
     var clipModelStatus: CLIPModelStatus = .notConfigured
     var clipIndexStatus: CLIPIndexStatus = .noFolderSelected
     private(set) var isIndexing = false
+    private(set) var isCancellingIndex = false
     var indexingProgress: CLIPIndexingProgress?
     private(set) var indexingDirectoryURL: URL?
     private var indexSummaries: [URL: CLIPIndexSummary] = [:]
@@ -171,6 +172,7 @@ final class CLIPFeatureModel {
         guard !isRuntimeSuspended, indexingTask == nil else { return nil }
         indexingID = operationID
         isIndexing = true
+        isCancellingIndex = false
         indexingProgress = nil
         indexingDirectoryURL = directory
         clipFeatureError = nil
@@ -182,6 +184,7 @@ final class CLIPFeatureModel {
         indexingTask = trackRuntimeTask { [self] in
             defer {
                 isIndexing = false
+                isCancellingIndex = false
                 indexingProgress = nil
                 indexingTask = nil
                 indexingDirectoryURL = nil
@@ -215,7 +218,9 @@ final class CLIPFeatureModel {
 
     func cancelIndexing() {
         // Keep ownership until the worker exits, including non-cooperative inference.
-        indexingTask?.cancel()
+        guard let indexingTask else { return }
+        isCancellingIndex = true
+        indexingTask.cancel()
         indexingProgress = nil
     }
 

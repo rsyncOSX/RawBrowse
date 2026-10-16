@@ -108,3 +108,9 @@ Validation: FeatureOwnershipTests and DeepAIReviewEnhancementTests passed in Xco
 Applied: the browser's Exports popover shows active/queued jobs, active cancellation, queued removal and cancel-all. Cancelled active work retains its access grants until it drains; removed jobs release theirs immediately. Individual failures persist with retry/dismiss controls after zoom closes. The renderer checks cancellation before writing and before committing staged output, preserving existing destinations. Quit offers Wait and Quit, Cancel Exports and Quit, or Keep RawBrowse Open; cancellation still drains before process exit.
 
 Validation: RAW9ExportQueueTests and FeatureOwnershipTests passed in Xcode, including active drain, queued removal/cancel-all grant cleanup, independent batch failures/retry, cancelled output preservation and existing termination waiting. `git diff --check` passed. Log: `/tmp/RawBrowse-export-fix.log`. Native quit-dialog and popover interaction remain manual UI checks; synchronous encoding can finish its current stage before cancellation is observed.
+
+### Update 6 — indexing context in the sidebar
+
+Applied: active indexing shows its full source folder path even after navigation. When another catalog is selected, its own index status appears separately beneath the active operation. Cancellation has an explicit observable draining state, disables repeated cancellation, and says it is waiting for indexing to stop instead of reverting to “Discovering images”.
+
+Validation: FeatureOwnershipTests and CLIPFeatureTests passed in Xcode, including cancellation-state lifetime for cancel/reset/deactivation/replacement and existing summary attribution. `git diff --check` passed. Log: `/tmp/RawBrowse-index-context-fix.log`. Sidebar layout/VoiceOver remains a manual UI check.

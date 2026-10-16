@@ -122,11 +122,13 @@ private struct SidebarIndexPanel: View {
                 Button(role: .cancel) {
                     clip.cancelIndexing()
                 } label: {
-                    Label("Cancel Indexing", systemImage: "stop.circle")
+                    Label(clip.isCancellingIndex ? "Cancelling Index…" : "Cancel Indexing", systemImage: "stop.circle")
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
                 .tint(.red)
+                .disabled(clip.isCancellingIndex)
+                .help(clip.indexingDirectoryURL.map { "Cancel indexing \($0.path)" } ?? "Cancel indexing")
             } else {
                 Button {
                     clip.startIndexingSelectedFolder()
@@ -140,7 +142,18 @@ private struct SidebarIndexPanel: View {
             }
 
             if clip.isIndexing {
+                if let directory = clip.indexingDirectoryURL {
+                    Label(directory.path, systemImage: "folder")
+                        .font(.caption)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .accessibilityLabel("Indexing folder: \(directory.path)")
+                }
                 indexingProgress
+                if clip.indexingDirectoryURL != clip.catalogURL {
+                    Divider()
+                    Text("Selected folder index").font(.caption.weight(.semibold))
+                    indexStatus
+                }
             } else {
                 indexStatus
             }
@@ -264,6 +277,7 @@ private struct SidebarIndexPanel: View {
     }
 
     private var indexingProgressText: String {
+        if clip.isCancellingIndex { return "Waiting for indexing to stop…" }
         guard let progress = clip.indexingProgress else { return "Discovering images…" }
         let count = "Indexing \(progress.completed) of \(progress.total)"
         return progress.currentFileName.map { "\(count) · \($0)" } ?? count
