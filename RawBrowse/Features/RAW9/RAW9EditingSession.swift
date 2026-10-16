@@ -12,7 +12,14 @@ final class RAW9EditingSession {
 
     var copiedRAW9Adjustments: RAW9Adjustments?
     var raw9SidecarError: String?
+    private struct PendingSave {
+        let adjustments: RAW9Adjustments
+        let access: CatalogAccessLease?
+    }
+
     private var unsavedRevisions: [URL: UUID] = [:]
+    private(set) var failedSaves: [URL: String] = [:]
+    @ObservationIgnored private var pendingSaves: [URL: PendingSave] = [:]
     var hasUnsavedChanges: Bool {
         !unsavedRevisions.isEmpty
     }
@@ -49,6 +56,11 @@ final class RAW9EditingSession {
         let pendingSave = raw9SidecarSaveTask
         await pendingSave?.value
         try Task.checkCancellation()
+        if let pending = pendingSaves[url], raw9AdjustmentURL == url {
+            setAdjustments(pending.adjustments, persist: false)
+            raw9LoadedSidecarURL = url
+            return
+        }
         do {
             let saved = try await load(url)
             try Task.checkCancellation()
@@ -114,11 +126,20 @@ final class RAW9EditingSession {
         return true
     }
 
-    private func scheduleRAW9SidecarSave(for url: URL) {
-        let adjustments = raw9Adjustments
+    @discardableResult
+    func retrySave(for url: URL) -> Task<Void, Never>? {
+        guard failedSaves[url] != nil, let pending = pendingSaves[url] else { return nil }
+        return scheduleRAW9SidecarSave(for: url, adjustments: pending.adjustments)
+    }
+
+    @discardableResult
+    private func scheduleRAW9SidecarSave(for url: URL, adjustments snapshot: RAW9Adjustments? = nil) -> Task<Void, Never> {
+        let adjustments = snapshot ?? raw9Adjustments
         let revision = UUID()
         unsavedRevisions[url] = revision
-        let access = CatalogAccess.shared.lease(for: url)
+        let access = pendingSaves[url]?.access ?? CatalogAccess.shared.lease(for: url)
+        pendingSaves[url] = PendingSave(adjustments: adjustments, access: access)
+        failedSaves[url] = nil
         let previousSave = raw9SidecarSaveTask
         if raw9SidecarSaveURL == url {
             previousSave?.cancel()
@@ -126,7 +147,7 @@ final class RAW9EditingSession {
         raw9SidecarSaveURL = url
         // Coalesce drag events, preserve write order across files, and finish
         // the final save even after navigating away or closing zoom.
-        raw9SidecarSaveTask = Task {
+        let task = Task {
             defer { withExtendedLifetime(access) {} }
             do {
                 // Debounce from the edit time, independently of earlier files.
@@ -138,6 +159,8 @@ final class RAW9EditingSession {
                 try await save(adjustments, url)
                 if unsavedRevisions[url] == revision {
                     unsavedRevisions[url] = nil
+                    pendingSaves[url] = nil
+                    failedSaves[url] = nil
                 }
                 if raw9AdjustmentURL == url {
                     raw9SidecarError = nil
@@ -145,11 +168,16 @@ final class RAW9EditingSession {
             } catch is CancellationError {
                 return
             } catch {
+                guard unsavedRevisions[url] == revision else { return }
+                let message = "Could not save RAW 9 sidecar: \(error.localizedDescription)"
+                failedSaves[url] = message
                 if raw9AdjustmentURL == url {
-                    raw9SidecarError = "Could not save RAW 9 sidecar: \(error.localizedDescription)"
+                    raw9SidecarError = message
                 }
             }
         }
+        raw9SidecarSaveTask = task
+        return task
     }
 
     func raw9ToneSettings() async throws -> RAW9ToneDefaults {

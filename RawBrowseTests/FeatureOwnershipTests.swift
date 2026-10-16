@@ -6,6 +6,43 @@ import Testing
 @MainActor
 struct FeatureOwnershipTests {
     @Test
+    func `Failed sidecar snapshots survive navigation and retry without replacing newer edits`() async throws {
+        let first = URL(filePath: "/tmp/failed-first.ARW")
+        let second = URL(filePath: "/tmp/failed-second.ARW")
+        let probe = SidecarRetryProbe()
+        let session = RAW9EditingSession(load: { _ in RAW9Adjustments() }, save: { adjustments, url in
+            if probe.shouldFail { throw CocoaError(.fileWriteNoPermission) }
+            probe.saved[url] = adjustments
+        })
+        _ = session.prepare(for: first)
+        session.raw9Adjustments = RAW9Adjustments(exposure: 1)
+        // Navigate before the debounced write fails.
+        session.close()
+        _ = session.prepare(for: second)
+        session.raw9Adjustments = RAW9Adjustments(exposure: 2)
+        await session.finishSaving()
+        #expect(session.failedSaves.count == 2)
+        #expect(session.hasUnsavedChanges)
+        _ = session.prepare(for: first)
+        try await session.restore(for: first, initialAdjustments: RAW9Adjustments())
+        #expect(session.raw9Adjustments.exposure == 1)
+        probe.shouldFail = false
+        let retry = try #require(session.retrySave(for: first))
+        // A newer edit must supersede the retry snapshot.
+        session.raw9Adjustments = RAW9Adjustments(exposure: 3)
+        await retry.value
+        await session.finishSaving()
+        #expect(probe.saved[first]?.exposure == 3)
+        #expect(session.failedSaves[first] == nil)
+        #expect(session.failedSaves[second] != nil)
+        await session.retrySave(for: second)?.value
+        #expect(probe.saved[second]?.exposure == 2)
+        #expect(session.failedSaves.isEmpty)
+        #expect(!session.hasUnsavedChanges)
+        #expect(session.raw9Adjustments.exposure == 3)
+    }
+
+    @Test
     func `Settings snapshots save in call order`() async {
         let release = FeatureGate()
         let started = FeatureGate()
@@ -514,4 +551,10 @@ private nonisolated struct NeverReviewService: DeepAIReviewServicing {
         Issue.record("Cancelled preparation must not invoke inference")
         throw DeepAIReviewFailure.noCandidates
     }
+}
+
+@MainActor
+private final class SidecarRetryProbe {
+    var shouldFail = true
+    var saved: [URL: RAW9Adjustments] = [:]
 }

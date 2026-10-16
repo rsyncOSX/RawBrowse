@@ -84,3 +84,9 @@ The original audit tables above are historical. Completion and validation of eac
 Applied: cancellation after installation now refreshes states, installed locations and runtime callbacks together, including from a cancelled task. Refreshes preserve downloading/validating states owned by other active UI tasks. Shutdown still suppresses activation callbacks. Added a controlled late-install cancellation regression that also checks progress preservation during an unrelated refresh.
 
 Validation: AIModelDownloadTests passed in Xcode; Swift syntax parsing and `git diff --check` passed. Log: `/tmp/RawBrowse-download-fix.log`.
+
+### Update 2 — sidecar recovery
+
+Applied: unsaved adjustment snapshots and their access leases survive navigation and failed writes. Failures are retained per file and shown in the browser with Retry Save. Reopening an unsaved image restores its retained adjustments rather than older disk values. Retries preserve write ordering and newer edits supersede retry snapshots; successful saves clear only their matching revision.
+
+Validation: FeatureOwnershipTests passed in Xcode, including navigation-before-failure, retained restoration, independent per-file retry and newer-edit precedence. `git diff --check` passed. Log: `/tmp/RawBrowse-sidecar-fix.log`.

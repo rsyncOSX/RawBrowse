@@ -39,6 +39,9 @@ struct FileBrowserView: View {
                     .zIndex(10)
             }
         }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            RAW9SaveFailuresView()
+        }
         .transaction { transaction in
             if reduceMotion {
                 transaction.animation = nil
@@ -107,6 +110,28 @@ struct FileBrowserView: View {
             if !isPresented {
                 clip.clipFeatureError = nil
             }
+        }
+    }
+}
+
+private struct RAW9SaveFailuresView: View {
+    @Environment(RAW9EditingSession.self) private var raw9
+
+    var body: some View {
+        if !raw9.failedSaves.isEmpty {
+            VStack(alignment: .leading, spacing: 8) {
+                ForEach(raw9.failedSaves.keys.sorted(by: { $0.path < $1.path }), id: \.self) { url in
+                    HStack {
+                        Label("Unsaved adjustments: \(url.path)", systemImage: "exclamationmark.triangle")
+                            .lineLimit(2)
+                            .help(raw9.failedSaves[url] ?? "")
+                        Spacer()
+                        Button("Retry Save") { raw9.retrySave(for: url) }
+                    }
+                }
+            }
+            .padding(12)
+            .background(.bar)
         }
     }
 }
