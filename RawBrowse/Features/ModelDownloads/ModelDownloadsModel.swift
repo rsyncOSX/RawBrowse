@@ -18,14 +18,23 @@ final class ModelDownloadsModel {
         clipModelDownloadCoordinator = coordinator
     }
 
-    func refreshCLIPModels(allowCancelled: Bool = false) async {
+    func refreshCLIPModels(allowCancelled: Bool = false, finishingDownload: CLIPModelDownloadID? = nil) async {
         guard !isShuttingDown, removingModels.isEmpty else { return }
         clipModelRefreshGeneration &+= 1
         let generation = clipModelRefreshGeneration
         let snapshot = await clipModelDownloadCoordinator.snapshot()
         guard !Task.isCancelled || allowCancelled, clipModelRefreshGeneration == generation, !isShuttingDown, removingModels.isEmpty else { return }
         managedCLIPModelLocations = snapshot.managedModelLocations
-        clipModelDownloadStates = snapshot.states
+        var states = snapshot.states
+        for id in clipModelDownloadTasks.keys where id != finishingDownload {
+            switch clipModelDownloadStates[id] {
+            case .downloading, .validating:
+                states[id] = clipModelDownloadStates[id]
+            default:
+                break
+            }
+        }
+        clipModelDownloadStates = states
         locationsChanged?(managedCLIPModelLocations)
     }
 
@@ -42,12 +51,13 @@ final class ModelDownloadsModel {
         }
     }
 
-    func startCLIPModelDownload(_ id: CLIPModelDownloadID) {
+    @discardableResult
+    func startCLIPModelDownload(_ id: CLIPModelDownloadID) -> Task<Void, Never>? {
         guard !isShuttingDown, clipModelDownloadTasks[id] == nil,
               clipModelDownloadStates[id]?.canStartDownload == true
-        else { return }
+        else { return nil }
 
-        beginDownload(id) { [self] in await performCLIPModelDownload(id) }
+        return beginDownload(id) { [self] in await performCLIPModelDownload(id) }
     }
 
     @discardableResult
@@ -119,10 +129,9 @@ final class ModelDownloadsModel {
             try Task.checkCancellation()
             clipModelDownloadStates[id] = .validating
             managedCLIPModelLocations[id] = location
-            await refreshCLIPModels()
+            await refreshCLIPModels(finishingDownload: id)
         } catch is CancellationError {
-            let snapshot = await clipModelDownloadCoordinator.snapshot()
-            clipModelDownloadStates[id] = snapshot.states[id] ?? .ready
+            await refreshCLIPModels(allowCancelled: true, finishingDownload: id)
         } catch {
             clipModelDownloadStates[id] = .failed(message: error.localizedDescription)
         }

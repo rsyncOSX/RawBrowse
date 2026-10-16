@@ -78,3 +78,9 @@ Apply and commit each update separately, with focused regression coverage:
 7. Folder-access failures: present a useful error with retry when security-scoped access cannot start.
 
 The original audit tables above are historical. Completion and validation of each update are recorded below. Manual accessibility checks, Instruments measurements and broader refactoring remain follow-up work.
+
+### Update 1 — download reconciliation
+
+Applied: cancellation after installation now refreshes states, installed locations and runtime callbacks together, including from a cancelled task. Refreshes preserve downloading/validating states owned by other active UI tasks. Shutdown still suppresses activation callbacks. Added a controlled late-install cancellation regression that also checks progress preservation during an unrelated refresh.
+
+Validation: AIModelDownloadTests passed in Xcode; Swift syntax parsing and `git diff --check` passed. Log: `/tmp/RawBrowse-download-fix.log`.

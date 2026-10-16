@@ -35,6 +35,32 @@ struct AIModelDownloadTests {
     }
 
     @Test @MainActor
+    func `Late download cancellation reconciles installation and preserves other progress`() async throws {
+        let service = LateInstallService()
+        let directory = URL.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let model = ModelDownloadsModel(coordinator: CLIPModelDownloadCoordinator(
+            service: service,
+            acceptanceStore: RawBrowseAIModelLicenceAcceptanceFileStore(fileURL: directory.appending(path: "licences.json")),
+        ))
+        await model.refreshCLIPModels()
+        var activated: [CLIPModelDownloadID: URL] = [:]
+        model.locationsChanged = { activated = $0 }
+        let task = try #require(model.startCLIPModelDownload(.clipDataComp))
+        await service.waitForStart()
+        #expect(model.clipModelDownloadStates[.clipDataComp] == .downloading(progress: 0.5))
+        await model.refreshCLIPModels()
+        #expect(model.clipModelDownloadStates[.clipDataComp] == .downloading(progress: 0.5))
+        model.cancelCLIPModelDownload(.clipDataComp)
+        await service.finishInstallation()
+        await task.value
+        let location = URL(filePath: "/tmp/test-installed-model")
+        #expect(model.clipModelDownloadStates[.clipDataComp] == .installed(location: location))
+        #expect(model.managedCLIPModelLocations[.clipDataComp] == location)
+        #expect(activated[.clipDataComp] == location)
+    }
+
+    @Test @MainActor
     func `Removal waits for runtime preparation and rejects duplicate removal`() async {
         let service = ObservedRemovalService()
         let model = ModelDownloadsModel(coordinator: CLIPModelDownloadCoordinator(service: service))
@@ -111,4 +137,38 @@ private actor ObservedRemovalService: CLIPModelDownloadServicing {
     func remove(_: CLIPModelDownloadDescriptor) {
         removalCount += 1
     }
+}
+
+private actor LateInstallService: CLIPModelDownloadServicing {
+    private var installed = false
+    private var release: CheckedContinuation<Void, Never>?
+    private var started: CheckedContinuation<Void, Never>?
+
+    func state(for descriptor: CLIPModelDownloadDescriptor) -> CLIPModelDownloadState {
+        installed && descriptor.id == .clipDataComp
+            ? .installed(location: URL(filePath: "/tmp/test-installed-model")) : .ready
+    }
+
+    func download(_: CLIPModelDownloadDescriptor,
+                  progress: @escaping @MainActor @Sendable (Double) -> Void) async -> URL {
+        await progress(0.5)
+        await withCheckedContinuation {
+            release = $0
+            started?.resume()
+            started = nil
+        }
+        installed = true
+        return URL(filePath: "/tmp/test-installed-model")
+    }
+
+    func waitForStart() async {
+        if release == nil { await withCheckedContinuation { started = $0 } }
+    }
+
+    func finishInstallation() {
+        release?.resume()
+        release = nil
+    }
+
+    func remove(_: CLIPModelDownloadDescriptor) {}
 }
