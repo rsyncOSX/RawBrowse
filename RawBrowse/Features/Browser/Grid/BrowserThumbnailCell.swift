@@ -8,10 +8,10 @@ struct BrowserThumbnailCell: View {
     let thumbnailSize: Int
     let displayPath: String?
 
-    @State private var image: NSImage?
-    @State private var isLoading = false
+    @State private var presentation = ThumbnailPresentationModel()
 
     var body: some View {
+        let request = ThumbnailRequest(url: file.url, targetSize: thumbnailSize)
         VStack(alignment: .leading, spacing: 6) {
             thumbnail
 
@@ -23,19 +23,15 @@ struct BrowserThumbnailCell: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
         .contentShape(.rect)
-        .task(id: taskID) {
-            if let cached = await MemoryImageCache.shared.thumbnail(for: file.url, maxPixelSize: thumbnailSize) {
-                image = cached
-                return
+        .task(id: request) {
+            await presentation.load(request: request) {
+                if let cached = await MemoryImageCache.shared.thumbnail(for: request.url, maxPixelSize: request.targetSize) {
+                    return cached
+                }
+                return await BrowserImageLoader.shared.thumbnail(for: request.url, targetSize: request.targetSize)
             }
-            isLoading = true
-            image = await BrowserImageLoader.shared.thumbnail(for: file.url, targetSize: thumbnailSize)
-            isLoading = false
         }
-        .onDisappear {
-            image = nil
-            isLoading = false
-        }
+        .onDisappear { presentation.invalidate() }
     }
 
     private var thumbnail: some View {
@@ -74,18 +70,14 @@ struct BrowserThumbnailCell: View {
         return .primary.opacity(0.08)
     }
 
-    private var taskID: String {
-        "\(file.url.path)|\(thumbnailSize)"
-    }
-
     @ViewBuilder
     private var thumbnailContent: some View {
-        if let image {
+        if let image = presentation.image {
             Image(nsImage: image)
                 .resizable()
                 .scaledToFit()
                 .clipped()
-        } else if isLoading {
+        } else if presentation.isLoading {
             ProgressView()
                 .controlSize(.small)
         } else {
