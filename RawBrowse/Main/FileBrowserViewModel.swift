@@ -16,6 +16,7 @@ final class FileBrowserViewModel {
     let selection: SelectionModel
     let sidebar: SidebarPresentationModel
     let browserPresentation = BrowserPresentationState()
+    @ObservationIgnored private let refreshRunner = LatestTaskRunner()
     @ObservationIgnored private var workspaceTask: Task<Void, Never>?
 
     init(
@@ -158,6 +159,7 @@ final class FileBrowserViewModel {
     func selectFolder(_ folder: BrowserFolderItem) -> Bool {
         guard contents.isSidebarSelectionEnabled,
               catalog.startSecurityScopedAccess(for: catalog.securityScopedURL(for: folder.url)) else { return false }
+        refreshRunner.cancel()
         zoom.closeZoom()
         zoom.presentation.resetZoomInterfaceState()
         selection.clear()
@@ -165,6 +167,32 @@ final class FileBrowserViewModel {
         contents.scan(folder, access: catalog.lease(for: folder.url))
         clip.selectCatalog(catalogAccessURL)
         return true
+    }
+
+    var canRefreshSelectedFolder: Bool {
+        !isShuttingDown && contents.selectedFolder != nil && !contents.isScanning
+    }
+
+    @discardableResult
+    func refreshSelectedFolder() -> Task<Void, Never>? {
+        guard canRefreshSelectedFolder, let folder = contents.selectedFolder,
+              catalog.startSecurityScopedAccess(for: catalog.securityScopedURL(for: folder.url)) else { return nil }
+        let selectedURLs = Set(selection.selectedFiles.map { $0.url.standardizedFileURL })
+        let primaryURL = selection.selectedFile?.url.standardizedFileURL
+        zoom.closeZoom()
+        clip.clearSemanticSearchResults()
+        let scan = contents.scan(folder, access: catalog.lease(for: folder.url))
+        clip.validateCatalogCLIPIndex(at: folder.url.standardizedFileURL)
+        return refreshRunner.start { [self] token in
+            await scan.value
+            guard !Task.isCancelled, refreshRunner.isCurrent(token),
+                  contents.selectedFolder?.id == folder.id, contents.scanError == nil,
+                  !clip.semanticSearchActive else { return }
+            let surviving = selection.displayedFiles.filter { selectedURLs.contains($0.url.standardizedFileURL) }
+            selection.selectedFileIDs = Set(surviving.map(\.id))
+            selection.selectedFileID = surviving.first(where: { $0.url.standardizedFileURL == primaryURL })?.id
+                ?? surviving.first?.id
+        }
     }
 
     func startSimilaritySearch() {
@@ -198,6 +226,7 @@ final class FileBrowserViewModel {
     }
 
     func clearRememberedCatalogs() async {
+        refreshRunner.cancel()
         clip.clearCatalogCLIPIndexes()
         zoom.closeZoom()
         contents.clear()
@@ -209,6 +238,7 @@ final class FileBrowserViewModel {
     func removeRootCatalog(_ folder: BrowserFolderItem) async {
         let url = folder.url.standardizedFileURL
         if contents.selectedFolder?.url.standardizedFileURL.isEqualOrDescendant(of: url) == true {
+            refreshRunner.cancel()
             zoom.closeZoom()
             contents.clear()
             selection.clear()

@@ -21,7 +21,7 @@ struct RawBrowseApp: App {
         .windowToolbarStyle(.unified)
         .commands {
             SidebarCommands()
-            RawBrowseCommands()
+            RawBrowseCommands(viewModel: viewModel)
         }
 
         Window("AI Workspace", id: "ai-workspace") {

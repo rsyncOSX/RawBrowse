@@ -90,3 +90,9 @@ Validation: AIModelDownloadTests passed in Xcode; Swift syntax parsing and `git 
 Applied: unsaved adjustment snapshots and their access leases survive navigation and failed writes. Failures are retained per file and shown in the browser with Retry Save. Reopening an unsaved image restores its retained adjustments rather than older disk values. Retries preserve write ordering and newer edits supersede retry snapshots; successful saves clear only their matching revision.
 
 Validation: FeatureOwnershipTests passed in Xcode, including navigation-before-failure, retained restoration, independent per-file retry and newer-edit precedence. `git diff --check` passed. Log: `/tmp/RawBrowse-sidecar-fix.log`.
+
+### Update 3 — disk refresh and search freshness
+
+Applied: Refresh Folder is available in the browser toolbar and Workspace menu (Shift-Command-R). It rescans the folder, refreshes its index status, closes stale zoom presentation, and restores only surviving selected URLs. Cancelled/replaced refreshes cannot restore an old selection. Search publication now checks file existence off the main actor, excluding missing files and directories while retaining result order/rank.
+
+Validation: FeatureOwnershipTests and CLIPFeatureTests passed in Xcode, including real temporary-folder refresh with added/deleted files and missing search-result filtering. `git diff --check` passed. Log: `/tmp/RawBrowse-refresh-fix.log`. External disk changes require the explicit refresh command; no watcher or automatic rescan is claimed.

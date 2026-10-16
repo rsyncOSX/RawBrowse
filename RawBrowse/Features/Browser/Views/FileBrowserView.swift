@@ -86,6 +86,9 @@ struct FileBrowserView: View {
         }
 
         ToolbarItemGroup {
+            Button("Refresh Folder", systemImage: "arrow.clockwise") { viewModel.refreshSelectedFolder() }
+                .disabled(!viewModel.canRefreshSelectedFolder)
+                .help("Rescan the selected folder for disk changes (Shift-Command-R)")
             Button("Preview", systemImage: "arrow.up.left.and.arrow.down.right") {
                 viewModel.openZoom()
             }

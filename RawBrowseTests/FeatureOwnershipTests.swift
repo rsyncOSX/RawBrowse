@@ -43,6 +43,52 @@ struct FeatureOwnershipTests {
     }
 
     @Test
+    func `Search omits missing files and directories while preserving rank order`() async throws {
+        let root = URL.temporaryDirectory.appending(path: UUID().uuidString)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let file = root.appending(path: "present.jpg")
+        try Data().write(to: file)
+        let clip = CLIPFeatureModel(settings: SettingsModel(initialValues: BrowserSettings(), save: { _ in }))
+        await clip.startSearch(anchorName: nil) { _ in
+            [CLIPSearchResult(rank: 1, score: 1, fileName: "missing", path: root.appending(path: "missing.jpg").path),
+             CLIPSearchResult(rank: 2, score: 0.8, fileName: "present", path: file.path),
+             CLIPSearchResult(rank: 3, score: 0.5, fileName: "directory", path: root.path)]
+        }.value
+        #expect(clip.semanticSearchResults.map(\.url) == [file])
+        #expect(clip.semanticSearchResults.first?.rank == 2)
+        #expect(clip.semanticFiles.map(\.url) == [file])
+    }
+
+    @Test
+    func `Folder refresh reconciles deleted added and selected files`() async throws {
+        let root = URL.temporaryDirectory.appending(path: UUID().uuidString)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let kept = root.appending(path: "kept.jpg")
+        let added = root.appending(path: "added.jpg")
+        try Data().write(to: kept)
+        try Data().write(to: added)
+        let removed = BrowserFileItem(url: root.appending(path: "removed.jpg"))
+        let survivor = BrowserFileItem(url: kept)
+        let contents = BrowserContentsModel()
+        contents.selectedFolder = BrowserFolderItem(url: root)
+        contents.files = [removed, survivor]
+        let catalog = CatalogStore(openAccess: { _ in true }, closeAccess: { _ in }, lease: { _ in nil })
+        let model = FileBrowserViewModel(settings: SettingsModel(initialValues: BrowserSettings(), save: { _ in }),
+                                         catalog: catalog, contents: contents)
+        model.selection.selectedFileIDs = [removed.id, survivor.id]
+        model.selection.selectedFileID = removed.id
+        let refresh = try #require(model.refreshSelectedFolder())
+        #expect(contents.files.isEmpty)
+        await refresh.value
+        #expect(Set(contents.files.map(\.url)) == [kept, added])
+        #expect(model.selection.selectedFiles.map(\.url) == [kept])
+        #expect(model.selection.selectedFile?.url == kept)
+        #expect(contents.scanError == nil)
+    }
+
+    @Test
     func `Settings snapshots save in call order`() async {
         let release = FeatureGate()
         let started = FeatureGate()
@@ -108,7 +154,12 @@ struct FeatureOwnershipTests {
     }
 
     @Test
-    func `CLIP replacement rejects a non-cooperative result`() async {
+    func `CLIP replacement rejects a non-cooperative result`() async throws {
+        let directory = URL.temporaryDirectory.appending(path: UUID().uuidString)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let url = directory.appending(path: "new.jpg")
+        try Data().write(to: url)
         let clip = CLIPFeatureModel(settings: SettingsModel())
         let started = FeatureGate()
         let release = FeatureGate()
@@ -118,7 +169,7 @@ struct FeatureOwnershipTests {
             return [result("old")]
         }
         await started.wait()
-        let latest = clip.startSearch(anchorName: "new") { _ in [result("new")] }
+        let latest = clip.startSearch(anchorName: "new") { _ in [CLIPSearchResult(rank: 1, score: 1, fileName: "new", path: url.path)] }
         await latest.value
         release.open()
         await old.value

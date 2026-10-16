@@ -344,7 +344,9 @@ final class CLIPFeatureModel {
                 }
             }
             do {
-                let results = try await operation(limit)
+                let found = try await operation(limit)
+                guard !Task.isCancelled, searchRunner.isCurrent(token) else { return }
+                let results = try await Self.existingSearchResults(found)
                 guard !Task.isCancelled, searchRunner.isCurrent(token) else { return }
                 semanticSearchResults = results
                 semanticFiles = results.map { BrowserFileItem(url: $0.url) }
@@ -356,6 +358,15 @@ final class CLIPFeatureModel {
                 clipFeatureError = error.localizedDescription
                 clearSemanticSearchResults(keepingQuery: true)
             }
+        }
+    }
+
+    @concurrent
+    private nonisolated static func existingSearchResults(_ results: [CLIPSearchResult]) async throws -> [CLIPSearchResult] {
+        try results.filter { result in
+            try Task.checkCancellation()
+            var isDirectory: ObjCBool = false
+            return FileManager.default.fileExists(atPath: result.url.path, isDirectory: &isDirectory) && !isDirectory.boolValue
         }
     }
 
