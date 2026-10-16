@@ -10,6 +10,7 @@ final class ModelDownloadsModel {
     @ObservationIgnored private var clipModelDownloadTasks: [CLIPModelDownloadID: Task<Void, Never>] = [:]
     @ObservationIgnored private var clipModelRefreshGeneration = 0
     @ObservationIgnored var prepareForRemoval: (@MainActor (CLIPModelDownloadID) async -> Void)?
+    private var isShuttingDown = false
     @ObservationIgnored private var removingModels: Set<CLIPModelDownloadID> = []
     @ObservationIgnored var locationsChanged: (@MainActor ([CLIPModelDownloadID: URL]) -> Void)?
 
@@ -18,17 +19,18 @@ final class ModelDownloadsModel {
     }
 
     func refreshCLIPModels(allowCancelled: Bool = false) async {
-        guard removingModels.isEmpty else { return }
+        guard !isShuttingDown, removingModels.isEmpty else { return }
         clipModelRefreshGeneration &+= 1
         let generation = clipModelRefreshGeneration
         let snapshot = await clipModelDownloadCoordinator.snapshot()
-        guard !Task.isCancelled || allowCancelled, clipModelRefreshGeneration == generation, removingModels.isEmpty else { return }
+        guard !Task.isCancelled || allowCancelled, clipModelRefreshGeneration == generation, !isShuttingDown, removingModels.isEmpty else { return }
         managedCLIPModelLocations = snapshot.managedModelLocations
         clipModelDownloadStates = snapshot.states
         locationsChanged?(managedCLIPModelLocations)
     }
 
     func acceptModelLicence(_ id: CLIPModelDownloadID) async {
+        guard !isShuttingDown else { return }
         do {
             try await clipModelDownloadCoordinator.acceptLicence(
                 for: id,
@@ -41,14 +43,25 @@ final class ModelDownloadsModel {
     }
 
     func startCLIPModelDownload(_ id: CLIPModelDownloadID) {
-        guard clipModelDownloadTasks[id] == nil,
+        guard !isShuttingDown, clipModelDownloadTasks[id] == nil,
               clipModelDownloadStates[id]?.canStartDownload == true
         else { return }
 
+        beginDownload(id) { [self] in await performCLIPModelDownload(id) }
+    }
+
+    @discardableResult
+    func beginDownload(_ id: CLIPModelDownloadID,
+                       operation: @escaping @MainActor () async -> Void) -> Task<Void, Never>? {
+        guard !isShuttingDown, clipModelDownloadTasks[id] == nil else { return nil }
         clipModelDownloadStates[id] = .downloading(progress: 0)
-        clipModelDownloadTasks[id] = Task { [self] in
-            await performCLIPModelDownload(id)
+        let task = Task { [self] in
+            defer { clipModelDownloadTasks[id] = nil }
+            guard !Task.isCancelled else { return }
+            await operation()
         }
+        clipModelDownloadTasks[id] = task
+        return task
     }
 
     func cancelCLIPModelDownload(_ id: CLIPModelDownloadID) {
@@ -56,7 +69,7 @@ final class ModelDownloadsModel {
     }
 
     func removeManagedCLIPModel(_ id: CLIPModelDownloadID) async {
-        guard clipModelDownloadTasks[id] == nil, removingModels.insert(id).inserted else { return }
+        guard !isShuttingDown, clipModelDownloadTasks[id] == nil, removingModels.insert(id).inserted else { return }
         clipModelRefreshGeneration &+= 1
         clipModelDownloadStates[id] = .removing
         await prepareForRemoval?(id)
@@ -77,8 +90,20 @@ final class ModelDownloadsModel {
         }
     }
 
+    func cancelAndWait() async {
+        isShuttingDown = true
+        clipModelRefreshGeneration &+= 1
+        let pending = Array(clipModelDownloadTasks.values)
+        pending.forEach { $0.cancel() }
+        for task in pending { await task.value }
+    }
+
+    func resumeAfterCancelledTermination() async {
+        isShuttingDown = false
+        await refreshCLIPModels()
+    }
+
     private func performCLIPModelDownload(_ id: CLIPModelDownloadID) async {
-        defer { clipModelDownloadTasks[id] = nil }
         do {
             let location = try await clipModelDownloadCoordinator.download(
                 id,

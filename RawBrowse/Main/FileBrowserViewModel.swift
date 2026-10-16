@@ -119,6 +119,7 @@ final class FileBrowserViewModel {
 
     func prepareForTermination(exports: RAW9ExportQueue = .shared) async -> String? {
         isShuttingDown = true
+        await workspaceTask?.value
         await raw9.finishSaving()
         await exports.waitUntilFinished()
         await settingsModel.finishSaving()
@@ -129,6 +130,19 @@ final class FileBrowserViewModel {
         if raw9.hasUnsavedChanges {
             isShuttingDown = false
             return raw9.raw9SidecarError ?? "Some image adjustments could not be saved."
+        }
+        // Prevent late download refreshes from reactivating a drained runtime.
+        clip.cancelIndexing()
+        deepReview.deepAIReviewController.cancel()
+        await downloads.cancelAndWait()
+        await deepReview.deactivateAndWait()
+        await clip.deactivateAndWait()
+        // Index completion may have persisted its final summary while we waited.
+        await settingsModel.finishSaving()
+        if settingsModel.hasUnsavedChanges {
+            isShuttingDown = false
+            await downloads.resumeAfterCancelledTermination()
+            return settingsModel.settingsError ?? "Some settings could not be saved."
         }
         return nil
     }

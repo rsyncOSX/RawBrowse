@@ -11,7 +11,7 @@ final class CLIPFeatureModel {
     @ObservationIgnored var indexPresenceChanged: (@MainActor (URL, Bool) -> Void)?
     var clipModelStatus: CLIPModelStatus = .notConfigured
     var clipIndexStatus: CLIPIndexStatus = .noFolderSelected
-    var isIndexing = false
+    private(set) var isIndexing = false
     var indexingProgress: CLIPIndexingProgress?
     private(set) var indexingDirectoryURL: URL?
     private var indexSummaries: [URL: CLIPIndexSummary] = [:]
@@ -96,7 +96,7 @@ final class CLIPFeatureModel {
     }
 
     func classifySubjects(in urls: [URL]) async -> [URL: String] {
-        guard !isRuntimeSuspended, let engine = clipEngine else { return [:] }
+        guard !isRuntimeSuspended, !isIndexing, let engine = clipEngine else { return [:] }
         var labels: [URL: String] = [:]
         let task = trackRuntimeTask {
             labels = await (try? engine.classifySubjects(in: urls)) ?? [:]
@@ -141,10 +141,7 @@ final class CLIPFeatureModel {
             return
         }
 
-        indexingID = UUID()
-        indexingTask?.cancel()
-        indexingTask = nil
-        indexingProgress = nil
+        cancelIndexing()
         indexValidationTask?.cancel()
         searchRunner.cancel()
         let operationID = UUID()
@@ -155,35 +152,59 @@ final class CLIPFeatureModel {
         clipEngineDirectoryURL = directory
         hasCompatibleCLIPIndex = false
         clipIndexStatus = .checking(directory)
+        let access = CatalogAccess.shared.lease(for: directory)
+        beginIndexing(directory: directory, operationID: operationID) { [self] in
+            defer { withExtendedLifetime(access) {} }
+            return try await engine.synchronize(directory: directory) { [weak self] progress in
+                await self?.publishIndexingProgress(progress, operationID: operationID)
+            }
+        }
+    }
+
+    /// Own the writer until it exits, even when a runtime transition cancels it.
+    @discardableResult
+    func beginIndexing(
+        directory: URL,
+        operationID: UUID = UUID(),
+        operation: @escaping @MainActor () async throws -> CLIPIndexSummary,
+    ) -> Task<Void, Never>? {
+        guard !isRuntimeSuspended, indexingTask == nil else { return nil }
+        indexingID = operationID
         isIndexing = true
         indexingProgress = nil
         indexingDirectoryURL = directory
         clipFeatureError = nil
         clearSemanticSearchResults(keepingQuery: true)
-
-        let access = CatalogAccess.shared.lease(for: directory)
+        // Include replaced/cancelled readers still unwinding, not just the
+        // validation handles currently visible in the catalog cache.
+        let readers = Array(runtimeTasks.values)
+        readers.forEach { $0.cancel() }
         indexingTask = trackRuntimeTask { [self] in
-            defer { withExtendedLifetime(access) {} }
-            do {
-                let summary = try await engine.synchronize(directory: directory) { [weak self] progress in
-                    await self?.publishIndexingProgress(progress, operationID: operationID)
+            defer {
+                isIndexing = false
+                indexingProgress = nil
+                indexingTask = nil
+                indexingDirectoryURL = nil
+                if !isRuntimeSuspended, clipProvider != nil {
+                    validateCatalogCLIPIndex(at: directory)
                 }
-                try Task.checkCancellation()
-                guard self.indexingID == operationID else { return }
-                self.recordIndexSummary(summary, for: directory)
-            } catch is CancellationError {
-                // Cancellation is user initiated or caused by a replacement index operation.
-            } catch {
-                guard !Task.isCancelled, self.indexingID == operationID else { return }
-                self.clipFeatureError = String(describing: error)
             }
-            guard self.indexingID == operationID else { return }
-            self.isIndexing = false
-            self.indexingProgress = nil
-            self.indexingTask = nil
-            self.indexingDirectoryURL = nil
-            self.validateCatalogCLIPIndex(at: directory)
+            do {
+                for reader in readers { await reader.value }
+                await searchRunner.cancelAndWait()
+                try Task.checkCancellation()
+                let summary = try await operation()
+                try Task.checkCancellation()
+                guard indexingID == operationID else { return }
+                recordIndexSummary(summary, for: directory)
+            } catch is CancellationError {
+                // Ownership is released only by the cleanup above.
+            } catch {
+                guard !Task.isCancelled, indexingID == operationID else { return }
+                clipFeatureError = String(describing: error)
+            }
         }
+        return indexingTask
     }
 
     func recordIndexSummary(_ summary: CLIPIndexSummary, for directory: URL) {
@@ -208,6 +229,7 @@ final class CLIPFeatureModel {
     }
 
     func validateCatalogCLIPIndex(at directory: URL) {
+        guard !isRuntimeSuspended else { return }
         guard let provider = clipProvider else {
             if catalogURL == directory {
                 clipIndexStatus = .modelRequired
@@ -222,8 +244,11 @@ final class CLIPFeatureModel {
             useCatalogCLIPIndex(at: directory)
         }
         let access = CatalogAccess.shared.lease(for: directory)
+        let writer = indexingTask
         let task = trackRuntimeTask { [weak self] in
             defer { withExtendedLifetime(access) {} }
+            await writer?.value
+            guard !Task.isCancelled else { return }
             let status = await engine.validateIndex(directory: directory)
             guard let self, !Task.isCancelled else { return }
             self.catalogCLIPIndexes[directory] = (engine, status)
@@ -302,6 +327,7 @@ final class CLIPFeatureModel {
         anchorName: String?,
         operation: @escaping @MainActor (Int) async throws -> [CLIPSearchResult],
     ) -> Task<Void, Never> {
+        guard !isRuntimeSuspended, !isIndexing else { return Task {} }
         isSearching = true
         clipFeatureError = nil
         semanticSearchActive = true
@@ -372,10 +398,7 @@ final class CLIPFeatureModel {
         clearCatalogCLIPIndexes()
         activeCLIPModelURL = nil
         modelValidationTask?.cancel()
-        indexingID = UUID()
-        indexingTask?.cancel()
-        indexingTask = nil
-        indexingProgress = nil
+        cancelIndexing()
         indexValidationTask?.cancel()
         searchRunner.cancel()
         clipModelStatus = .notConfigured
@@ -384,7 +407,6 @@ final class CLIPFeatureModel {
         clipEngineDirectoryURL = nil
         hasCompatibleCLIPIndex = false
         clipIndexStatus = catalogURL == nil ? .noFolderSelected : .modelRequired
-        isIndexing = false
         isSearching = false
         clearSemanticSearchResults()
     }
@@ -394,10 +416,7 @@ final class CLIPFeatureModel {
         let url = url.standardizedFileURL
         activeCLIPModelURL = url
         modelValidationTask?.cancel()
-        indexingID = UUID()
-        indexingTask?.cancel()
-        indexingTask = nil
-        indexingProgress = nil
+        cancelIndexing()
         indexValidationTask?.cancel()
         searchRunner.cancel()
         indexValidationID = UUID()
@@ -407,12 +426,13 @@ final class CLIPFeatureModel {
         clipEngineDirectoryURL = nil
         hasCompatibleCLIPIndex = false
         clipIndexStatus = catalogURL == nil ? .noFolderSelected : .modelRequired
-        isIndexing = false
         isSearching = false
         clipFeatureError = nil
         clearSemanticSearchResults()
 
+        let writer = indexingTask
         modelValidationTask = trackRuntimeTask { [self] in
+            await writer?.value
             guard !Task.isCancelled, activeCLIPModelURL == url else { return }
             let load = await self.clipModelManager.load(url: url)
             guard !Task.isCancelled, self.activeCLIPModelURL == url else { return }
@@ -482,10 +502,7 @@ final class CLIPFeatureModel {
     }
 
     func resetCLIPIndexSelection() {
-        indexingID = UUID()
-        indexingTask?.cancel()
-        indexingTask = nil
-        indexingProgress = nil
+        cancelIndexing()
         indexValidationTask?.cancel()
         searchRunner.cancel()
         indexValidationID = UUID()
@@ -493,8 +510,6 @@ final class CLIPFeatureModel {
         clipEngineDirectoryURL = nil
         clipIndexStatus = .noFolderSelected
         hasCompatibleCLIPIndex = false
-        isIndexing = false
-        indexingProgress = nil
         clearSemanticSearchResults()
     }
 }

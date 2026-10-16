@@ -115,6 +115,120 @@ struct FeatureOwnershipTests {
         #expect(drained)
     }
 
+    @Test(arguments: ["cancel", "reset", "deactivate", "replace"])
+    func `Index transitions retain a cancelled writer until it exits`(transition: String) async throws {
+        let clip = CLIPFeatureModel(settings: SettingsModel())
+        let started = FeatureGate()
+        let release = FeatureGate()
+        let directory = URL(filePath: "/tmp/index-ownership")
+        let writer = try #require(clip.beginIndexing(directory: directory) {
+            started.open()
+            await release.wait()
+            return CLIPIndexSummary(discovered: 1, indexed: 1, failures: [])
+        })
+        await started.wait()
+        switch transition {
+        case "reset": clip.resetCLIPIndexSelection()
+        case "deactivate": clip.activateModel(at: nil)
+        case "replace": clip.activateModel(at: URL(filePath: "/tmp/missing-model"))
+        default: clip.cancelIndexing()
+        }
+        #expect(writer.isCancelled)
+        #expect(clip.isIndexing)
+        #expect(clip.indexingDirectoryURL == directory)
+        #expect(clip.beginIndexing(directory: directory) {
+            Issue.record("A replacement writer must not start before cancellation drains")
+            return CLIPIndexSummary(discovered: 0, indexed: 0, failures: [])
+        } == nil)
+        release.open()
+        await writer.value
+        #expect(!clip.isIndexing)
+        #expect(clip.indexingDirectoryURL == nil)
+        #expect(clip.lastIndexSummary == nil)
+        await clip.deactivateAndWait()
+    }
+
+    @Test
+    func `Download shutdown cancels and drains workers and rejects new work`() async throws {
+        let downloads = ModelDownloadsModel()
+        let started = FeatureGate()
+        let release = FeatureGate()
+        let worker = try #require(downloads.beginDownload(.clipDataComp) {
+            started.open()
+            await release.wait()
+        })
+        await started.wait()
+        var finished = false
+        let shutdown = Task {
+            await downloads.cancelAndWait()
+            finished = true
+        }
+        // Wait for cancellation admission, rather than relying on scheduler timing.
+        while !worker.isCancelled { await Task.yield() }
+        #expect(!finished)
+        #expect(downloads.beginDownload(.sam3) { Issue.record("Shutdown must reject downloads") } == nil)
+        release.open()
+        await shutdown.value
+        #expect(finished)
+    }
+
+    @Test
+    func `Termination waits for a cancelled download to clean up`() async throws {
+        let model = FileBrowserViewModel()
+        let started = FeatureGate()
+        let release = FeatureGate()
+        var cleanedUp = false
+        let worker = try #require(model.downloads.beginDownload(.clipDataComp) {
+            started.open()
+            await release.wait()
+            cleanedUp = true
+        })
+        await started.wait()
+        let exports = RAW9ExportQueue(operation: { _ in }, startAccess: { _ in false }, stopAccess: { _ in })
+        var finished = false
+        let quit = Task {
+            #expect(await model.prepareForTermination(exports: exports) == nil)
+            finished = true
+        }
+        while !worker.isCancelled { await Task.yield() }
+        #expect(!finished)
+        #expect(!cleanedUp)
+        release.open()
+        await quit.value
+        #expect(cleanedUp)
+        #expect(finished)
+    }
+
+    @Test
+    func `Termination drains non-cooperative indexing and prevents restart`() async throws {
+        let model = FileBrowserViewModel()
+        let started = FeatureGate()
+        let release = FeatureGate()
+        let directory = URL(filePath: "/tmp/quit-index")
+        let writer = try #require(model.clip.beginIndexing(directory: directory) {
+            started.open()
+            await release.wait()
+            return CLIPIndexSummary(discovered: 1, indexed: 1, failures: [])
+        })
+        await started.wait()
+        let exports = RAW9ExportQueue(operation: { _ in }, startAccess: { _ in false }, stopAccess: { _ in })
+        var finished = false
+        let quit = Task {
+            #expect(await model.prepareForTermination(exports: exports) == nil)
+            finished = true
+        }
+        while !writer.isCancelled { await Task.yield() }
+        #expect(!finished)
+        #expect(model.clip.isIndexing)
+        release.open()
+        await quit.value
+        #expect(!model.clip.isIndexing)
+        #expect(model.clip.beginIndexing(directory: directory) {
+            Issue.record("Termination must reject indexing")
+            return CLIPIndexSummary(discovered: 0, indexed: 0, failures: [])
+        } == nil)
+    }
+
     @Test
     func `CLIP clearing invalidates a suspended search`() async {
         let clip = CLIPFeatureModel(settings: SettingsModel())
