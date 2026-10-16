@@ -210,6 +210,28 @@ struct FullSizeJPGDiskCacheTests {
         #expect(result.height == 5)
     }
 
+    @Test
+    func `injected loader caches do not share disk entries`() async throws {
+        let root = try makeTestRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let source = root.appendingPathComponent("photo.arw")
+        try Data([1]).write(to: source)
+        let image = try makeTestImage(width: 40, height: 20)
+        let cacheA = FullSizeJPGDiskCache(cacheDirectory: root.appendingPathComponent("cache-a"))
+        let cacheB = FullSizeJPGDiskCache(cacheDirectory: root.appendingPathComponent("cache-b"))
+        let first = BrowserImageLoader(fullSizeCache: cacheA, extractPreview: { _ in image })
+        let second = BrowserImageLoader(fullSizeCache: cacheB, extractPreview: { _ in nil })
+        #expect(await first.previewImage(for: source, maxPixelSize: 20) != nil)
+        #expect(await cacheA.load(for: source) != nil)
+        #expect(await cacheB.load(for: source) == nil)
+        #expect(await second.previewImage(for: source, maxPixelSize: 20) == nil)
+        let reopened = BrowserImageLoader(fullSizeCache: cacheA, extractPreview: { _ in
+            Issue.record("An isolated disk hit must not extract the source again")
+            return nil
+        })
+        #expect(await reopened.previewImage(for: source, maxPixelSize: 20)?.width == 20)
+    }
+
     private func makeTestRoot() throws -> URL {
         let root = FileManager.default.temporaryDirectory
             .appendingPathComponent("RawBrowseFullSizeCache-\(UUID().uuidString)", isDirectory: true)

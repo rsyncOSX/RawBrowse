@@ -19,7 +19,9 @@ struct BrowserFileDiscoveryTests {
             withIntermediateDirectories: true,
         )
 
-        let loader = BrowserImageLoader()
+        let loader = BrowserImageLoader(fullSizeCache: FullSizeJPGDiskCache(
+            cacheDirectory: root.appendingPathComponent("preview-cache", isDirectory: true),
+        ))
         let files = try await loader.discoverSupportedFiles(at: root)
         #expect(files.map(\.name) == names)
         let folder = await loader.folderItem(at: root)
