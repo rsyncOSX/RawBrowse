@@ -45,6 +45,7 @@ struct FileBrowserView: View {
             VStack(spacing: 0) {
                 FolderAccessFailureView()
                 RAW9SaveFailuresView()
+                RAW9CompatibilityStatusView()
             }
         }
         .transaction { transaction in
@@ -169,6 +170,26 @@ private struct FolderAccessFailureView: View {
             .padding(12)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(.bar)
+        }
+    }
+}
+
+private struct RAW9CompatibilityStatusView: View {
+    @Environment(CatalogStore.self) private var catalog
+
+    var body: some View {
+        if catalog.isScanningRAW9Compatibility {
+            HStack(spacing: 6) {
+                ProgressView().controlSize(.mini)
+                Label("Searching for RAW 9 compatibility…", systemImage: "figure.run")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(.bar, in: Capsule())
+            .frame(maxWidth: .infinity, alignment: .trailing)
+            .padding(8)
         }
     }
 }

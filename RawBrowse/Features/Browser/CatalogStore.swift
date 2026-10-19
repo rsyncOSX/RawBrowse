@@ -3,6 +3,12 @@ import Observation
 
 @Observable @MainActor
 final class CatalogStore {
+    private(set) var isScanningRAW9Compatibility = false
+    @ObservationIgnored private var raw9ScanTask: Task<Void, Never>?
+    @ObservationIgnored private var raw9Results: [URL: Bool] = [:]
+    @ObservationIgnored private var raw9Revision: [URL: UUID] = [:]
+    @ObservationIgnored private let checkRAW9: @MainActor (URL) async -> Bool
+
     var catalogError: String?
     @ObservationIgnored private var catalogLoadFailed = true
     @ObservationIgnored private var persistenceGeneration = 0
@@ -49,6 +55,7 @@ final class CatalogStore {
         closeAccess: @escaping @MainActor (URL) -> Void = { CatalogAccess.shared.close($0) },
         lease: @escaping @MainActor (URL) -> CatalogAccessLease? = { CatalogAccess.shared.lease(for: $0) },
         discoverFolders: @escaping @MainActor (URL) async -> [BrowserFolderItem] = { await BrowserImageLoader.shared.discoverFolders(at: $0) },
+        checkRAW9: @escaping @MainActor (URL) async -> Bool = { await BrowserImageLoader.shared.hasRAW9Files(at: $0) },
     ) {
         resolveCatalog = resolve
         makeCatalog = remember
@@ -59,6 +66,7 @@ final class CatalogStore {
         self.closeAccess = closeAccess
         acquireLease = lease
         self.discoverFolders = discoverFolders
+        self.checkRAW9 = checkRAW9
     }
 
     func lease(for url: URL) -> CatalogAccessLease? {
@@ -79,9 +87,61 @@ final class CatalogStore {
             }
         }
         hierarchyChanged?()
+        scheduleRAW9Scan()
+    }
+
+    private func scheduleRAW9Scan() {
+        guard raw9ScanTask == nil, foldersByID.keys.contains(where: { raw9Results[$0] == nil }) else { return }
+        raw9ScanTask = Task { [weak self] in
+            // Let the initial folder hierarchy and browser render before probing decoders.
+            try? await Task.sleep(for: .milliseconds(300))
+            guard let self else { return }
+            defer {
+                raw9ScanTask = nil
+                isScanningRAW9Compatibility = false
+            }
+            while !Task.isCancelled {
+                if isLoadingCatalogs || !loadingFolderIDs.isEmpty {
+                    try? await Task.sleep(for: .milliseconds(100))
+                    continue
+                }
+                guard let folder = foldersByID.values.first(where: { raw9Results[$0.id] == nil }) else { break }
+                isScanningRAW9Compatibility = true
+                let revision = raw9Revision[folder.id]
+                let generation = persistenceGeneration
+                let access = lease(for: folder.url)
+                let supported = await checkRAW9(folder.url)
+                withExtendedLifetime(access) {}
+                guard !Task.isCancelled else { break }
+                guard foldersByID[folder.id] != nil, generation == persistenceGeneration,
+                      raw9Revision[folder.id] == revision else { continue }
+                raw9Results[folder.id] = supported
+                applyRAW9Result(supported, to: folder.id)
+            }
+        }
+    }
+
+    private func applyRAW9Result(_ supported: Bool, to id: URL) {
+        func updated(_ folder: BrowserFolderItem) -> BrowserFolderItem {
+            BrowserFolderItem(url: folder.url, supportedFileCount: folder.supportedFileCount,
+                              hasCLIPIndex: folder.hasCLIPIndex, hasRAW9Files: supported)
+        }
+        if let index = rootFolders.firstIndex(where: { $0.id == id }) {
+            rootFolders[index] = updated(rootFolders[index])
+        }
+        for parent in Array(folderChildren.keys) {
+            guard var children = folderChildren[parent], let index = children.firstIndex(where: { $0.id == id }) else { continue }
+            children[index] = updated(children[index])
+            folderChildren[parent] = children
+        }
+        if let folder = foldersByID[id] {
+            folderChanged?(folder)
+        }
     }
 
     func clearRememberedCatalogs() async {
+        raw9Results = [:]
+        raw9Revision = [:]
         persistenceGeneration += 1
         isLoadingCatalogs = false
         for task in folderTasks.values {
@@ -112,6 +172,10 @@ final class CatalogStore {
 
     func removeRootCatalog(_ folder: BrowserFolderItem) async {
         let url = folder.url.standardizedFileURL
+        raw9Results = raw9Results.filter { !$0.key.isEqualOrDescendant(of: url) }
+        for id in foldersByID.keys where id.isEqualOrDescendant(of: url) {
+            raw9Revision[id] = UUID()
+        }
         for (id, task) in folderTasks where id.standardizedFileURL.isEqualOrDescendant(of: url) {
             task.cancel()
         }
@@ -165,6 +229,12 @@ final class CatalogStore {
     }
 
     func setLoadedChildren(_ children: [BrowserFolderItem], for folder: BrowserFolderItem) {
+        for child in children {
+            raw9Results[child.id] = nil
+            raw9Revision[child.id] = UUID()
+        }
+        raw9Results[folder.id] = nil
+        raw9Revision[folder.id] = UUID()
         folderChildren[folder.id] = children
         if rootFolders.contains(where: { $0.id == folder.id }), !children.isEmpty {
             rootChildrenDiscovered?(folder)
