@@ -40,6 +40,11 @@ nonisolated enum RAW9Support {
 
     @concurrent
     static func isSupported(for url: URL) async -> Bool {
+        supportsDecoder(for: url)
+    }
+
+    /// Synchronous capability probe for callers already performing background discovery.
+    static func supportsDecoder(for url: URL) -> Bool {
         guard !Task.isCancelled, !SupportedFileType.isRenderedImage(url) else { return false }
         return autoreleasepool {
             guard let filter = CIRAWFilter(imageURL: url) else { return false }

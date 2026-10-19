@@ -179,6 +179,7 @@ final class CatalogStore {
                 url: folder.url,
                 supportedFileCount: folder.supportedFileCount,
                 hasCLIPIndex: isPresent,
+                hasRAW9Files: folder.hasRAW9Files,
             )
         }
 

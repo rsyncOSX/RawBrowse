@@ -5,17 +5,20 @@ struct BrowserFolderItem: Identifiable, Hashable {
     let url: URL
     let name: String
     let supportedFileCount: Int
+    let hasRAW9Files: Bool
     let hasCLIPIndex: Bool
 
     nonisolated init(
         url: URL,
         supportedFileCount: Int = 0,
         hasCLIPIndex: Bool = false,
+        hasRAW9Files: Bool = false,
     ) {
         self.id = url
         self.url = url
         self.name = url.lastPathComponent.isEmpty ? url.path : url.lastPathComponent
         self.supportedFileCount = supportedFileCount
         self.hasCLIPIndex = hasCLIPIndex
+        self.hasRAW9Files = hasRAW9Files
     }
 }

@@ -363,27 +363,37 @@ actor BrowserImageLoader {
         return (width, height)
     }
 
-    private nonisolated static func supportedFileCount(in folderURL: URL) -> Int {
-        let supported = RawFormatRegistry.allExtensions.union(SupportedFileType.renderedImageExtensions)
-        guard let children = try? FileManager.default.contentsOfDirectory(
+    /// Called from background discovery; only files directly inside this folder contribute.
+    nonisolated static func folderItem(
+        at folderURL: URL,
+        supportsRAW9: (URL) -> Bool = { RAW9Support.supportsDecoder(for: $0) },
+    ) -> BrowserFolderItem {
+        let rawExtensions = RawFormatRegistry.allExtensions
+        let supported = rawExtensions.union(SupportedFileType.renderedImageExtensions)
+        let children = (try? FileManager.default.contentsOfDirectory(
             at: folderURL,
             includingPropertiesForKeys: [.isRegularFileKey],
             options: [.skipsHiddenFiles, .skipsPackageDescendants],
-        ) else { return 0 }
-
-        let supportedFiles = children.filter { url in
-            guard supported.contains(url.pathExtension.lowercased()) else { return false }
-            let values = try? url.resourceValues(forKeys: [.isRegularFileKey])
-            return values?.isRegularFile == true
+        )) ?? []
+        var count = 0
+        var hasRAW9Files = false
+        for url in children {
+            guard !Task.isCancelled else { break }
+            let fileExtension = url.pathExtension.lowercased()
+            guard supported.contains(fileExtension),
+                  (try? url.resourceValues(forKeys: [.isRegularFileKey]))?.isRegularFile == true
+            else { continue }
+            count += 1
+            if !hasRAW9Files, rawExtensions.contains(fileExtension),
+               !SupportedFileType.isRenderedImage(url) {
+                hasRAW9Files = supportsRAW9(url)
+            }
         }
-        return supportedFiles.count
-    }
-
-    private nonisolated static func folderItem(at folderURL: URL) -> BrowserFolderItem {
-        BrowserFolderItem(
+        return BrowserFolderItem(
             url: folderURL,
-            supportedFileCount: supportedFileCount(in: folderURL),
+            supportedFileCount: count,
             hasCLIPIndex: CLIPIndexPaths.containsIndex(in: folderURL),
+            hasRAW9Files: hasRAW9Files,
         )
     }
 }

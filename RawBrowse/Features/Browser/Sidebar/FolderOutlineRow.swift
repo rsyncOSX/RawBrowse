@@ -44,6 +44,15 @@ struct FolderOutlineRow: View {
             HStack {
                 Text(displayName)
                     .lineLimit(1)
+                if folder.hasRAW9Files {
+                    Text("RAW 9", comment: "Sidebar badge indicating a folder contains files supported by Apple's RAW 9 decoder.")
+                        .font(.caption2.weight(.semibold))
+                        .padding(.horizontal, 5)
+                        .padding(.vertical, 2)
+                        .background(.quaternary, in: Capsule())
+                        .help("Contains RAW files supported by Apple’s RAW 9 engine")
+                        .accessibilityLabel("Contains RAW 9 compatible files")
+                }
                 Spacer()
                 if let imageCountText {
                     Text(imageCountText)
