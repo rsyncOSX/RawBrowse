@@ -50,7 +50,7 @@ struct FolderOutlineRow: View {
                         .foregroundStyle(.white)
                         .padding(.horizontal, 4)
                         .padding(.vertical, 1)
-                        .background(.green, in: Capsule())
+                        .background(.blue, in: Capsule())
                         .help("Contains RAW files supported by Apple’s RAW 9 engine")
                         .accessibilityLabel("Contains RAW 9 compatible files")
                 }
