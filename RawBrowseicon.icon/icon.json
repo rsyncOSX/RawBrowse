@@ -9,6 +9,32 @@
     {
       "layers" : [
         {
+          "blend-mode" : "normal",
+          "fill" : "system-dark",
+          "image-name" : "shutter-icon-512.png",
+          "name" : "shutter-icon-512",
+          "opacity" : 0.9,
+          "position" : {
+            "scale" : 0.8,
+            "translation-in-points" : [
+              0,
+              70.34375
+            ]
+          }
+        }
+      ],
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.6
+      },
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.2
+      }
+    },
+    {
+      "layers" : [
+        {
           "image-name" : "rawcullfbicon.png",
           "name" : "rawcullfbicon"
         }
