@@ -45,11 +45,12 @@ struct FolderOutlineRow: View {
                 Text(displayName)
                     .lineLimit(1)
                 if folder.hasRAW9Files {
-                    Text("RAW 9", comment: "Sidebar badge indicating a folder contains files supported by Apple's RAW 9 decoder.")
-                        .font(.caption2.weight(.semibold))
-                        .padding(.horizontal, 5)
-                        .padding(.vertical, 2)
-                        .background(.quaternary, in: Capsule())
+                    Text("RAW9", comment: "Sidebar badge indicating a folder contains files supported by Apple's RAW 9 decoder.")
+                        .font(.system(size: 9, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 4)
+                        .padding(.vertical, 1)
+                        .background(.green, in: Capsule())
                         .help("Contains RAW files supported by Apple’s RAW 9 engine")
                         .accessibilityLabel("Contains RAW 9 compatible files")
                 }
