@@ -124,7 +124,7 @@ Requirements are pinned to exact versions or revisions in the Xcode project and 
 | Package (resolved identity) | Resolved pin | Responsibility | Main APIs/products used by RawBrowse |
 |---|---:|---|---|
 | [PhotoAIKit](https://github.com/rsyncOSX/PhotoAIKit) (`photoaikit`) | revision `7f9adfcd69661c6bae4a640c16a4056dfc7393df` | Core AI model discovery and validation, CLIP inference, embedding artifacts, multi-object SAM 3 masks, and AI workflow contracts | `CoreAICLIPProvider`, `CoreAISAM3Provider`, `PhotoAIContracts`, `PhotoAIWorkflows` |
-| [RawParserKit](https://github.com/rsyncOSX/RawParserKit) (`rawparserkit`) | `1.3.1` | RAW metadata, embedded previews, thumbnails, focus-point metadata, and supported-format handling, including Sony ARW and DNG | `RawImageLoader`, `BrowserExifInfo`, `RawFocusPoint` |
+| [RawParserKit](https://github.com/rsyncOSX/RawParserKit) (`rawparserkit`) | `1.3.3` | RAW metadata, embedded previews, thumbnails, focus-point metadata, and supported-format handling, including Sony ARW and DNG | `RawImageLoader`, `BrowserExifInfo`, `RawFocusPoint` |
 | [RawCullCore](https://github.com/rsyncOSX/RawCullCore) (`rawcullcore`) | `1.1.2` | Shared image-analysis utilities | `HistogramCalculator.normalizedLuminanceHistogram` |
 
 The Xcode target also links PhotoAIKit's `CoreAIEfficientSAMBackend`, `CoreAISAM3Backend`, `PhotoAIStorage`, and `VisionFeaturePrintBackend` products. Deep Review uses the SAM 3 backend's composited semantic mask, which includes every object matching the selected prompt.

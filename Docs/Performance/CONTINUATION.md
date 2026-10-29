@@ -2,6 +2,10 @@
 
 Updated 29 October 2026 after completing rebuilt empty/warm comparisons and separate interaction checks. All experiment apps quit normally. Work is saved in reports linked from updates.md. No production dependency or sibling RawParserKit checkout was changed.
 
+## Production integration — RawParserKit 1.3.3
+
+The user published 1.3.3 and requested adoption. RawBrowse now requires exact version 1.3.3, resolved to `26df4abc2178d5c07d08f3883d84d0648f5141d3` (merged PR #8). Its loader and package settings match the reviewed candidate. No other dependency pins changed. The full RawBrowse macOS suite passed; Release integration build passed. Logs: `/tmp/rawbrowse-rawparser133-tests.log` and `/tmp/rawbrowse-rawparser133-release.log`. The prior deferral below records the pre-release decision and is superseded by this integration. Broader frame/hitch and CPU/memory limitations remain.
+
 ## Upstream review submitted
 
 RawParserKit PR #8: https://github.com/rsyncOSX/RawParserKit/pull/8. Head `9b9f51280f9a55619dfcb4459b8f44d5493813ff`, branch `codex/bounded-thumbnail-executor`, base main `4b3bf40`. Prepared in `/tmp/rawparserkit-upstream-review`; sibling checkout unchanged. Current upstream loader/package settings match the evaluated baseline. Only implementation addition beyond the measured patch is an explanatory comment. The PR contains `Docs/ThumbnailExecutorEvaluation.md` with individual measurements and limitations. Both full Debug/Release package suites passed 105 tests with no warnings. No GitHub checks were reported at PR verification. No merge or release has been performed; production dependency pin remains unchanged. Next integration action depends on upstream review/release, not another executor experiment.

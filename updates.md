@@ -23,6 +23,8 @@ Interaction follow-up: [validation and recommendation](Docs/Performance/Phase4-I
 
 Upstream review submitted: [RawParserKit PR #8](https://github.com/rsyncOSX/RawParserKit/pull/8), commit `9b9f51280f9a55619dfcb4459b8f44d5493813ff`, extracts the existing bounded decode body into the measured concurrent helper. Current upstream Debug and Release suites each pass 105 tests without warnings. The PR includes a benchmark/limitations document; no release, merge or RawBrowse production pin change is performed. Prepared from an isolated temporary clone; sibling repository is untouched.
 
+Production integration: adopted the user-published RawParserKit **1.3.3**, exact requirement and resolved revision `26df4abc2178d5c07d08f3883d84d0648f5141d3` (merged [PR #8](https://github.com/rsyncOSX/RawParserKit/pull/8)). Loader and package settings match the reviewed candidate; other dependency pins are unchanged. Full RawBrowse macOS tests and Release build passed against the published release. README dependency version is updated. This supersedes the earlier production-adoption deferral; painted-frame/hitch and app CPU/memory limitations remain.
+
 ## Purpose
 
 Determine which lessons from RawCull's performance phases 0–6 apply to RawBrowse. Establish a RawBrowse baseline, test individual candidates, and retain only changes supported by measurements and lifecycle checks.
