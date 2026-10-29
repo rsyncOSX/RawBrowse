@@ -22,6 +22,10 @@ final class ThumbnailPresentationModel {
 
     func load(request: ThumbnailRequest, imageLoader: @MainActor () async -> NSImage?) async {
         guard !Task.isCancelled else { return }
+        let diagnostic = BrowserPerformance.begin("thumbnail.presentationDelivery", request.url,
+            details: ["target_pixels": String(request.targetSize)])
+        var outcome = "superseded"
+        defer { diagnostic?.end(Task.isCancelled ? "cancelled" : outcome) }
         let token = UUID()
         generation = token
         if self.request?.url != request.url || self.request?.sourceFingerprint != request.sourceFingerprint {
@@ -37,6 +41,7 @@ final class ThumbnailPresentationModel {
               ImageSourceFingerprint.key(for: request.url) == request.sourceFingerprint
         else { return }
         image = result
+        outcome = result == nil ? "unavailable" : "image"
     }
 
     func invalidate() {

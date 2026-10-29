@@ -87,25 +87,31 @@ actor BrowserImageLoader {
         return try await Task.detached(priority: .utility) {
             let supported = RawFormatRegistry.allExtensions.union(SupportedFileType.renderedImageExtensions)
             let keys: Set<URLResourceKey> = [.isRegularFileKey, .isHiddenKey]
-            let children = try FileManager.default.contentsOfDirectory(
-                at: folderURL,
-                includingPropertiesForKeys: Array(keys),
-                options: [.skipsHiddenFiles, .skipsPackageDescendants],
-            )
+            let children: [URL] = try {
+                let interval = BrowserPerformance.begin("discovery.files.enumerate", folderURL)
+                defer { interval?.end() }
+                return try FileManager.default.contentsOfDirectory(
+                    at: folderURL, includingPropertiesForKeys: Array(keys),
+                    options: [.skipsHiddenFiles, .skipsPackageDescendants])
+            }()
 
+            let filtering = BrowserPerformance.begin("discovery.files.filterAndMetadata", folderURL)
             let files = children.compactMap { url -> BrowserFileItem? in
                 guard supported.contains(url.pathExtension.lowercased()) else { return nil }
                 let values = try? url.resourceValues(forKeys: keys)
                 guard values?.isRegularFile == true, values?.isHidden != true else { return nil }
                 return BrowserFileItem(url: url)
             }
-            return files
-                .sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
+            filtering?.end()
+            let sorting = BrowserPerformance.begin("discovery.files.sort", folderURL)
+            let sorted = files.sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
+            sorting?.end()
+            return sorted
         }.value
     }
 
     func thumbnail(for url: URL, targetSize: Int = 200) async -> NSImage? {
-        let diagnostic = BrowserPerformance.begin("thumbnail.total", url)
+        let diagnostic = BrowserPerformance.begin("thumbnail.total", url, details: ["target_pixels": String(targetSize)])
         defer { diagnostic?.end(Task.isCancelled ? "cancelled" : "finished") }
         let access = await CatalogAccess.shared.lease(for: url)
         guard !isClearingCaches else { return nil }
@@ -118,6 +124,8 @@ actor BrowserImageLoader {
 
         guard !isClearingCaches else { return nil }
         if let existing = thumbnailTasks[taskKey] {
+            BrowserPerformance.event("thumbnail.sharedWait", fields: ["path": url.path,
+                "target_pixels": boundedTargetSize, "active_thumbnail_tasks": thumbnailTasks.count])
             return await existing.value
         }
 
@@ -142,7 +150,7 @@ actor BrowserImageLoader {
                 return diskImage
             }
 
-            let parserTiming = BrowserPerformance.begin("thumbnail.parser", url)
+            let parserTiming = BrowserPerformance.begin("thumbnail.parser", url, details: ["target_pixels": String(boundedTargetSize)])
             let parsedImage = await RawParserKit.RawImageLoader.shared.thumbnail(
                 for: url,
                 maxPixelSize: boundedTargetSize,
@@ -167,16 +175,24 @@ actor BrowserImageLoader {
 
         thumbnailTasks[taskKey] = task
         thumbnailTaskIDs[taskKey] = taskID
+        BrowserPerformance.event("thumbnail.taskStarted", fields: ["path": url.path,
+            "task_id": taskID.uuidString, "target_pixels": boundedTargetSize,
+            "active_thumbnail_tasks": thumbnailTasks.count, "active_preview_tasks": extractedJPGTasks.count])
         let image = await task.value
         if thumbnailTaskIDs[taskKey] == taskID {
             thumbnailTasks[taskKey] = nil
             thumbnailTaskIDs[taskKey] = nil
         }
+        BrowserPerformance.event("thumbnail.taskFinished", fields: ["path": url.path,
+            "task_id": taskID.uuidString, "active_thumbnail_tasks": thumbnailTasks.count,
+            "cancelled_waiter": Task.isCancelled])
         return image
     }
 
     func previewImage(for url: URL, maxPixelSize: Int) async -> CGImage? {
         guard !Task.isCancelled, let image = await fullSizePreview(for: url), !Task.isCancelled else { return nil }
+        let resize = BrowserPerformance.begin("preview.resize", url, details: ["target_pixels": String(maxPixelSize)])
+        defer { resize?.end(Task.isCancelled ? "cancelled" : "finished") }
         return await Self.resizedPreview(image, maxPixelSize: maxPixelSize)
     }
 
@@ -198,7 +214,10 @@ actor BrowserImageLoader {
                 return await Self.loadCGImage(from: url)
             }
 
-            if let cached = await fullSizeCache.load(for: url) {
+            let lookup = BrowserPerformance.begin("preview.diskLookup", url)
+            let cached = await fullSizeCache.load(for: url)
+            lookup?.end(cached == nil ? "miss" : "hit")
+            if let cached {
                 guard !Task.isCancelled else { return nil }
                 return cached
             }
@@ -209,6 +228,8 @@ actor BrowserImageLoader {
             guard !Task.isCancelled else { return nil }
 
             if let extracted {
+                let persistence = BrowserPerformance.begin("preview.sourceJPEGAndSave", url)
+                defer { persistence?.end(Task.isCancelled ? "cancelled" : "finished") }
                 let sourceJPEGData = await Self.embeddedPreviewJPEGData(
                     for: url,
                     matchingPixelWidth: extracted.width,
@@ -226,11 +247,15 @@ actor BrowserImageLoader {
 
         extractedJPGTasks[url] = task
         extractedJPGTaskIDs[url] = taskID
+        BrowserPerformance.event("preview.taskStarted", fields: ["path": url.path,
+            "task_id": taskID.uuidString, "active_preview_tasks": extractedJPGTasks.count])
         let image = await task.value
         if extractedJPGTaskIDs[url] == taskID {
             extractedJPGTasks[url] = nil
             extractedJPGTaskIDs[url] = nil
         }
+        BrowserPerformance.event("preview.taskFinished", fields: ["path": url.path,
+            "task_id": taskID.uuidString, "active_preview_tasks": extractedJPGTasks.count])
         return image
     }
 

@@ -1,3 +1,4 @@
+import AppKit
 import Foundation
 import Synchronization
 
@@ -12,6 +13,35 @@ nonisolated enum BrowserPerformance {
         return Mutex(try? FileHandle(forWritingTo: URL(fileURLWithPath: path)))
     }()
 
+    static var isEnabled: Bool { output.withLock { $0 != nil } }
+
+    private static func write(_ record: [String: Any]) {
+        guard isEnabled,
+              var data = try? JSONSerialization.data(withJSONObject: record, options: [.sortedKeys]) else { return }
+        data.append(0x0A)
+        output.withLock { handle in try? handle?.write(contentsOf: data) }
+    }
+
+    static func event(_ name: String, fields: [String: Any]) {
+        write(["event": name, "time": ProcessInfo.processInfo.systemUptime, "fields": fields])
+    }
+
+    @MainActor static func recordWorkspace(settings: BrowserSettings) {
+        guard isEnabled else { return }
+        let windows: [[String: Any]] = NSApplication.shared.windows.filter(\.isVisible).map { window in
+            ["title": window.title, "width": window.frame.width, "height": window.frame.height,
+             "content_width": window.contentLayoutRect.width, "content_height": window.contentLayoutRect.height,
+             "backing_scale": window.backingScaleFactor]
+        }
+        event("workspace.configuration", fields: ["windows": windows,
+            "executable": Bundle.main.executableURL?.path ?? "unknown",
+            "grid_pixels": settings.thumbnailSizeGrid, "preview_pixels": settings.thumbnailSizePreview,
+            "full_size_pixels": settings.thumbnailSizeFullSize, "grid_cache_mb": settings.gridCacheSizeMB,
+            "memory_cache_mb": settings.memoryCacheSizeMB,
+            "max_cached_previews": settings.maxCachedExtractedJPGs,
+            "selected_clip_model": settings.selectedCLIPModel.downloadID])
+    }
+
     static func cacheDirectory(_ component: String) -> URL? {
         guard let path = ProcessInfo.processInfo.environment["RAWBROWSE_PERFORMANCE_CACHE_ROOT"],
               path.hasPrefix("/") else { return nil }
@@ -22,22 +52,21 @@ nonisolated enum BrowserPerformance {
         let id = UUID().uuidString
         let stage: String
         let path: String
+        let details: [String: String]
         let start = ProcessInfo.processInfo.systemUptime
 
         func end(_ result: String = "finished") {
             let finish = ProcessInfo.processInfo.systemUptime
-            let record: [String: Any] = ["id": id, "stage": stage, "path": path,
+            let record: [String: Any] = ["id": id, "stage": stage, "path": path, "details": details,
                 "start": start, "end": finish, "duration_ms": (finish - start) * 1000,
                 "result": result]
-            guard var data = try? JSONSerialization.data(withJSONObject: record, options: [.sortedKeys]) else { return }
-            data.append(0x0A)
             // A synchronous lock protects the handle; no suspension or actor hop occurs inside it.
-            output.withLock { handle in try? handle?.write(contentsOf: data) }
+            write(record)
         }
     }
 
-    static func begin(_ stage: String, _ url: URL) -> Interval? {
-        guard output.withLock({ $0 != nil }) else { return nil }
-        return Interval(stage: stage, path: url.path)
+    static func begin(_ stage: String, _ url: URL, details: [String: String] = [:]) -> Interval? {
+        guard isEnabled else { return nil }
+        return Interval(stage: stage, path: url.path, details: details)
     }
 }

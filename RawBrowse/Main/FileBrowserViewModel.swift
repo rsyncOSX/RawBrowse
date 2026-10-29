@@ -116,6 +116,7 @@ final class FileBrowserViewModel {
         }
         let task = Task { [self] in
             await settingsModel.loadSettings()
+            BrowserPerformance.recordWorkspace(settings: settingsModel.values)
             await catalog.loadRememberedCatalogs()
             await downloads.refreshCLIPModels()
             for folder in catalog.rootFolders {

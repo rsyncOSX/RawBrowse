@@ -70,6 +70,10 @@ final class ZoomModel {
         let previewSize = settingsModel.values.thumbnailSizeFullSize
         let access = CatalogAccess.shared.lease(for: selectedFile.url)
         zoomTask = Task {
+            let diagnostic = BrowserPerformance.begin("preview.presentationDelivery", selectedFile.url,
+                details: ["target_pixels": String(previewSize)])
+            var delivered = false
+            defer { if !delivered { diagnostic?.end(Task.isCancelled ? "cancelled" : "failed") } }
             defer {
                 withExtendedLifetime(access) {}
                 if renderOperationID == operationID {
@@ -100,6 +104,8 @@ final class ZoomModel {
                 }
                 guard !Task.isCancelled else { return }
                 zoomImage = loadedImage
+                diagnostic?.end(loadedImage == nil ? "unavailable" : "image")
+                delivered = true
                 if loadedImage == nil {
                     zoomImageError = "Unable to load this image."
                 }

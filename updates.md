@@ -11,6 +11,8 @@ Parser follow-up: [round-trip investigation](Docs/Performance/Phase4-Parser-Inve
 
 Executor candidate: [standalone experiment](Docs/Performance/Phase4-Executor-Candidate.md) shows lower batch latency when a temporary parser helper explicitly uses the concurrent executor while preserving six slots. All 54 runs completed with matching pixels; the temporary uninstrumented package passed 105 tests. Candidate CPU and memory usage increase. A review patch is retained as experiment evidence only; no dependency change is adopted. Next: paired sandboxed app copies with matching diagnostics and settings.
 
+Application comparison setup: [matched experiment protocol](Docs/Performance/Application-Experiment-Protocol.md) records the new opt-in settings/window, stage, task-count and model-delivery diagnostics. Diagnostic Release build and full macOS tests passed. Isolated baseline/candidate projects use identical app sources and separate local copies of the pinned parser; the real dependency pin remains unchanged.
+
 ## Purpose
 
 Determine which lessons from RawCull's performance phases 0–6 apply to RawBrowse. Establish a RawBrowse baseline, test individual candidates, and retain only changes supported by measurements and lifecycle checks.

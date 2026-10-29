@@ -49,7 +49,9 @@ final class BrowserContentsModel {
                 let (children, discoveredFiles) = try await discover(folder.url)
                 guard !Task.isCancelled, scanRunner.isCurrent(token) else { return }
                 childrenDiscovered?(folder, children)
+                let publication = BrowserPerformance.begin("scan.publishFileList", folder.url)
                 files = discoveredFiles
+                publication?.end()
                 scanFinished?()
             } catch {
                 guard !Task.isCancelled, scanRunner.isCurrent(token) else { return }
