@@ -82,6 +82,51 @@ struct AIModelDownloadTests {
         #expect(model.managedCLIPModelLocations[.clipDataComp] == nil)
     }
 
+    @Test(arguments: ["success", "failure", "cancel", "shutdown"]) @MainActor
+    func `Old progress cannot mutate terminal state or a replacement attempt`(_ outcome: String) async throws {
+        let service = HeldProgressService()
+        let model = ModelDownloadsModel(coordinator: CLIPModelDownloadCoordinator(service: service))
+        await model.refreshCLIPModels()
+        let first = try #require(model.startCLIPModelDownload(.clipDataComp))
+        let oldProgress = try await service.nextProgress()
+        oldProgress(0.6)
+        #expect(model.clipModelDownloadStates[.clipDataComp] == .downloading(progress: 0.6))
+        oldProgress(0.2)
+        #expect(model.clipModelDownloadStates[.clipDataComp] == .downloading(progress: 0.6))
+
+        var shutdown: Task<Void, Never>?
+        if outcome == "cancel" {
+            model.cancelCLIPModelDownload(.clipDataComp)
+            oldProgress(0.9)
+            #expect(model.clipModelDownloadStates[.clipDataComp] == .downloading(progress: 0.6))
+        } else if outcome == "shutdown" {
+            shutdown = Task { await model.cancelAndWait() }
+            // Wait for shutdown to cancel the owned worker without timing sleeps.
+            await service.waitForCancellation()
+            oldProgress(0.9)
+            #expect(model.clipModelDownloadStates[.clipDataComp] == .downloading(progress: 0.6))
+        }
+        await service.finish(failing: outcome == "failure")
+        await first.value
+        await shutdown?.value
+        let terminal = model.clipModelDownloadStates[.clipDataComp]
+        oldProgress(0.95)
+        #expect(model.clipModelDownloadStates[.clipDataComp] == terminal)
+        if outcome == "shutdown" { await model.resumeAfterCancelledTermination() }
+        // Simulate removing the installed fixture before retrying a successful attempt.
+        await service.resetInstallation()
+        await model.refreshCLIPModels()
+        let second = try #require(model.startCLIPModelDownload(.clipDataComp))
+        let newProgress = try await service.nextProgress()
+        newProgress(0.3)
+        oldProgress(0.99)
+        #expect(model.clipModelDownloadStates[.clipDataComp] == .downloading(progress: 0.3))
+        newProgress(0.4)
+        #expect(model.clipModelDownloadStates[.clipDataComp] == .downloading(progress: 0.4))
+        await service.finish(failing: false)
+        await second.value
+    }
+
     @Test @MainActor
     func `Removal waits for runtime preparation and rejects duplicate removal`() async {
         let service = ObservedRemovalService()
@@ -215,4 +260,51 @@ private actor LateInstallService: CLIPModelDownloadServicing {
     }
 
     func remove(_: CLIPModelDownloadDescriptor) {}
+}
+
+/// Retains the real model's progress closure beyond worker exit to control stale delivery.
+private actor HeldProgressService: CLIPModelDownloadServicing {
+    private let events = AsyncStream<@MainActor @Sendable (Double) -> Void>.makeStream()
+    private let cancellationEvents = AsyncStream<Void>.makeStream()
+    private var release: CheckedContinuation<Void, Never>?
+    private var failing = false
+    private var installed = false
+
+    func state(for _: CLIPModelDownloadDescriptor) -> CLIPModelDownloadState {
+        installed ? .installed(location: URL(filePath: "/tmp/held-progress-model")) : .ready
+    }
+    func resetInstallation() { installed = false }
+    func remove(_: CLIPModelDownloadDescriptor) {}
+
+    func nextProgress() async throws -> @MainActor @Sendable (Double) -> Void {
+        var iterator = events.stream.makeAsyncIterator()
+        return try #require(await iterator.next())
+    }
+
+    func waitForCancellation() async {
+        var iterator = cancellationEvents.stream.makeAsyncIterator()
+        _ = await iterator.next()
+    }
+
+    func download(_: CLIPModelDownloadDescriptor,
+                  progress: @escaping @MainActor @Sendable (Double) -> Void) async throws -> URL {
+        await withTaskCancellationHandler {
+            await withCheckedContinuation {
+                release = $0
+                events.continuation.yield(progress)
+            }
+        } onCancel: {
+            self.cancellationEvents.continuation.yield(())
+        }
+        try Task.checkCancellation()
+        if failing { throw URLError(.cannotLoadFromNetwork) }
+        installed = true
+        return URL(filePath: "/tmp/held-progress-model")
+    }
+
+    func finish(failing: Bool) {
+        self.failing = failing
+        release?.resume()
+        release = nil
+    }
 }

@@ -1,0 +1,78 @@
+{
+  "delegate_sha256": "870d1c28e48f99994251354b61a683128579ea9811d5bb7af993309334aa126b",
+  "optimization": "-O",
+  "trials": [
+    {
+      "callbacks": 100,
+      "deliveries": 100,
+      "trial": 1,
+      "drain_ms": 0.272625,
+      "regressions": 0,
+      "last": 1.0
+    },
+    {
+      "callbacks": 100,
+      "deliveries": 100,
+      "trial": 2,
+      "drain_ms": 0.1125,
+      "regressions": 0,
+      "last": 1.0
+    },
+    {
+      "callbacks": 100,
+      "deliveries": 100,
+      "trial": 3,
+      "drain_ms": 0.09875,
+      "regressions": 0,
+      "last": 1.0
+    },
+    {
+      "callbacks": 1000,
+      "deliveries": 1000,
+      "trial": 1,
+      "drain_ms": 0.986708,
+      "regressions": 0,
+      "last": 1.0
+    },
+    {
+      "callbacks": 1000,
+      "deliveries": 1000,
+      "trial": 2,
+      "drain_ms": 0.835959,
+      "regressions": 0,
+      "last": 1.0
+    },
+    {
+      "callbacks": 1000,
+      "deliveries": 1000,
+      "trial": 3,
+      "drain_ms": 0.806542,
+      "regressions": 0,
+      "last": 1.0
+    },
+    {
+      "callbacks": 10000,
+      "deliveries": 10000,
+      "trial": 1,
+      "drain_ms": 7.668166,
+      "regressions": 0,
+      "last": 1.0
+    },
+    {
+      "callbacks": 10000,
+      "deliveries": 10000,
+      "trial": 2,
+      "drain_ms": 5.585792,
+      "regressions": 0,
+      "last": 1.0
+    },
+    {
+      "callbacks": 10000,
+      "deliveries": 10000,
+      "trial": 3,
+      "drain_ms": 4.88925,
+      "regressions": 0,
+      "last": 1.0
+    }
+  ]
+}

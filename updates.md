@@ -1,6 +1,8 @@
 # RawBrowse performance updates and investigation plan
 
-Prepared 24 October 2026. Status: investigation plan; no application changes or new performance measurements.
+Prepared 24 October 2026. Evaluated 29 October 2026: phases 0–2 reviewed with a workload manifest, optimized production-delegate pressure measurements and a loopback integrity/cancellation check. Follow-up implementation adds download-attempt identity and monotonic displayed progress. See [the phase 0–2 evaluation](Docs/Performance/Phases0-2-Evaluation.md) for results and recommendations.
+
+Current decision: phase 0 and phase 1 remain partial; phase 2 production coalescing is deferred because material UI overhead has not been established. Per-download-attempt progress identity and monotonic displayed progress are implemented as correctness improvements. Measure representative transfer/UI pressure before adding a timer. CLIP coalescing remains deferred pending inference measurements. Follow-up validation passed: focused download/ownership tests, full macOS test suite and local Release build.
 
 ## Purpose
 

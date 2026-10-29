@@ -8,6 +8,8 @@ final class ModelDownloadsModel {
     private(set) var managedCLIPModelLocations: [CLIPModelDownloadID: URL] = [:]
     @ObservationIgnored private let clipModelDownloadCoordinator: CLIPModelDownloadCoordinator
     @ObservationIgnored private var clipModelDownloadTasks: [CLIPModelDownloadID: Task<Void, Never>] = [:]
+    // Queued delegate callbacks must identify their original worker, including after retry.
+    @ObservationIgnored private var downloadAttempts: [CLIPModelDownloadID: UUID] = [:]
     @ObservationIgnored private var clipModelRefreshGeneration = 0
     @ObservationIgnored private var finishingDownloads: Set<CLIPModelDownloadID> = []
     @ObservationIgnored var prepareForRemoval: (@MainActor (CLIPModelDownloadID) async -> Void)?
@@ -59,16 +61,21 @@ final class ModelDownloadsModel {
               clipModelDownloadStates[id]?.canStartDownload == true
         else { return nil }
 
-        return beginDownload(id) { [self] in await performCLIPModelDownload(id) }
+        let attemptID = UUID()
+        return beginDownload(id, attemptID: attemptID) { [self] in
+            await performCLIPModelDownload(id, attemptID: attemptID)
+        }
     }
 
     @discardableResult
-    func beginDownload(_ id: CLIPModelDownloadID,
+    func beginDownload(_ id: CLIPModelDownloadID, attemptID: UUID = UUID(),
                        operation: @escaping @MainActor () async -> Void) -> Task<Void, Never>? {
         guard !isShuttingDown, clipModelDownloadTasks[id] == nil else { return nil }
+        downloadAttempts[id] = attemptID
         clipModelDownloadStates[id] = .downloading(progress: 0)
         let task = Task { [self] in
             defer {
+                downloadAttempts[id] = nil
                 clipModelDownloadTasks[id] = nil
                 finishingDownloads.remove(id)
             }
@@ -83,6 +90,7 @@ final class ModelDownloadsModel {
     }
 
     func cancelCLIPModelDownload(_ id: CLIPModelDownloadID) {
+        downloadAttempts[id] = nil
         clipModelDownloadTasks[id]?.cancel()
     }
 
@@ -110,6 +118,7 @@ final class ModelDownloadsModel {
 
     func cancelAndWait() async {
         isShuttingDown = true
+        downloadAttempts.removeAll()
         clipModelRefreshGeneration &+= 1
         let pending = Array(clipModelDownloadTasks.values)
         pending.forEach { $0.cancel() }
@@ -121,26 +130,29 @@ final class ModelDownloadsModel {
         await refreshCLIPModels()
     }
 
-    private func performCLIPModelDownload(_ id: CLIPModelDownloadID) async {
+    private func performCLIPModelDownload(_ id: CLIPModelDownloadID, attemptID: UUID) async {
         do {
             let location = try await clipModelDownloadCoordinator.download(
                 id,
                 progress: { [weak self] progress in
-                    guard let self, !Task.isCancelled,
-                          case .downloading = clipModelDownloadStates[id],
+                    guard let self, !isShuttingDown, downloadAttempts[id] == attemptID,
+                          case let .downloading(current) = clipModelDownloadStates[id],
                           clipModelDownloadTasks[id]?.isCancelled == false else { return }
                     clipModelDownloadStates[id] = .downloading(
-                        progress: min(max(progress, 0), 1),
+                        progress: max(current, min(max(progress, 0), 1)),
                     )
                 },
             )
+            downloadAttempts[id] = nil
             try Task.checkCancellation()
             clipModelDownloadStates[id] = .validating
             managedCLIPModelLocations[id] = location
             await refreshCLIPModels(finishingDownload: id)
         } catch is CancellationError {
+            downloadAttempts[id] = nil
             await refreshCLIPModels(allowCancelled: true, finishingDownload: id)
         } catch {
+            downloadAttempts[id] = nil
             clipModelDownloadStates[id] = .failed(message: error.localizedDescription)
         }
     }
