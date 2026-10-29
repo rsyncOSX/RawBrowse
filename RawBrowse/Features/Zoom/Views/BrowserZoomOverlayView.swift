@@ -3,6 +3,8 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 struct BrowserZoomOverlayView: View {
+    @Environment(\.displayScale) private var displayScale
+
     @Environment(SelectionModel.self) private var selection
 
     @Environment(DeepReviewModel.self) private var deepReview
@@ -190,6 +192,12 @@ struct BrowserZoomOverlayView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
             }
+            .onGeometryChange(for: CGSize.self) { $0.size } action: { size in
+                viewportSize = size
+                updateRAWPreviewViewport()
+            }
+            .onChange(of: displayScale) { updateRAWPreviewViewport() }
+            .onChange(of: zoomPresentation.zoomScale) { updateRAWPreviewViewport() }
 
             VStack {
                 ZStack(alignment: .top) {
@@ -317,6 +325,7 @@ struct BrowserZoomOverlayView: View {
         .background(ReviewKeyboardScopeReader(scope: keyboardScope))
         .onAppear {
             pendingInitialZoomMode = zoomPresentation.zoomLaunchContext.initialZoomMode
+            updateRAWPreviewViewport()
             installKeyMonitor()
         }
         .onDisappear {
@@ -838,6 +847,14 @@ struct BrowserZoomOverlayView: View {
                 lastOffset = .zero
             }
         }
+    }
+
+    private func updateRAWPreviewViewport() {
+        // An actual-pixels launch must finish its native render before deriving zoom from image size.
+        guard pendingInitialZoomMode != .actualPixels,
+              zoom.zoomImage != nil || zoomPresentation.zoomLaunchContext.initialZoomMode != .actualPixels else { return }
+        zoom.updateRAWPreviewViewport(size: viewportSize, displayScale: displayScale,
+                                      zoomScale: zoomPresentation.zoomScale)
     }
 
     private func zoomToTwoX() {

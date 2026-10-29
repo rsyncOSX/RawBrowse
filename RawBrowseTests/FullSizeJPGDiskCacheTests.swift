@@ -341,6 +341,52 @@ struct FullSizeJPGDiskCacheTests {
         #expect(zoom.raw9SupportedURL == nil)
     }
 
+    @Test("RAW restoration and resize keep the initial load alive", .timeLimit(.minutes(1))) @MainActor
+    func rawRestorationAndResizeKeepInitialLoadAlive() async throws {
+        let root = try makeTestRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let source = root.appendingPathComponent("photo.arw")
+        try Data([1]).write(to: source)
+        let image = try makeTestImage(width: 20, height: 10)
+        let gate = PreviewExtractionGate()
+        var dimensions: [CGFloat?] = []
+        var adjustments: [RAW9Adjustments] = []
+        var cancelled: [Bool] = []
+        let session = RAW9EditingSession(load: { _ in RAW9Adjustments(exposure: 1) })
+        let zoom = ZoomModel(settings: SettingsModel(initialValues: BrowserSettings()), raw9: session,
+                             supportsRAW9: { _ in true },
+                             renderRAWPreview: { _, values, _, dimension in
+                                 dimensions.append(dimension)
+                                 adjustments.append(values)
+                                 await gate.arriveAndWait()
+                                 cancelled.append(Task.isCancelled)
+                                 try Task.checkCancellation()
+                                 return image
+                             })
+        defer { zoom.closeZoom() }
+        zoom.useDevelopedRAW = true
+        zoom.updateRAWPreviewViewport(size: CGSize(width: 1440, height: 900), displayScale: 2, zoomScale: 1)
+        zoom.openZoom(for: BrowserFileItem(url: source))
+        await gate.waitForArrivals(1)
+        // Mirrors the view observing restored sidecar values while the first render is in flight.
+        zoom.refreshRAW9Preview()
+        zoom.updateRAWPreviewViewport(size: CGSize(width: 1920, height: 1080), displayScale: 2, zoomScale: 1)
+        await gate.release()
+        await gate.waitForArrivals(2)
+        await gate.release()
+        let deadline = ContinuousClock.now + .seconds(5)
+        while zoom.isApplyingRAW9, ContinuousClock.now < deadline {
+            try await Task.sleep(for: .milliseconds(10))
+        }
+        #expect(dimensions == [3072, 3840])
+        #expect(adjustments == [RAW9Adjustments(exposure: 1), RAW9Adjustments(exposure: 1)])
+        #expect(cancelled == [false, false])
+        #expect(zoom.zoomImage?.width == 20)
+        #expect(zoom.isZoomExifInfoLoaded)
+        #expect(!zoom.isApplyingRAW9)
+        #expect(zoom.zoomImageError == nil)
+    }
+
     @Test
     func `preview memory enforces LRU count byte and disabled limits`() throws {
         let small = try makeTestImage(width: 40, height: 20)

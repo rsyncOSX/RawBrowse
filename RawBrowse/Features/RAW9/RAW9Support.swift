@@ -172,6 +172,7 @@ actor RAW9PreviewRenderer {
     private var sourceURL: URL?
     private var sourceRevision: RAW9RenderedPreviewCache.Key?
     private var filter: CIRAWFilter?
+    private var nativeSize: CGSize = .zero
     private lazy var context = CIContext(options: [.cacheIntermediates: true])
     private var defaultTemperature: Float = 6500
     private var defaultTint: Float = 0
@@ -222,6 +223,17 @@ actor RAW9PreviewRenderer {
 
     func render(url: URL, adjustments: RAW9Adjustments, bitDepth: RAWPreviewBitDepth = .eightBit,
                 maximumDimension: CGFloat? = nil) throws -> CGImage {
+        // Core Image creates autoreleased render resources on the actor's worker thread.
+        return try autoreleasepool {
+            try renderPreview(url: url, adjustments: adjustments, bitDepth: bitDepth, maximumDimension: maximumDimension)
+        }
+    }
+
+    private func renderPreview(url: URL, adjustments: RAW9Adjustments, bitDepth: RAWPreviewBitDepth,
+                               maximumDimension: CGFloat?) throws -> CGImage {
+        let diagnostic = BrowserPerformance.begin("preview.raw9Render", url,
+            details: ["maximum_dimension": maximumDimension.map { String(Int($0)) } ?? "native"])
+        defer { diagnostic?.end(Task.isCancelled ? "cancelled" : "finished") }
         try Task.checkCancellation()
         let key = try RAW9RenderedPreviewCache.Key(url: url, adjustments: adjustments,
                                                    bitDepth: bitDepth, maximumDimension: maximumDimension)
@@ -235,10 +247,15 @@ actor RAW9PreviewRenderer {
             || sourceRevision?.modificationDate != key.modificationDate {
             filter = nil
             sourceURL = nil
+            // Intermediates accelerate edits to one photo; discard the previous source's graph.
+            context.clearCaches()
             guard let loaded = CIRAWFilter(imageURL: url),
                   let version = RAW9Support.preferredVersion(in: loaded.supportedDecoderVersions)
             else { throw CocoaError(.fileReadUnsupportedScheme) }
             loaded.decoderVersion = version
+            nativeSize = loaded.nativeSize
+            BrowserPerformance.event("preview.raw9Source", fields: ["path": url.path,
+                "native_width": nativeSize.width, "native_height": nativeSize.height])
             defaults = (loaded.luminanceNoiseReductionAmount, loaded.sharpnessAmount, loaded.contrastAmount)
             defaultTemperature = loaded.neutralTemperature
             defaultTint = loaded.neutralTint
@@ -253,8 +270,10 @@ actor RAW9PreviewRenderer {
         filter.exposure = Float(adjustments.exposure)
         filter.boostAmount = Float(adjustments.globalToneMap ?? toneDefaults.globalToneMap)
         filter.boostShadowAmount = Float(adjustments.shadowBoost ?? toneDefaults.shadowBoost)
-        // Full resolution remains the default for zoom and export; crop uses a smaller preview.
-        filter.scaleFactor = Self.previewScale(nativeSize: filter.nativeSize, maximumDimension: maximumDimension)
+        // Preserve enough source pixels for a cropped fit preview. Native zoom and export use scale 1.
+        let cropFraction = adjustments.crop.map { min($0.width, $0.height) } ?? 1
+        let sourceDimension = maximumDimension.map { $0 / CGFloat(max(0.001, cropFraction)) }
+        filter.scaleFactor = Self.previewScale(nativeSize: nativeSize, maximumDimension: sourceDimension)
         filter.luminanceNoiseReductionAmount = min(1, max(0, defaults.noise + Float(adjustments.noiseReduction)))
         filter.sharpnessAmount = min(1, max(0, defaults.sharpness + Float(adjustments.sharpness)))
         filter.contrastAmount = min(1, max(0, defaults.contrast + Float(adjustments.contrast)))

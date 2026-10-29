@@ -6,6 +6,28 @@ import Testing
 
 @Suite("RAW 9 sidecars")
 struct RAW9SidecarStoreTests {
+    @Test @MainActor func `RAW fit preview follows backing pixels and zoom requests native pixels`() {
+        let zoom = ZoomModel(settings: SettingsModel(initialValues: BrowserSettings()), raw9: RAW9EditingSession())
+        zoom.updateRAWPreviewViewport(size: CGSize(width: 1440, height: 900), displayScale: 2, zoomScale: 1)
+        #expect(zoom.rawPreviewMaximumDimension == 3072)
+        zoom.updateRAWPreviewViewport(size: CGSize(width: 1440, height: 900), displayScale: 2, zoomScale: 1.25)
+        #expect(zoom.rawPreviewMaximumDimension == nil)
+        zoom.updateRAWPreviewViewport(size: CGSize(width: 1440, height: 900), displayScale: 1, zoomScale: 1)
+        #expect(zoom.rawPreviewMaximumDimension == 1536)
+        zoom.updateRAWPreviewViewport(size: .zero, displayScale: 2, zoomScale: 1)
+        #expect(zoom.rawPreviewMaximumDimension == 1536)
+    }
+
+    @Test @MainActor func `actual pixels RAW launch requests native resolution before geometry arrives`() throws {
+        let url = try temporaryRAW()
+        defer { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
+        let zoom = ZoomModel(settings: SettingsModel(initialValues: BrowserSettings()), raw9: RAW9EditingSession())
+        zoom.useDevelopedRAW = true
+        zoom.openZoom(for: BrowserFileItem(url: url), initialZoomMode: .actualPixels)
+        #expect(zoom.rawPreviewMaximumDimension == nil)
+        zoom.closeZoom()
+    }
+
     private func temporaryRAW() throws -> URL {
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)

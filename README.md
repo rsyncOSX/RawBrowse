@@ -72,6 +72,8 @@ Exposure spans −5 to +5 stops. Noise reduction and detail contrast use the dec
 
 Exports preserve supported capture metadata, including EXIF, camera/lens information, and GPS where the output format supports it. Dimensions and orientation are updated for the rendered image; proprietary MakerNotes are omitted.
 
+Fit-to-window RAW 9 previews apply your adjustments at the display’s pixel resolution. Zooming in requests full-resolution processing for detail inspection; exports always use full resolution.
+
 Adjustments are saved automatically beside the original as `<original filename>.rawcull-raw9.json`; the original RAW file stays unchanged. These app-specific sidecars are separate from XMP files used by other editors. **Settings > Images** controls preview bit depth without changing saved adjustments.
 
 The **Export** menu offers the writable ImageIO formats available on the Mac, plus HEIF (10-bit) and OpenEXR. Exports run in a queue and continue after navigating to another photo or closing zoom.
