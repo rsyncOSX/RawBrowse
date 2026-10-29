@@ -1,0 +1,144 @@
+{
+  "scope": "One matched interaction sequence per variant with separate Time Profiler-only recordings; no frame/hitch claim",
+  "variants": {
+    "baseline": {
+      "log": "/tmp/rawbrowse-app-comparison/Interactions/RunsFinal/baseline-empty-1.jsonl",
+      "sha256": "d67c75052fd98d2de1ee877962c238a78a4135e324b0ce48d452878af0794aa1",
+      "status": "sequence complete; normal quit",
+      "thumbnail_outcomes": {
+        "image": 652,
+        "cancelled": 152
+      },
+      "preview_outcomes": {
+        "image": 2
+      },
+      "peak_owned_thumbnail_tasks": 152,
+      "pending_image_tasks": 0,
+      "folder_switches": [
+        {
+          "folder": "100MSDCF",
+          "start": 3162.6242686250002,
+          "thumbnail_intervals_in_flight": 0
+        },
+        {
+          "folder": "06_mai_2026",
+          "start": 3211.2723100000003,
+          "thumbnail_intervals_in_flight": 0
+        },
+        {
+          "folder": "100MSDCF",
+          "start": 3213.5697937500004,
+          "thumbnail_intervals_in_flight": 0
+        },
+        {
+          "folder": "06_mai_2026",
+          "start": 3247.690953291667,
+          "thumbnail_intervals_in_flight": 152
+        },
+        {
+          "folder": "100MSDCF",
+          "start": 3250.071053666667,
+          "thumbnail_intervals_in_flight": 0
+        }
+      ]
+    },
+    "candidate": {
+      "log": "/tmp/rawbrowse-app-comparison/Interactions/RunsFinal/candidate-empty-1.jsonl",
+      "sha256": "57e336d20238c4ca3dbc1758a0188bab0ffe13689dc18668050d05cb2263c055",
+      "status": "sequence complete; normal quit",
+      "thumbnail_outcomes": {
+        "image": 652,
+        "cancelled": 152
+      },
+      "preview_outcomes": {
+        "image": 2
+      },
+      "peak_owned_thumbnail_tasks": 152,
+      "pending_image_tasks": 0,
+      "folder_switches": [
+        {
+          "folder": "100MSDCF",
+          "start": 3280.2103598333333,
+          "thumbnail_intervals_in_flight": 0
+        },
+        {
+          "folder": "06_mai_2026",
+          "start": 3437.6866820416667,
+          "thumbnail_intervals_in_flight": 0
+        },
+        {
+          "folder": "100MSDCF",
+          "start": 3439.9954010833335,
+          "thumbnail_intervals_in_flight": 0
+        },
+        {
+          "folder": "06_mai_2026",
+          "start": 3441.991972041667,
+          "thumbnail_intervals_in_flight": 152
+        },
+        {
+          "folder": "100MSDCF",
+          "start": 3444.3299150833336,
+          "thumbnail_intervals_in_flight": 0
+        }
+      ]
+    }
+  },
+  "baseline_profile": {
+    "trace": "/tmp/rawbrowse-app-comparison/Interactions/baseline.trace",
+    "pid": 4940,
+    "export": "/tmp/rawbrowse-app-comparison/Interactions/baseline-cpu.xml",
+    "export_sha256": "8ce42179e762630ef140951333862e5e70575cbfe6580b43c6b157118429c4bb",
+    "export_bytes": 9020054,
+    "raw_time_sample_rows": 11656,
+    "summary": {
+      "start-date": "2026-10-29T13:05:37.750+01:00",
+      "end-date": "2026-10-29T13:06:23.077+01:00",
+      "duration": "45.326934",
+      "end-reason": "Time limit reached",
+      "instruments-version": "27.1 (27A9275)",
+      "template-name": "Blank",
+      "recording-mode": "Deferred",
+      "time-limit": "45 seconds"
+    },
+    "limitation": "Raw samples include thread states and stackshots; counts are not CPU time or view executions. Capture pacing and covered action windows differ, so no quantitative CPU comparison is made."
+  },
+  "input_metadata_mismatches_after_runs": [],
+  "validation": {
+    "baseline-build.log": {
+      "sha256": "2aee426bbc17f35363c309c7e07ce56aa86e9a4f267f21dd66a9627bed85b036",
+      "passed": true
+    },
+    "candidate-build.log": {
+      "sha256": "fd34a6390a1f390426507b03e84407ff87dd35c90ad24122dd4e3206496d5617",
+      "passed": true
+    },
+    "candidate-tests.log": {
+      "sha256": "a1a7f4b0ad20ea3493b11e29c3232044547abd3d2524c147395bc5e14bd914e2",
+      "passed": true
+    }
+  },
+  "candidate_profile": {
+    "trace": "/tmp/rawbrowse-app-comparison/Interactions/candidate-unlocked.trace",
+    "pid": 5039,
+    "export": "/tmp/rawbrowse-app-comparison/Interactions/candidate-unlocked-cpu.xml",
+    "export_sha256": "3f419007fab97e8525e8c861a82e5393ea556be9dc7a447ef26dc45d0be2982a",
+    "export_bytes": 13203047,
+    "raw_time_sample_rows": 17748,
+    "summary": {
+      "start-date": "2026-10-29T13:09:29.063+01:00",
+      "end-date": "2026-10-29T13:10:14.349+01:00",
+      "duration": "45.285333",
+      "end-reason": "Time limit reached",
+      "instruments-version": "27.1 (27A9275)",
+      "template-name": "Blank",
+      "recording-mode": "Deferred",
+      "time-limit": "45 seconds"
+    },
+    "limitation": "Raw samples include thread states and stackshots; counts are not CPU time or view executions. Capture pacing and covered action windows differ, so no quantitative CPU comparison is made."
+  },
+  "excluded_capture": {
+    "path": "/tmp/rawbrowse-app-comparison/Interactions/candidate.trace",
+    "reason": "Mac locked before candidate UI sequence; no interactions ran. Replaced by candidate-unlocked.trace after user unlock."
+  }
+}

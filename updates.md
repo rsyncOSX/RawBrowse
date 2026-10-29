@@ -19,6 +19,8 @@ Sandboxed app result: [three empty-cache pairs](Docs/Performance/Phase4-App-Comp
 
 Rebuilt comparison follow-up: [three new empty/warm pairs per variant](Docs/Performance/Phase4-App-Warm-Comparison.md) reproduce empty-cache cohort median improvements of 978→382 ms (large) and 430→122 ms (small). Warm disk bypasses the parser and shows no candidate benefit (60→73 ms and 56→57 ms). All 12 cohorts complete and image tasks drain. Both Release builds and the post-fix candidate full macOS suite pass. Previous temporary evidence was absent, so new source-matched binaries and trials 4–6 are summarized separately. Interaction/profiler acceptance remains pending.
 
+Interaction follow-up: [validation and recommendation](Docs/Performance/Phase4-Interaction-Validation.md) completes one matched scroll/keyboard/preview/folder-switch sequence per variant. Both switch with 152 thumbnail requests in flight, reject 152 cancelled deliveries and drain all image tasks. Time Profiler-only captures save and export nonempty samples; differing action coverage prevents a CPU or smoothness comparison. Candidate full tests and both Release builds pass. Retain the parser review patch for upstream review; defer the production dependency pin until an upstream reviewed revision/release is available. This candidate evaluation is complete within its stated scope; the broader phases remain partial.
+
 ## Purpose
 
 Determine which lessons from RawCull's performance phases 0–6 apply to RawBrowse. Establish a RawBrowse baseline, test individual candidates, and retain only changes supported by measurements and lifecycle checks.
