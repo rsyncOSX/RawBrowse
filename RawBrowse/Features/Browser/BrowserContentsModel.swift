@@ -44,6 +44,8 @@ final class BrowserContentsModel {
                 }
             }
             do {
+                let diagnostic = BrowserPerformance.begin("scan.discoveryAndPublication", folder.url)
+                defer { diagnostic?.end(Task.isCancelled ? "cancelled" : "finished") }
                 let (children, discoveredFiles) = try await discover(folder.url)
                 guard !Task.isCancelled, scanRunner.isCurrent(token) else { return }
                 childrenDiscovered?(folder, children)

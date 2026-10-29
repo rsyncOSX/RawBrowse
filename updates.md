@@ -4,6 +4,9 @@ Prepared 24 October 2026. Evaluated 29 October 2026: phases 0–2 reviewed with 
 
 Current decision: phase 0 and phase 1 remain partial; phase 2 production coalescing is deferred because material UI overhead has not been established. Per-download-attempt progress identity and monotonic displayed progress are implemented as correctness improvements. Measure representative transfer/UI pressure before adding a timer. CLIP coalescing remains deferred pending inference measurements. Follow-up validation passed: focused download/ownership tests, full macOS test suite and local Release build.
 
+
+Phase 4 exploratory baseline (29 October): [browsing baseline report](Docs/Performance/Phase4-Browsing-Baseline.md), [two-workload manifest](Docs/Performance/Phase4-Workloads.json), and [six paired-trial summaries](Docs/Performance/Phase4-Baseline-Results.json). Three empty-cache/fresh-process warm-disk pairs show that the thumbnail parser round trip dominates empty-cache request time for the fixed initial filename cohort. Warm-disk trials avoid parser calls. Two Blank + Time Profiler-only captures saved and exported successfully; the standard template pilot failed with a logging-stream error and was discarded. Retained changes are opt-in stage timing and disposable cache roots, not a performance optimization. Full tests and diagnostic Release build passed. Phase 3 is explicitly deferred; phase 4 remains partial pending parser isolation, painted-frame readiness, complete settings identity and broader interaction measurements. Next: isolate parser queueing versus decode/file-access work using the pinned dependency.
+
 ## Purpose
 
 Determine which lessons from RawCull's performance phases 0–6 apply to RawBrowse. Establish a RawBrowse baseline, test individual candidates, and retain only changes supported by measurements and lifecycle checks.
@@ -169,7 +172,7 @@ Success means less unnecessary progress publication or lower measured UI overhea
 - [ ] Phase 0: reproducible baseline and workload manifests.
 - [ ] Phase 1: download and CLIP callback pressure measured.
 - [ ] Phase 2: download candidate evaluated and decision recorded.
-- [ ] Phase 3: CLIP candidate evaluated or explicitly deferred.
+- [x] Phase 3: explicitly deferred; inference callback pressure remains unmeasured.
 - [ ] Phase 4: browsing/image stage bottlenecks measured.
 - [ ] Phase 5: matched interaction checks and final comparison.
 - [ ] Retained changes pass relevant lifecycle tests, full tests and Release build.

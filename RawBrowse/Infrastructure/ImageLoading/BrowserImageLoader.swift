@@ -36,6 +36,8 @@ actor BrowserImageLoader {
     private let fullSizeCache: FullSizeJPGDiskCache
 
     func discoverFolders(at folderURL: URL) async -> [BrowserFolderItem] {
+        let diagnostic = BrowserPerformance.begin("discovery.folders", folderURL)
+        defer { diagnostic?.end(Task.isCancelled ? "cancelled" : "finished") }
         let access = await CatalogAccess.shared.lease(for: folderURL)
         defer { withExtendedLifetime(access) {} }
         return await Task.detached(priority: .utility) {
@@ -78,6 +80,8 @@ actor BrowserImageLoader {
     }
 
     func discoverSupportedFiles(at folderURL: URL) async throws -> [BrowserFileItem] {
+        let diagnostic = BrowserPerformance.begin("discovery.files", folderURL)
+        defer { diagnostic?.end(Task.isCancelled ? "cancelled" : "finished") }
         let access = await CatalogAccess.shared.lease(for: folderURL)
         defer { withExtendedLifetime(access) {} }
         return try await Task.detached(priority: .utility) {
@@ -101,6 +105,8 @@ actor BrowserImageLoader {
     }
 
     func thumbnail(for url: URL, targetSize: Int = 200) async -> NSImage? {
+        let diagnostic = BrowserPerformance.begin("thumbnail.total", url)
+        defer { diagnostic?.end(Task.isCancelled ? "cancelled" : "finished") }
         let access = await CatalogAccess.shared.lease(for: url)
         guard !isClearingCaches else { return nil }
         let boundedTargetSize = max(targetSize, 1)
@@ -120,10 +126,13 @@ actor BrowserImageLoader {
         let task = Task<NSImage?, Never>(priority: .utility) {
             defer { withExtendedLifetime(access) {} }
             guard !Task.isCancelled else { return nil }
-            if let diskImage = await ThumbnailDiskCache.shared.load(
+            let diskTiming = BrowserPerformance.begin("thumbnail.diskLookup", url)
+            let diskImage = await ThumbnailDiskCache.shared.load(
                 for: url,
                 maxPixelSize: boundedTargetSize,
-            ) {
+            )
+            diskTiming?.end(diskImage == nil ? "miss" : "hit")
+            if let diskImage {
                 guard !Task.isCancelled, generation == cacheGeneration else { return nil }
                 await MemoryImageCache.shared.storeThumbnail(
                     diskImage,
@@ -133,13 +142,18 @@ actor BrowserImageLoader {
                 return diskImage
             }
 
-            guard let image = await RawParserKit.RawImageLoader.shared.thumbnail(
+            let parserTiming = BrowserPerformance.begin("thumbnail.parser", url)
+            let parsedImage = await RawParserKit.RawImageLoader.shared.thumbnail(
                 for: url,
                 maxPixelSize: boundedTargetSize,
-            ), !Task.isCancelled else { return nil }
+            )
+            parserTiming?.end(parsedImage == nil ? "failed" : "image")
+            guard let image = parsedImage, !Task.isCancelled else { return nil }
 
             guard generation == cacheGeneration else { return nil }
             await MemoryImageCache.shared.storeThumbnail(image, for: url, maxPixelSize: boundedTargetSize)
+            let saveTiming = BrowserPerformance.begin("thumbnail.encodeAndSave", url)
+            defer { saveTiming?.end() }
             if let cgImage = image.cgImage(forProposedRect: nil, context: nil, hints: nil),
                let jpegData = ThumbnailDiskCache.jpegData(from: cgImage) {
                 await ThumbnailDiskCache.shared.save(
@@ -167,6 +181,8 @@ actor BrowserImageLoader {
     }
 
     private func fullSizePreview(for url: URL) async -> CGImage? {
+        let diagnostic = BrowserPerformance.begin("preview.total", url)
+        defer { diagnostic?.end(Task.isCancelled ? "cancelled" : "finished") }
         let access = await CatalogAccess.shared.lease(for: url)
         guard !isClearingCaches else { return nil }
         if let existing = extractedJPGTasks[url] {
@@ -187,7 +203,9 @@ actor BrowserImageLoader {
                 return cached
             }
 
+            let extractionTiming = BrowserPerformance.begin("preview.extract", url)
             let extracted = await extractPreview(url)
+            extractionTiming?.end(extracted == nil ? "failed" : "image")
             guard !Task.isCancelled else { return nil }
 
             if let extracted {

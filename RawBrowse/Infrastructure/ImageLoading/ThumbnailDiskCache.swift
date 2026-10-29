@@ -17,6 +17,8 @@ actor ThumbnailDiskCache {
         let folder: URL
         if let cacheDirectory {
             folder = cacheDirectory
+        } else if let diagnosticDirectory = BrowserPerformance.cacheDirectory("Thumbnails") {
+            folder = diagnosticDirectory
         } else {
             let paths = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)
             folder = paths[0]
