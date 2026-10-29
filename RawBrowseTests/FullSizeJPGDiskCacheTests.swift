@@ -260,6 +260,24 @@ struct FullSizeJPGDiskCacheTests {
     }
 
     @Test
+    func `native JPG previews preserve pixels and cache independently of bounded previews`() async throws {
+        let root = try makeTestRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let source = root.appendingPathComponent("photo.arw")
+        try Data([1]).write(to: source)
+        let image = try makeTestImage(width: 9000, height: 2)
+        let loader = BrowserImageLoader(fullSizeCache: FullSizeJPGDiskCache(cacheDirectory: root.appendingPathComponent("cache")),
+                                        extractPreview: { _ in image })
+        let native = try #require(await loader.previewImage(for: source))
+        #expect(native === image)
+        #expect(native.width == 9000)
+        let bounded = try #require(await loader.previewImage(for: source, maxPixelSize: 8700))
+        #expect(bounded.width == 8700)
+        #expect(bounded !== native)
+        #expect(await loader.previewImage(for: source) === native)
+    }
+
+    @Test
     func `standalone JPEG preview revisits use memory`() async throws {
         let root = try makeTestRoot()
         defer { try? FileManager.default.removeItem(at: root) }
@@ -274,12 +292,12 @@ struct FullSizeJPGDiskCacheTests {
     }
 
     @Test @MainActor
-    func `JPG delivery precedes RAW support and sidecar restoration`() async throws {
+    func `JPG browsing defers RAW support and sidecar restoration until RAW mode`() async throws {
         let root = try makeTestRoot()
         defer { try? FileManager.default.removeItem(at: root) }
         let source = root.appendingPathComponent("photo.arw")
         try Data([1]).write(to: source)
-        let image = try makeTestImage(width: 40, height: 20)
+        let image = try makeTestImage(width: 9000, height: 2)
         let gate = PreviewExtractionGate()
         let loader = BrowserImageLoader(fullSizeCache: FullSizeJPGDiskCache(cacheDirectory: root.appendingPathComponent("cache")),
                                         extractPreview: { _ in image })
@@ -294,14 +312,26 @@ struct FullSizeJPGDiskCacheTests {
                                  return true
                              })
         zoom.openZoom(for: BrowserFileItem(url: source))
-        await gate.waitForArrivals(1)
-        #expect(zoom.zoomImage != nil)
+        let deadline = ContinuousClock.now + .seconds(5)
+        while !zoom.isZoomExifInfoLoaded, ContinuousClock.now < deadline {
+            try await Task.sleep(for: .milliseconds(10))
+        }
+        // Give any incorrectly scheduled post-delivery work a chance to start.
+        try await Task.sleep(for: .milliseconds(50))
+        #expect(await gate.arrivalCount == 0)
+        #expect(await sidecarGate.arrivalCount == 0)
+        #expect(!session.isEditing(source))
+        #expect(zoom.zoomImage?.width == 9000)
         #expect(zoom.isZoomExifInfoLoaded)
         #expect(zoom.raw9SupportedURL == nil)
         #expect(!session.hasRestored(source))
+        zoom.useDevelopedRAW = true
+        zoom.openZoom(for: BrowserFileItem(url: source))
+        await gate.waitForArrivals(1)
+        #expect(session.isEditing(source))
         await gate.release()
         await sidecarGate.waitForArrivals(1)
-        #expect(zoom.zoomImage != nil)
+        #expect(!session.hasRestored(source))
         #expect(zoom.raw9SupportedURL == nil)
         // Closing while restoration is in flight must reject stale adjustments.
         zoom.closeZoom()
@@ -395,6 +425,7 @@ struct FullSizeJPGDiskCacheTests {
 
 private actor PreviewExtractionGate {
     private var arrivals = 0
+    var arrivalCount: Int { arrivals }
     private var workers: [CheckedContinuation<Void, Never>] = []
     private var observers: [(Int, CheckedContinuation<Void, Never>)] = []
 

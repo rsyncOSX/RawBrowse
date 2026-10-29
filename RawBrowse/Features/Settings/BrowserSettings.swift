@@ -16,6 +16,7 @@ nonisolated struct BrowserSettings: Codable, Equatable, Sendable {
     var maxCachedExtractedJPGs = defaultMaxCachedExtractedJPGs
     var thumbnailSizeGrid = 200
     var thumbnailSizePreview = 1616
+    // Retained for settings-file compatibility; full-size JPG browsing uses native pixels.
     var thumbnailSizeFullSize = 8700
     var rawPreviewBitDepth: RAWPreviewBitDepth = .eightBit
     var clipModelPath: String?

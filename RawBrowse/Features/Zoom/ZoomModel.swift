@@ -56,8 +56,6 @@ final class ZoomModel {
         file = selectedFile
         raw9SupportedURL = nil
 
-        let shouldLoadSidecar = raw9.prepare(for: selectedFile.url)
-        let initialAdjustments = raw9.raw9Adjustments
         zoomTask?.cancel()
         let operationID = UUID()
         renderOperationID = operationID
@@ -75,12 +73,11 @@ final class ZoomModel {
             )
         }
         presentation.zoomOverlayVisible = true
-        let previewSize = settingsModel.values.thumbnailSizeFullSize
         let cacheSettings = settingsModel.values
         let access = CatalogAccess.shared.lease(for: selectedFile.url)
         zoomTask = Task {
             let diagnostic = BrowserPerformance.begin("preview.presentationDelivery", selectedFile.url,
-                details: ["target_pixels": String(previewSize)])
+                details: ["target_pixels": "native"])
             var delivered = false
             defer { if !delivered { diagnostic?.end(Task.isCancelled ? "cancelled" : "failed") } }
             defer {
@@ -95,6 +92,9 @@ final class ZoomModel {
             do {
                 let loadedImage: CGImage?
                 if developRAW {
+                    // Decoder probing and editing state are lazy: JPG navigation never needs them.
+                    let shouldLoadSidecar = raw9.prepare(for: selectedFile.url)
+                    let initialAdjustments = raw9.raw9Adjustments
                     if try await prepareRAW9(for: selectedFile.url, shouldLoadSidecar: shouldLoadSidecar,
                                              initialAdjustments: initialAdjustments) {
                         loadedImage = try await raw9.render(url: selectedFile.url, adjustments: raw9.raw9Adjustments, bitDepth: settingsModel.values.rawPreviewBitDepth)
@@ -103,9 +103,7 @@ final class ZoomModel {
                     }
                 } else {
                     await imageLoader.apply(settings: cacheSettings)
-                    loadedImage = await imageLoader.previewImage(
-                        for: selectedFile.url, maxPixelSize: previewSize,
-                    )
+                    loadedImage = await imageLoader.previewImage(for: selectedFile.url)
                 }
                 guard !Task.isCancelled else { return }
                 zoomImage = loadedImage
@@ -122,17 +120,6 @@ final class ZoomModel {
             guard !Task.isCancelled else { return }
             zoomExifInfo = loadedExifInfo
             isZoomExifInfoLoaded = true
-            // Restore editing state after delivering the JPG and its metadata.
-            if !developRAW, !SupportedFileType.isRenderedImage(selectedFile.url) {
-                do {
-                    _ = try await prepareRAW9(for: selectedFile.url, shouldLoadSidecar: shouldLoadSidecar,
-                                               initialAdjustments: initialAdjustments)
-                } catch {
-                    // Restoration only propagates cancellation; the session
-                    // reports sidecar read failures without hiding the JPG.
-                    return
-                }
-            }
         }
     }
 

@@ -77,3 +77,29 @@ The follow-up change makes `ZoomModel` own the current file's support result. Th
 Validation extends the JPG delivery regression to check that support remains unavailable during blocked probing/restoration and after closing. Actual photo browsing and first-painted-frame timings still require a matched runtime workload; filter-count reduction alone is not a measured latency improvement.
 
 The full macOS test suite passed after this change (`xcodebuild test`, arm64, existing pinned dependencies); `git diff --check` passed. Existing sendable-capture warnings remain in unrelated tests. Test log: `/tmp/rawbrowse-raw9-browsing-tests.log`.
+
+## Follow-up: measured 66-megapixel JPG resize cost
+
+On 29 October, six sequential RAW files supplied by the user in `2_okt_2026` were measured with an optimized standalone probe built against the pinned RawParserKit sources. All six identify as Sony ILCE-7RM6 and support RAW 9. Their embedded camera JPEGs are 9984 × 6656 pixels and lack their own orientation tag. Original photos were read only. Detailed stage measurements are in [JPG-Native-Resolution-Results.json](JPG-Native-Resolution-Results.json).
+
+Median stage times on this host:
+
+| Operation | Milliseconds |
+| --- | ---: |
+| Locate embedded JPEG offsets | 0.14 |
+| Read JPEG bytes (warmed filesystem) | 1.77 |
+| Native JPEG decode and bitmap draw | 209 |
+| Existing 8700-pixel high-quality resize, including JPEG decode | 358 |
+| Direct ImageIO JPEG decode at 8700 pixels | 465 |
+| RAW 9 capability probe | 50 |
+| EXIF/focus metadata | 4.7 |
+
+The app's hidden 8700-pixel limit adds a resize for these 9984-pixel previews, whereas smaller JPEGs bypass that stage. RAW 9 support is not a predicate of the JPG extraction path. The tested folder contains 23 RAW files; six were timed, all compatible. These measurements do not compare supported and unsupported files of identical dimensions, or prove first-painted-frame latency. Native bitmap measurements ran before resize experiments to avoid timing a reused, already decoded image as the native baseline. Direct target-size decoding was rejected because it was slower at the same 8700-pixel target.
+
+Full-size JPG browsing now requests native pixels and skips the arbitrary resize. Explicitly bounded loader callers retain their existing resize behavior, and native/bounded variants have separate memory cache keys. Orientation and camera JPEG bytes retain the existing parser/cache handling. Larger native images consume more memory per retained image; the existing byte budget still bounds retention. The legacy full-size setting remains decodable for compatibility; diagnostics now report native resolution.
+
+RAW 9 support probing and sidecar preparation now occur only in developed RAW mode. Catalog badge discovery remains a separate background scan; it can still construct a RAW filter and is not claimed to be eliminated by the JPG navigation change.
+
+At investigation time `/Applications/RawBrowse.app` had a 16:43 executable timestamp, preceding the preceding lazy RAW setup change at 16:50. The installed executable therefore did not contain that source change. An optimized build of the updated source is prepared separately for testing; no installed app or user photos are replaced.
+
+Validation: the focused JPEG/RAW 9 sidecar suites and the full macOS test suite passed. The Release build succeeded at `/tmp/rawbrowse-zoom-validation/Build/Products/Release/RawBrowse.app`. Regression coverage checks native pixels above the old 8700-pixel boundary, separate native/bounded cache entries, and no RAW 9 probe or sidecar read while browsing JPG. Logs are under `/tmp/rawbrowse-jpg-investigation/`. No GUI browsing latency or painted-frame improvement is claimed from these stage timings.

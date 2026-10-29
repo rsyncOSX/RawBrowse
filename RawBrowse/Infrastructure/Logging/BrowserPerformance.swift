@@ -30,7 +30,7 @@ nonisolated enum BrowserPerformance {
 
     static func workspaceSettingsFields(_ settings: BrowserSettings) -> [String: Any] {
         ["grid_pixels": settings.thumbnailSizeGrid, "preview_pixels": settings.thumbnailSizePreview,
-         "full_size_pixels": settings.thumbnailSizeFullSize, "grid_cache_mb": settings.gridCacheSizeMB,
+         "full_size_pixels": "native", "grid_cache_mb": settings.gridCacheSizeMB,
          "memory_cache_mb": settings.memoryCacheSizeMB,
          "max_cached_previews": settings.maxCachedExtractedJPGs,
          "selected_clip_model": settings.selectedCLIPModel.downloadID.rawValue]

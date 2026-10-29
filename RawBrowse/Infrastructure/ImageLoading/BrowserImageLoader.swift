@@ -194,22 +194,30 @@ actor BrowserImageLoader {
         return image
     }
 
-    func previewImage(for url: URL, maxPixelSize: Int) async -> CGImage? {
+    /// Full-size browsing preserves the camera JPEG's native resolution. Callers
+    /// requesting a bounded preview can still opt into an explicit resize.
+    func previewImage(for url: URL, maxPixelSize: Int? = nil) async -> CGImage? {
         guard !Task.isCancelled, !isClearingCaches else { return nil }
-        let key = "\(ImageSourceFingerprint.key(for: url))|\(max(1, maxPixelSize))"
+        let sizeKey = maxPixelSize.map { String(max(1, $0)) } ?? "native"
+        let key = "\(ImageSourceFingerprint.key(for: url))|\(sizeKey)"
         if let image = previewMemoryCache.image(for: key) {
-            BrowserPerformance.event("preview.memoryHit", fields: ["path": url.path, "target_pixels": maxPixelSize])
+            BrowserPerformance.event("preview.memoryHit", fields: ["path": url.path, "target_pixels": sizeKey])
             return image
         }
         let generation = cacheGeneration
         guard let image = await fullSizePreview(for: url), !Task.isCancelled,
               generation == cacheGeneration else { return nil }
-        let resize = BrowserPerformance.begin("preview.resize", url, details: ["target_pixels": String(maxPixelSize)])
-        defer { resize?.end(Task.isCancelled ? "cancelled" : "finished") }
-        let resized = await Self.resizedPreview(image, maxPixelSize: maxPixelSize)
+        let resized: CGImage?
+        if let maxPixelSize {
+            let resize = BrowserPerformance.begin("preview.resize", url, details: ["target_pixels": String(maxPixelSize)])
+            resized = await Self.resizedPreview(image, maxPixelSize: maxPixelSize)
+            resize?.end(Task.isCancelled ? "cancelled" : "finished")
+        } else {
+            resized = image
+        }
         guard !Task.isCancelled, generation == cacheGeneration, !isClearingCaches else { return nil }
         // Do not retain an image if its source changed while it was loading.
-        if let resized, key == "\(ImageSourceFingerprint.key(for: url))|\(max(1, maxPixelSize))" {
+        if let resized, key == "\(ImageSourceFingerprint.key(for: url))|\(sizeKey)" {
             previewMemoryCache.insert(resized, for: key)
         }
         return resized
