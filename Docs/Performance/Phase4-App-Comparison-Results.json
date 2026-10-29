@@ -1,0 +1,1421 @@
+{
+  "scope": "Initial accepted model image delivery, not painted frames",
+  "configuration": {
+    "full_size_pixels": 8700,
+    "grid_cache_mb": 768,
+    "grid_pixels": 200,
+    "max_cached_previews": 4,
+    "memory_cache_mb": 768,
+    "preview_pixels": 1616,
+    "selected_clip_model": "clip-datacomp",
+    "windows": [
+      {
+        "backing_scale": 2,
+        "content_height": 1220,
+        "content_width": 1644,
+        "height": 1272,
+        "title": "RawBrowse",
+        "width": 1644
+      }
+    ]
+  },
+  "build_identity": {
+    "Baseline": {
+      "executable": "/private/tmp/rawbrowse-app-comparison/BaselineBuild/Build/Products/Release/RawBrowse.app/Contents/MacOS/RawBrowse",
+      "sha256": "3f6b27e19dd9e05d5937f5391c3c24171fff26cf9a1a24f96d20a1075f0ec330",
+      "binary_uuid": "UUID: 3407340B-8D34-3294-8A6C-6C3BB744D0F8 (arm64) /tmp/rawbrowse-app-comparison/BaselineBuild/Build/Products/Release/RawBrowse.app/Contents/MacOS/RawBrowse",
+      "dsym_uuid": "UUID: 3407340B-8D34-3294-8A6C-6C3BB744D0F8 (arm64) /tmp/rawbrowse-app-comparison/BaselineBuild/Build/Products/Release/RawBrowse.app.dSYM/Contents/Resources/DWARF/RawBrowse"
+    },
+    "Candidate": {
+      "executable": "/private/tmp/rawbrowse-app-comparison/CandidateBuild/Build/Products/Release/RawBrowse.app/Contents/MacOS/RawBrowse",
+      "sha256": "0aee7fa52f138d3a70cd4d6ded7122cf0be69094d0c2c80d19423971131d8e00",
+      "binary_uuid": "UUID: 3195912B-7FC4-3ADF-BC66-C35E165C0F0C (arm64) /tmp/rawbrowse-app-comparison/CandidateBuild/Build/Products/Release/RawBrowse.app/Contents/MacOS/RawBrowse",
+      "dsym_uuid": "UUID: 3195912B-7FC4-3ADF-BC66-C35E165C0F0C (arm64) /tmp/rawbrowse-app-comparison/CandidateBuild/Build/Products/Release/RawBrowse.app.dSYM/Contents/Resources/DWARF/RawBrowse"
+    }
+  },
+  "source_identity": {
+    "Baseline": {
+      "app": "/private/tmp/rawbrowse-app-comparison/Baseline/App",
+      "package": "/private/tmp/rawbrowse-app-comparison/Baseline/RawParserKit",
+      "swift_source_hashes": {
+        "RawBrowse/Features/About/Views/AboutRawBrowseView.swift": "e5e4989427b3446cc1e87d56fc9f606a6b0a6e6de33ae3740934439ad24f1f57",
+        "RawBrowse/Features/About/Views/ShortcutRow.swift": "51de11ab9640c13e51932043ec74e47eed7fbda5d12fd1bcf7ce439874e19ca2",
+        "RawBrowse/Features/Browser/BrowserContentsModel.swift": "0d494ed3bf3167d9ba6174dad06efbb665a46b5c8e98c4c84f913a45749abbdc",
+        "RawBrowse/Features/Browser/BrowserFileItem.swift": "24586b5bd530674f9bd9ba52e8034f90a4555b5ecebefa8ed212e550326e3e7e",
+        "RawBrowse/Features/Browser/BrowserFolderItem.swift": "dc309906c2c7492e9333c4e810a01edd5e13b8e54064c4bbcdc40fbf93db0d2f",
+        "RawBrowse/Features/Browser/CatalogStore.swift": "59605c386feb4c6e0e8706e277fa6652b64a47eb77c429e14c1509ad265d7a64",
+        "RawBrowse/Features/Browser/Grid/BrowserGridView.swift": "354e7d73676734dbe65b4cdb8ccb0dc42ee34070f10495508429f1ab7dd057cf",
+        "RawBrowse/Features/Browser/Grid/BrowserThumbnailCell.swift": "39f2ed490cbf9a7f0f153d8a9a094fc0c4fa93567178580a1985a45de9a6e1f5",
+        "RawBrowse/Features/Browser/Grid/ThumbnailPresentationModel.swift": "d3f25b80bc9e4d7ad2f6571b80346a0ec0fecc07233ba747ba68b039208cdde3",
+        "RawBrowse/Features/Browser/Histogram/BrowserHistogramCalculator.swift": "a129780c9e1df9dae83cfc81ee887943fef4ac25b9d3af5bc526b0de4b6d52d9",
+        "RawBrowse/Features/Browser/Histogram/BrowserHistogramPath.swift": "e71775fc0b4c42e05fbc930d4f126a67ea48d426cc6da6aaa47d59e664b9ae38",
+        "RawBrowse/Features/Browser/Histogram/BrowserHistogramView.swift": "0d820d2cc4fedb6d40b4942ff25c09be26f07e1be23d3fb0e8e93ca8331a68fa",
+        "RawBrowse/Features/Browser/Presentation/BrowserPresentationState.swift": "750169e9dc70b3fd21faa5f65f50e14a4751559d8aa8e9c2fa6df77f1cc428b5",
+        "RawBrowse/Features/Browser/RememberedCatalog.swift": "0d0f126fcae0786d0bd5a0fd84a64657d7cfd7c8c418e826d1e5be7429b4ce14",
+        "RawBrowse/Features/Browser/RememberedCatalogStore.swift": "290f00d1a7f21785e43c10c975d8e5ffee1e278125605e482f6622b72e8412e2",
+        "RawBrowse/Features/Browser/SelectionModel.swift": "58147bdbe1986bfe84e521d5a4a50e69703a1e77a2e79cd5ed8a912362cccb31",
+        "RawBrowse/Features/Browser/Sidebar/BrowserSidebarView.swift": "62c85972e7dfdfdc5c3c39beb3613741c0001b535561d14da48a42a66c60ed56",
+        "RawBrowse/Features/Browser/Sidebar/FolderOutlineRow.swift": "58d55815565e45c987cb19e05be1461c474a560a9350d6ae2263aeac3ae9efdd",
+        "RawBrowse/Features/Browser/Sidebar/SidebarPresentationModel.swift": "fd92172274f060dd33ca0a37270f04ba6af5ca76de334cf5649adb8e241c2645",
+        "RawBrowse/Features/Browser/SupportedFileType.swift": "f002c86f6c121d857738eedbd807b7811698bb183e24c8939b2706b8c8cbc813",
+        "RawBrowse/Features/Browser/Views/BrowserAIWorkspaceView.swift": "5c6b0a197d8c78be569483780e3586de3f58ba4f99def6d8fabb0e1743dfe806",
+        "RawBrowse/Features/Browser/Views/BrowserNavigationTitle.swift": "3628e2a813faaf67d372985c52662506d9b4d9b2c8ca19c5822c1352312198b1",
+        "RawBrowse/Features/Browser/Views/FileBrowserView.swift": "592abcae446604b1a3a5e63f23cdb38393f4d92fd47689590907cc24ab39059f",
+        "RawBrowse/Features/CLIP/CLIPFeatureModel.swift": "b278b965d4263328f21da5f0a350591e7b2eff465972534afe51774681f6174f",
+        "RawBrowse/Features/CLIP/CLIPImageDiscovery.swift": "4bdbbe087b752617a5f375df47183d4b35f44a12727aeb866801e4359173117b",
+        "RawBrowse/Features/CLIP/CLIPIndex.swift": "c04ed7b7d53628c06e128f59a9b6373cc94f7e64e31b924aa6c34823c36d36a7",
+        "RawBrowse/Features/CLIP/CLIPModelManager.swift": "2e583c567f66412eee2ef09c5e825905fe8f4e14cd04ae0d43e902f88111b061",
+        "RawBrowse/Features/CLIP/CLIPSearchEngine.swift": "f9d8fc05bb60f3beb916704782a9d47705eddea307a94df16ddb3b3fb462d36c",
+        "RawBrowse/Features/CLIP/CLIPSimilaritySearch.swift": "ac334fc1ad9073d6e316ed1c227fdd0e1e391c32ffa8929fd0d51ad9787d88eb",
+        "RawBrowse/Features/DeepReview/DeepAIReviewController.swift": "01f2527e8ce24211f020d3867e0b8efe5b34ecb41d42f8559fbee794f50b3b64",
+        "RawBrowse/Features/DeepReview/DeepAIReviewFeature.swift": "e4e189a5b1982b1a2c1d1f3bfc4b0e7b83521edfc442ce28c416098b17e87fab",
+        "RawBrowse/Features/DeepReview/DeepAIReviewMaskOutlineRenderer.swift": "d98dc49e2ac2529f9c0035a2099a679d7cbfca4e599d4da178c38ecdc928044e",
+        "RawBrowse/Features/DeepReview/DeepAIReviewRuntime.swift": "cd1b02881a2c1762678d0c9fd1723cc59c34be08aeb9a8fe329b2435f11e9851",
+        "RawBrowse/Features/DeepReview/DeepAIReviewSupport.swift": "ef8654a3c1c708c047950ef4694b87a10286c7d65a9ddb82e8bf1c4e3ff3f8a8",
+        "RawBrowse/Features/DeepReview/DeepReviewModel.swift": "5489717e15c01de659c4d6e211cd20f51b234ba4631765be2f0e9a1a989d807c",
+        "RawBrowse/Features/DeepReview/SubjectMaskFocusScorer.swift": "0158fd23bf12870c30e6008383e48f7fa81fbe5eda286f2ac74197ccc8d3e53f",
+        "RawBrowse/Features/DeepReview/SubjectMaskForeground.swift": "f711597972f889c1acdd334523bb912ec6815602a3b728933a6131f1d4bf97e7",
+        "RawBrowse/Features/DeepReview/Views/DeepAIReviewSheetView.swift": "1c07675a1eb5a6c0d72f94c356c28e056657e254392888a470f841d56f8de4ac",
+        "RawBrowse/Features/DeepReview/WholeImageSharpnessScorer.swift": "51119801e34e24e7d03ebe5cfe2e6a71e804abeb20aaea79e829bc187c512de5",
+        "RawBrowse/Features/ModelDownloads/CLIPManagedModels.swift": "fc3e4b6de3f7e2d1b5d91c6da915b08d5743ee896d865ea62722fda1e18ee807",
+        "RawBrowse/Features/ModelDownloads/CLIPModelDownloadCatalog.swift": "74ff41cb1cca428d964094bb85b301f50b944d2039f2cb466cd83b4a3d45b4c6",
+        "RawBrowse/Features/ModelDownloads/ModelDownloadsModel.swift": "e17c38f4171ed7294b88cfe2190a506f84936c0ff42398b839c02a56bbe74061",
+        "RawBrowse/Features/ModelDownloads/RawBrowseAIModelLicenceAcceptance.swift": "6550564d71fa65839147cc2f5a77acb0adf77e0276bffbbb7cce99e8b925bb10",
+        "RawBrowse/Features/ModelDownloads/Views/CLIPModelDownloadsView.swift": "9a75d97adeb654a6b7d32015697d72a0b3eddee51a147c1efc647a0c41c56d2b",
+        "RawBrowse/Features/RAW9/RAW9EditingSession.swift": "69a56b4e15a56555e5b5668f5c8eceb97ba2da9dbb0ba8a6f142893f925077be",
+        "RawBrowse/Features/RAW9/RAW9ExportQueue.swift": "61663fd657a6e72ae8daeea7d38cdf5c772aa52409c3bf44eccde33593d4e02c",
+        "RawBrowse/Features/RAW9/RAW9Support.swift": "a963a0770bf9c9104b8b3fa847ca1b6f618554b428006ba928a41bb265d54528",
+        "RawBrowse/Features/RAW9/Views/RAW9CropEditor.swift": "64c43500a2a06064ff2bce311765aeffeee7be0aeba0b77cf11400c175aa993e",
+        "RawBrowse/Features/RAW9/Views/RAW9ExportQueueView.swift": "8f836a167dca4bf078aa5662629f02a8a096fc76cb2766496b9bc0df638a527a",
+        "RawBrowse/Features/Settings/BrowserSettings.swift": "bd8bea728972de6232d1bd70d810a0a8afab5f954581801c6706316d27081307",
+        "RawBrowse/Features/Settings/BrowserSettingsStore.swift": "4a851dfa7160fc06a3982224f2d1e0c13f08a8943a42f401ac04981825de51aa",
+        "RawBrowse/Features/Settings/MemoryViewModel.swift": "006d57fae9b50a24f16cc8f0b9f0b22a35c00bdc4864b939924b91723d433bac",
+        "RawBrowse/Features/Settings/SettingsModel.swift": "e7996b75d1fdb5a1caa0c59c0bbb911865c9e7f40adacf3188406f42d28bbca3",
+        "RawBrowse/Features/Settings/Views/AISettingsTab.swift": "d43dbf027957f46c8c4e4d13eb4310cbb72dda457b2e77401a171c1ca1f6fc65",
+        "RawBrowse/Features/Settings/Views/CLIPIndexesSettingsTab.swift": "d9880d9de365e88ba548ae8f0f9da7fd53d992630e56093e3c852b841d76e1be",
+        "RawBrowse/Features/Settings/Views/ImageCacheSettingsTab.swift": "bb967e48b4b68650117574c981ba318c9cd1d87e5bcf00ac8b1ba42fb1e9f50a",
+        "RawBrowse/Features/Settings/Views/ImagePreviewSettingsTab.swift": "52c39ab91de8613224237bf5d428b834e235590bc55928ca0426bc7b4ea265fc",
+        "RawBrowse/Features/Settings/Views/MemoryTab.swift": "e50c35d54ea5a9e8d36ed2fe7e6f6a7065169538d0f9d49112239d8995882f77",
+        "RawBrowse/Features/Settings/Views/SettingsView.swift": "c91891a03ca0e98a38ab00c081eef1374deaa10f7dfedaf6e12e8d621abe51ce",
+        "RawBrowse/Features/Zoom/Presentation/BrowserZoomInitialMode.swift": "40dee8a57f7900fbb753ccc404e30928ddadd3896dd1241733d22e7e2f09b39b",
+        "RawBrowse/Features/Zoom/Presentation/BrowserZoomLaunchContext.swift": "7d8719a0bfc00fbe021cb535a76cd28aac5d19199c1b1314f9002c8e1f0a21af",
+        "RawBrowse/Features/Zoom/Presentation/ZoomPresentationState.swift": "49743489e1c8a4fd14047462a66b6bfcdbeefb660b4cdf332680ef980c86330e",
+        "RawBrowse/Features/Zoom/Views/BrowserZoomGeometry.swift": "cd44bacee0d3317482eeeb22903055ce9e583567808197dc2a191f8355d6b259",
+        "RawBrowse/Features/Zoom/Views/BrowserZoomOverlayView.swift": "95bc276bfcca8e5b0ce21655789834a6a3b2b0e3d2d32d03f5dd5f3a12776aa6",
+        "RawBrowse/Features/Zoom/Views/BrowserZoomViewportTransform.swift": "f3274299ebb124933d778cd5e188a9078c6bc9ee39c8f30c15265642eabfda71",
+        "RawBrowse/Features/Zoom/Views/FocusPointBracketMarker.swift": "c549983ffa9f1182248e6f6413c08bbb6befde2f2858751e7d6d6063efac9b58",
+        "RawBrowse/Features/Zoom/Views/FocusPointMarker.swift": "2dec3daa056bc62e92d368056af2bc9c6d04e496662cabb2acf44d2aa20c8cb7",
+        "RawBrowse/Features/Zoom/Views/ZoomBadgeStyle.swift": "7d2f8cc0ea48a2c1dce4d96b57761512edc9809bc6da1da5832b20e04a44018a",
+        "RawBrowse/Features/Zoom/Views/ZoomControlBadge.swift": "3879cf3308afcd724ca63f89fd72d22e40de7735cde85c267d2c92172ddd6b9a",
+        "RawBrowse/Features/Zoom/Views/ZoomMetadataPanel.swift": "e56e2e86472f436c3c31547ae9246e56acc39fe9ac81f9380df3cb83175037c4",
+        "RawBrowse/Features/Zoom/Views/ZoomOverlayKeyAction.swift": "c1ce3b473f3377acb24c35374fc96a6d4ee82943c337dc98d7769ba8f99977da",
+        "RawBrowse/Features/Zoom/Views/ZoomOverlayNavigationAxis.swift": "b5441bfe6dc6e2552cf715cbb465399c0c29a63f777874db81531cef1031d5f0",
+        "RawBrowse/Features/Zoom/ZoomModel.swift": "2bc8480c9e01a72c013a2c0b109eec9bf4dc517c326442a07e414b58a5a934db",
+        "RawBrowse/Infrastructure/CatalogAccess/CatalogAccess.swift": "4568e3296d5623c1b8f001be5532e85c6c6e7af9ae6798a8139bd0f36128b5ee",
+        "RawBrowse/Infrastructure/CatalogAccess/URL+BrowserHierarchy.swift": "f97eb4fa04ab9309d4f181ad9bd437588a99b584ce68cdb22cee2be95df38abe",
+        "RawBrowse/Infrastructure/Concurrency/LatestTaskRunner.swift": "8f3e4a535a60121ef63ab8897ec48ecaaedf1f210998b2749d8a516a6c76bc0e",
+        "RawBrowse/Infrastructure/ImageLoading/BrowserImageLoader.swift": "2cafbc61e6fca07b8b936af871dd5bd6708a5817b1981ee1ebebe869e0b1119f",
+        "RawBrowse/Infrastructure/ImageLoading/CachedNSImage.swift": "2392601541436b9546a8fc611f31f032c2abc0ac8e98c7fa9f37f3d35dee032e",
+        "RawBrowse/Infrastructure/ImageLoading/DiskCachePolicy.swift": "bc768f463d15a17748fca8391bc40dc62ed6809c7114ef0b29eb99e0e236dd19",
+        "RawBrowse/Infrastructure/ImageLoading/FullSizeJPGDiskCache.swift": "5657078600687aeea3a9b982277209e4ee6cbc72c1f8e310bf06131ee4b22976",
+        "RawBrowse/Infrastructure/ImageLoading/MemoryImageCache.swift": "335bb6f8dd581352c7087708562767719644bccd42551595dd81d23c77c755cd",
+        "RawBrowse/Infrastructure/ImageLoading/ThumbnailDiskCache.swift": "9415d1840ac19ebcb70d387e0e7ccc2924e3482820130b2bed2cade48984dd61",
+        "RawBrowse/Infrastructure/Logging/BrowserPerformance.swift": "836a61212d93a8d148cf5070eb116dc06215a1624f6b7a098d538ad6066ecbfc",
+        "RawBrowse/Infrastructure/Logging/extension+Thread+Logger.swift": "e71ade1a101fa3c06207c2def99e96b593626b55f182f5208418eecf9e0e2e47",
+        "RawBrowse/Infrastructure/ReviewKeyboardScope.swift": "6b3ce13ed1b6bb9c451aabd0265dfe31c2e812ccec5e209bce92cc8457327dd9",
+        "RawBrowse/Main/AppDelegate.swift": "d6a23f5d1bb78fca9b8c0fbf43940f217226cd1339f39984282a57c81744194b",
+        "RawBrowse/Main/BrowserWorkspaceEnvironment.swift": "f0531502db5b0133223721b4475ed1286c35797c17b9e0ead860fbcf8d0e1180",
+        "RawBrowse/Main/FileBrowserViewModel.swift": "03d3f5da2886167d8031706cbd5106ed826995f4f74fb788d6c31a61bfe3e78e",
+        "RawBrowse/Main/RawBrowseApp.swift": "13d248b5153c4dfb061f51420cea0c5ec6a00c1e4255ced3165f5f9137424a8b",
+        "RawBrowse/Main/RawBrowseCommands.swift": "0dac7fc669ed048a651f7c96db2d07587e7d7bed8a583b03f09e51c46ae341d6"
+      },
+      "parser_loader_sha256": "cb85df0b8462aac57dace0ed35de7edb028eb02269450b7032d951cebeeb70b3"
+    },
+    "Candidate": {
+      "app": "/private/tmp/rawbrowse-app-comparison/Candidate/App",
+      "package": "/private/tmp/rawbrowse-app-comparison/Candidate/RawParserKit",
+      "swift_source_hashes": {
+        "RawBrowse/Features/About/Views/AboutRawBrowseView.swift": "e5e4989427b3446cc1e87d56fc9f606a6b0a6e6de33ae3740934439ad24f1f57",
+        "RawBrowse/Features/About/Views/ShortcutRow.swift": "51de11ab9640c13e51932043ec74e47eed7fbda5d12fd1bcf7ce439874e19ca2",
+        "RawBrowse/Features/Browser/BrowserContentsModel.swift": "0d494ed3bf3167d9ba6174dad06efbb665a46b5c8e98c4c84f913a45749abbdc",
+        "RawBrowse/Features/Browser/BrowserFileItem.swift": "24586b5bd530674f9bd9ba52e8034f90a4555b5ecebefa8ed212e550326e3e7e",
+        "RawBrowse/Features/Browser/BrowserFolderItem.swift": "dc309906c2c7492e9333c4e810a01edd5e13b8e54064c4bbcdc40fbf93db0d2f",
+        "RawBrowse/Features/Browser/CatalogStore.swift": "59605c386feb4c6e0e8706e277fa6652b64a47eb77c429e14c1509ad265d7a64",
+        "RawBrowse/Features/Browser/Grid/BrowserGridView.swift": "354e7d73676734dbe65b4cdb8ccb0dc42ee34070f10495508429f1ab7dd057cf",
+        "RawBrowse/Features/Browser/Grid/BrowserThumbnailCell.swift": "39f2ed490cbf9a7f0f153d8a9a094fc0c4fa93567178580a1985a45de9a6e1f5",
+        "RawBrowse/Features/Browser/Grid/ThumbnailPresentationModel.swift": "d3f25b80bc9e4d7ad2f6571b80346a0ec0fecc07233ba747ba68b039208cdde3",
+        "RawBrowse/Features/Browser/Histogram/BrowserHistogramCalculator.swift": "a129780c9e1df9dae83cfc81ee887943fef4ac25b9d3af5bc526b0de4b6d52d9",
+        "RawBrowse/Features/Browser/Histogram/BrowserHistogramPath.swift": "e71775fc0b4c42e05fbc930d4f126a67ea48d426cc6da6aaa47d59e664b9ae38",
+        "RawBrowse/Features/Browser/Histogram/BrowserHistogramView.swift": "0d820d2cc4fedb6d40b4942ff25c09be26f07e1be23d3fb0e8e93ca8331a68fa",
+        "RawBrowse/Features/Browser/Presentation/BrowserPresentationState.swift": "750169e9dc70b3fd21faa5f65f50e14a4751559d8aa8e9c2fa6df77f1cc428b5",
+        "RawBrowse/Features/Browser/RememberedCatalog.swift": "0d0f126fcae0786d0bd5a0fd84a64657d7cfd7c8c418e826d1e5be7429b4ce14",
+        "RawBrowse/Features/Browser/RememberedCatalogStore.swift": "290f00d1a7f21785e43c10c975d8e5ffee1e278125605e482f6622b72e8412e2",
+        "RawBrowse/Features/Browser/SelectionModel.swift": "58147bdbe1986bfe84e521d5a4a50e69703a1e77a2e79cd5ed8a912362cccb31",
+        "RawBrowse/Features/Browser/Sidebar/BrowserSidebarView.swift": "62c85972e7dfdfdc5c3c39beb3613741c0001b535561d14da48a42a66c60ed56",
+        "RawBrowse/Features/Browser/Sidebar/FolderOutlineRow.swift": "58d55815565e45c987cb19e05be1461c474a560a9350d6ae2263aeac3ae9efdd",
+        "RawBrowse/Features/Browser/Sidebar/SidebarPresentationModel.swift": "fd92172274f060dd33ca0a37270f04ba6af5ca76de334cf5649adb8e241c2645",
+        "RawBrowse/Features/Browser/SupportedFileType.swift": "f002c86f6c121d857738eedbd807b7811698bb183e24c8939b2706b8c8cbc813",
+        "RawBrowse/Features/Browser/Views/BrowserAIWorkspaceView.swift": "5c6b0a197d8c78be569483780e3586de3f58ba4f99def6d8fabb0e1743dfe806",
+        "RawBrowse/Features/Browser/Views/BrowserNavigationTitle.swift": "3628e2a813faaf67d372985c52662506d9b4d9b2c8ca19c5822c1352312198b1",
+        "RawBrowse/Features/Browser/Views/FileBrowserView.swift": "592abcae446604b1a3a5e63f23cdb38393f4d92fd47689590907cc24ab39059f",
+        "RawBrowse/Features/CLIP/CLIPFeatureModel.swift": "b278b965d4263328f21da5f0a350591e7b2eff465972534afe51774681f6174f",
+        "RawBrowse/Features/CLIP/CLIPImageDiscovery.swift": "4bdbbe087b752617a5f375df47183d4b35f44a12727aeb866801e4359173117b",
+        "RawBrowse/Features/CLIP/CLIPIndex.swift": "c04ed7b7d53628c06e128f59a9b6373cc94f7e64e31b924aa6c34823c36d36a7",
+        "RawBrowse/Features/CLIP/CLIPModelManager.swift": "2e583c567f66412eee2ef09c5e825905fe8f4e14cd04ae0d43e902f88111b061",
+        "RawBrowse/Features/CLIP/CLIPSearchEngine.swift": "f9d8fc05bb60f3beb916704782a9d47705eddea307a94df16ddb3b3fb462d36c",
+        "RawBrowse/Features/CLIP/CLIPSimilaritySearch.swift": "ac334fc1ad9073d6e316ed1c227fdd0e1e391c32ffa8929fd0d51ad9787d88eb",
+        "RawBrowse/Features/DeepReview/DeepAIReviewController.swift": "01f2527e8ce24211f020d3867e0b8efe5b34ecb41d42f8559fbee794f50b3b64",
+        "RawBrowse/Features/DeepReview/DeepAIReviewFeature.swift": "e4e189a5b1982b1a2c1d1f3bfc4b0e7b83521edfc442ce28c416098b17e87fab",
+        "RawBrowse/Features/DeepReview/DeepAIReviewMaskOutlineRenderer.swift": "d98dc49e2ac2529f9c0035a2099a679d7cbfca4e599d4da178c38ecdc928044e",
+        "RawBrowse/Features/DeepReview/DeepAIReviewRuntime.swift": "cd1b02881a2c1762678d0c9fd1723cc59c34be08aeb9a8fe329b2435f11e9851",
+        "RawBrowse/Features/DeepReview/DeepAIReviewSupport.swift": "ef8654a3c1c708c047950ef4694b87a10286c7d65a9ddb82e8bf1c4e3ff3f8a8",
+        "RawBrowse/Features/DeepReview/DeepReviewModel.swift": "5489717e15c01de659c4d6e211cd20f51b234ba4631765be2f0e9a1a989d807c",
+        "RawBrowse/Features/DeepReview/SubjectMaskFocusScorer.swift": "0158fd23bf12870c30e6008383e48f7fa81fbe5eda286f2ac74197ccc8d3e53f",
+        "RawBrowse/Features/DeepReview/SubjectMaskForeground.swift": "f711597972f889c1acdd334523bb912ec6815602a3b728933a6131f1d4bf97e7",
+        "RawBrowse/Features/DeepReview/Views/DeepAIReviewSheetView.swift": "1c07675a1eb5a6c0d72f94c356c28e056657e254392888a470f841d56f8de4ac",
+        "RawBrowse/Features/DeepReview/WholeImageSharpnessScorer.swift": "51119801e34e24e7d03ebe5cfe2e6a71e804abeb20aaea79e829bc187c512de5",
+        "RawBrowse/Features/ModelDownloads/CLIPManagedModels.swift": "fc3e4b6de3f7e2d1b5d91c6da915b08d5743ee896d865ea62722fda1e18ee807",
+        "RawBrowse/Features/ModelDownloads/CLIPModelDownloadCatalog.swift": "74ff41cb1cca428d964094bb85b301f50b944d2039f2cb466cd83b4a3d45b4c6",
+        "RawBrowse/Features/ModelDownloads/ModelDownloadsModel.swift": "e17c38f4171ed7294b88cfe2190a506f84936c0ff42398b839c02a56bbe74061",
+        "RawBrowse/Features/ModelDownloads/RawBrowseAIModelLicenceAcceptance.swift": "6550564d71fa65839147cc2f5a77acb0adf77e0276bffbbb7cce99e8b925bb10",
+        "RawBrowse/Features/ModelDownloads/Views/CLIPModelDownloadsView.swift": "9a75d97adeb654a6b7d32015697d72a0b3eddee51a147c1efc647a0c41c56d2b",
+        "RawBrowse/Features/RAW9/RAW9EditingSession.swift": "69a56b4e15a56555e5b5668f5c8eceb97ba2da9dbb0ba8a6f142893f925077be",
+        "RawBrowse/Features/RAW9/RAW9ExportQueue.swift": "61663fd657a6e72ae8daeea7d38cdf5c772aa52409c3bf44eccde33593d4e02c",
+        "RawBrowse/Features/RAW9/RAW9Support.swift": "a963a0770bf9c9104b8b3fa847ca1b6f618554b428006ba928a41bb265d54528",
+        "RawBrowse/Features/RAW9/Views/RAW9CropEditor.swift": "64c43500a2a06064ff2bce311765aeffeee7be0aeba0b77cf11400c175aa993e",
+        "RawBrowse/Features/RAW9/Views/RAW9ExportQueueView.swift": "8f836a167dca4bf078aa5662629f02a8a096fc76cb2766496b9bc0df638a527a",
+        "RawBrowse/Features/Settings/BrowserSettings.swift": "bd8bea728972de6232d1bd70d810a0a8afab5f954581801c6706316d27081307",
+        "RawBrowse/Features/Settings/BrowserSettingsStore.swift": "4a851dfa7160fc06a3982224f2d1e0c13f08a8943a42f401ac04981825de51aa",
+        "RawBrowse/Features/Settings/MemoryViewModel.swift": "006d57fae9b50a24f16cc8f0b9f0b22a35c00bdc4864b939924b91723d433bac",
+        "RawBrowse/Features/Settings/SettingsModel.swift": "e7996b75d1fdb5a1caa0c59c0bbb911865c9e7f40adacf3188406f42d28bbca3",
+        "RawBrowse/Features/Settings/Views/AISettingsTab.swift": "d43dbf027957f46c8c4e4d13eb4310cbb72dda457b2e77401a171c1ca1f6fc65",
+        "RawBrowse/Features/Settings/Views/CLIPIndexesSettingsTab.swift": "d9880d9de365e88ba548ae8f0f9da7fd53d992630e56093e3c852b841d76e1be",
+        "RawBrowse/Features/Settings/Views/ImageCacheSettingsTab.swift": "bb967e48b4b68650117574c981ba318c9cd1d87e5bcf00ac8b1ba42fb1e9f50a",
+        "RawBrowse/Features/Settings/Views/ImagePreviewSettingsTab.swift": "52c39ab91de8613224237bf5d428b834e235590bc55928ca0426bc7b4ea265fc",
+        "RawBrowse/Features/Settings/Views/MemoryTab.swift": "e50c35d54ea5a9e8d36ed2fe7e6f6a7065169538d0f9d49112239d8995882f77",
+        "RawBrowse/Features/Settings/Views/SettingsView.swift": "c91891a03ca0e98a38ab00c081eef1374deaa10f7dfedaf6e12e8d621abe51ce",
+        "RawBrowse/Features/Zoom/Presentation/BrowserZoomInitialMode.swift": "40dee8a57f7900fbb753ccc404e30928ddadd3896dd1241733d22e7e2f09b39b",
+        "RawBrowse/Features/Zoom/Presentation/BrowserZoomLaunchContext.swift": "7d8719a0bfc00fbe021cb535a76cd28aac5d19199c1b1314f9002c8e1f0a21af",
+        "RawBrowse/Features/Zoom/Presentation/ZoomPresentationState.swift": "49743489e1c8a4fd14047462a66b6bfcdbeefb660b4cdf332680ef980c86330e",
+        "RawBrowse/Features/Zoom/Views/BrowserZoomGeometry.swift": "cd44bacee0d3317482eeeb22903055ce9e583567808197dc2a191f8355d6b259",
+        "RawBrowse/Features/Zoom/Views/BrowserZoomOverlayView.swift": "95bc276bfcca8e5b0ce21655789834a6a3b2b0e3d2d32d03f5dd5f3a12776aa6",
+        "RawBrowse/Features/Zoom/Views/BrowserZoomViewportTransform.swift": "f3274299ebb124933d778cd5e188a9078c6bc9ee39c8f30c15265642eabfda71",
+        "RawBrowse/Features/Zoom/Views/FocusPointBracketMarker.swift": "c549983ffa9f1182248e6f6413c08bbb6befde2f2858751e7d6d6063efac9b58",
+        "RawBrowse/Features/Zoom/Views/FocusPointMarker.swift": "2dec3daa056bc62e92d368056af2bc9c6d04e496662cabb2acf44d2aa20c8cb7",
+        "RawBrowse/Features/Zoom/Views/ZoomBadgeStyle.swift": "7d2f8cc0ea48a2c1dce4d96b57761512edc9809bc6da1da5832b20e04a44018a",
+        "RawBrowse/Features/Zoom/Views/ZoomControlBadge.swift": "3879cf3308afcd724ca63f89fd72d22e40de7735cde85c267d2c92172ddd6b9a",
+        "RawBrowse/Features/Zoom/Views/ZoomMetadataPanel.swift": "e56e2e86472f436c3c31547ae9246e56acc39fe9ac81f9380df3cb83175037c4",
+        "RawBrowse/Features/Zoom/Views/ZoomOverlayKeyAction.swift": "c1ce3b473f3377acb24c35374fc96a6d4ee82943c337dc98d7769ba8f99977da",
+        "RawBrowse/Features/Zoom/Views/ZoomOverlayNavigationAxis.swift": "b5441bfe6dc6e2552cf715cbb465399c0c29a63f777874db81531cef1031d5f0",
+        "RawBrowse/Features/Zoom/ZoomModel.swift": "2bc8480c9e01a72c013a2c0b109eec9bf4dc517c326442a07e414b58a5a934db",
+        "RawBrowse/Infrastructure/CatalogAccess/CatalogAccess.swift": "4568e3296d5623c1b8f001be5532e85c6c6e7af9ae6798a8139bd0f36128b5ee",
+        "RawBrowse/Infrastructure/CatalogAccess/URL+BrowserHierarchy.swift": "f97eb4fa04ab9309d4f181ad9bd437588a99b584ce68cdb22cee2be95df38abe",
+        "RawBrowse/Infrastructure/Concurrency/LatestTaskRunner.swift": "8f3e4a535a60121ef63ab8897ec48ecaaedf1f210998b2749d8a516a6c76bc0e",
+        "RawBrowse/Infrastructure/ImageLoading/BrowserImageLoader.swift": "2cafbc61e6fca07b8b936af871dd5bd6708a5817b1981ee1ebebe869e0b1119f",
+        "RawBrowse/Infrastructure/ImageLoading/CachedNSImage.swift": "2392601541436b9546a8fc611f31f032c2abc0ac8e98c7fa9f37f3d35dee032e",
+        "RawBrowse/Infrastructure/ImageLoading/DiskCachePolicy.swift": "bc768f463d15a17748fca8391bc40dc62ed6809c7114ef0b29eb99e0e236dd19",
+        "RawBrowse/Infrastructure/ImageLoading/FullSizeJPGDiskCache.swift": "5657078600687aeea3a9b982277209e4ee6cbc72c1f8e310bf06131ee4b22976",
+        "RawBrowse/Infrastructure/ImageLoading/MemoryImageCache.swift": "335bb6f8dd581352c7087708562767719644bccd42551595dd81d23c77c755cd",
+        "RawBrowse/Infrastructure/ImageLoading/ThumbnailDiskCache.swift": "9415d1840ac19ebcb70d387e0e7ccc2924e3482820130b2bed2cade48984dd61",
+        "RawBrowse/Infrastructure/Logging/BrowserPerformance.swift": "836a61212d93a8d148cf5070eb116dc06215a1624f6b7a098d538ad6066ecbfc",
+        "RawBrowse/Infrastructure/Logging/extension+Thread+Logger.swift": "e71ade1a101fa3c06207c2def99e96b593626b55f182f5208418eecf9e0e2e47",
+        "RawBrowse/Infrastructure/ReviewKeyboardScope.swift": "6b3ce13ed1b6bb9c451aabd0265dfe31c2e812ccec5e209bce92cc8457327dd9",
+        "RawBrowse/Main/AppDelegate.swift": "d6a23f5d1bb78fca9b8c0fbf43940f217226cd1339f39984282a57c81744194b",
+        "RawBrowse/Main/BrowserWorkspaceEnvironment.swift": "f0531502db5b0133223721b4475ed1286c35797c17b9e0ead860fbcf8d0e1180",
+        "RawBrowse/Main/FileBrowserViewModel.swift": "03d3f5da2886167d8031706cbd5106ed826995f4f74fb788d6c31a61bfe3e78e",
+        "RawBrowse/Main/RawBrowseApp.swift": "13d248b5153c4dfb061f51420cea0c5ec6a00c1e4255ced3165f5f9137424a8b",
+        "RawBrowse/Main/RawBrowseCommands.swift": "0dac7fc669ed048a651f7c96db2d07587e7d7bed8a583b03f09e51c46ae341d6"
+      },
+      "parser_loader_sha256": "dbe2ad7bc487ee584988c3726f8d75f9b362ec953dc1aea88e279c5592ab25d1"
+    }
+  },
+  "trials": [
+    {
+      "variant": "baseline",
+      "state": "empty",
+      "trial": 1,
+      "log": "/private/tmp/rawbrowse-app-comparison/RunsFinal/baseline-empty-1.jsonl",
+      "sha256": "234fcc217cba5436a9d91ca8761fc465a83995ca396a8ef98720dbec93697482",
+      "workloads": {
+        "06_mai_2026": {
+          "stages": {
+            "preview.diskLookup": {
+              "count": 1,
+              "median_ms": 0.15504166731261648,
+              "results": {
+                "miss": 1
+              }
+            },
+            "preview.extract": {
+              "count": 1,
+              "median_ms": 4.3151250001756125,
+              "results": {
+                "image": 1
+              }
+            },
+            "preview.presentationDelivery": {
+              "count": 1,
+              "median_ms": 80.2824166667051,
+              "results": {
+                "image": 1
+              }
+            },
+            "preview.resize": {
+              "count": 1,
+              "median_ms": 0.0007083335731294937,
+              "results": {
+                "finished": 1
+              }
+            },
+            "preview.sourceJPEGAndSave": {
+              "count": 1,
+              "median_ms": 2.8754999993907404,
+              "results": {
+                "finished": 1
+              }
+            },
+            "preview.total": {
+              "count": 1,
+              "median_ms": 7.798874999934924,
+              "results": {
+                "finished": 1
+              }
+            },
+            "thumbnail.diskLookup": {
+              "count": 26,
+              "median_ms": 0.6958124999982829,
+              "results": {
+                "miss": 26
+              }
+            },
+            "thumbnail.encodeAndSave": {
+              "count": 26,
+              "median_ms": 0.8733541662877542,
+              "results": {
+                "finished": 26
+              }
+            },
+            "thumbnail.parser": {
+              "count": 26,
+              "median_ms": 170.9795000001577,
+              "results": {
+                "image": 26
+              }
+            },
+            "thumbnail.presentationDelivery": {
+              "count": 26,
+              "median_ms": 219.840208333153,
+              "results": {
+                "image": 26
+              }
+            },
+            "thumbnail.total": {
+              "count": 26,
+              "median_ms": 174.4827083330165,
+              "results": {
+                "finished": 26
+              }
+            }
+          },
+          "folder_stages_ms": {
+            "discovery.folders": 6.961291666812031,
+            "scan.discoveryAndPublication": 2.7730833335226635,
+            "discovery.files": 2.563666666901554,
+            "discovery.files.enumerate": 0.40333333345188294,
+            "discovery.files.filterAndMetadata": 0.10920833301497623,
+            "discovery.files.sort": 0.04362500021670712,
+            "scan.publishFileList": 0.019083333427261095
+          },
+          "first_model_delivery_ms": 59.17649999992136,
+          "cohort_model_delivery_window_ms": 378.19000000035885
+        },
+        "100MSDCF": {
+          "stages": {
+            "preview.diskLookup": {
+              "count": 1,
+              "median_ms": 0.13658333318744553,
+              "results": {
+                "miss": 1
+              }
+            },
+            "preview.extract": {
+              "count": 1,
+              "median_ms": 4.031166666209174,
+              "results": {
+                "image": 1
+              }
+            },
+            "preview.presentationDelivery": {
+              "count": 1,
+              "median_ms": 368.9227083341393,
+              "results": {
+                "image": 1
+              }
+            },
+            "preview.resize": {
+              "count": 1,
+              "median_ms": 298.02612500043324,
+              "results": {
+                "finished": 1
+              }
+            },
+            "preview.sourceJPEGAndSave": {
+              "count": 1,
+              "median_ms": 4.508166666710167,
+              "results": {
+                "finished": 1
+              }
+            },
+            "preview.total": {
+              "count": 1,
+              "median_ms": 9.025416667100217,
+              "results": {
+                "finished": 1
+              }
+            },
+            "thumbnail.diskLookup": {
+              "count": 56,
+              "median_ms": 1.1059166668019316,
+              "results": {
+                "miss": 56
+              }
+            },
+            "thumbnail.encodeAndSave": {
+              "count": 56,
+              "median_ms": 0.688083333443501,
+              "results": {
+                "finished": 56
+              }
+            },
+            "thumbnail.parser": {
+              "count": 56,
+              "median_ms": 528.388833333338,
+              "results": {
+                "image": 56
+              }
+            },
+            "thumbnail.presentationDelivery": {
+              "count": 56,
+              "median_ms": 578.118812500179,
+              "results": {
+                "image": 56
+              }
+            },
+            "thumbnail.total": {
+              "count": 56,
+              "median_ms": 533.4084583332697,
+              "results": {
+                "finished": 56
+              }
+            }
+          },
+          "folder_stages_ms": {
+            "discovery.folders": 23.833083333556715,
+            "scan.discoveryAndPublication": 46.29691666650615,
+            "discovery.files": 45.93162499986647,
+            "discovery.files.enumerate": 1.2242916673130821,
+            "discovery.files.filterAndMetadata": 1.3260416671982966,
+            "discovery.files.sort": 1.381833332743554,
+            "scan.publishFileList": 0.0835833334349445
+          },
+          "first_model_delivery_ms": 195.13729166646954,
+          "cohort_model_delivery_window_ms": 927.3256666665475
+        }
+      },
+      "pending_image_tasks_at_log_end": 0,
+      "peak_owned_thumbnail_tasks": 56,
+      "shared_waits": 0,
+      "rejected_thumbnail_deliveries": {}
+    },
+    {
+      "variant": "baseline",
+      "state": "empty",
+      "trial": 2,
+      "log": "/private/tmp/rawbrowse-app-comparison/RunsFinal/baseline-empty-2.jsonl",
+      "sha256": "4458403b3a6c3b4e70ed1bfd9e3ff96316b62f82a153c898d0ac28dbdbde8778",
+      "workloads": {
+        "06_mai_2026": {
+          "stages": {
+            "preview.diskLookup": {
+              "count": 1,
+              "median_ms": 0.17204166670126142,
+              "results": {
+                "miss": 1
+              }
+            },
+            "preview.extract": {
+              "count": 1,
+              "median_ms": 4.456041667253885,
+              "results": {
+                "image": 1
+              }
+            },
+            "preview.presentationDelivery": {
+              "count": 1,
+              "median_ms": 78.79912500084174,
+              "results": {
+                "image": 1
+              }
+            },
+            "preview.resize": {
+              "count": 1,
+              "median_ms": 0.0005833335308125243,
+              "results": {
+                "finished": 1
+              }
+            },
+            "preview.sourceJPEGAndSave": {
+              "count": 1,
+              "median_ms": 2.7531249997991836,
+              "results": {
+                "finished": 1
+              }
+            },
+            "preview.total": {
+              "count": 1,
+              "median_ms": 7.799041666658013,
+              "results": {
+                "finished": 1
+              }
+            },
+            "thumbnail.diskLookup": {
+              "count": 26,
+              "median_ms": 0.4167916667938698,
+              "results": {
+                "miss": 26
+              }
+            },
+            "thumbnail.encodeAndSave": {
+              "count": 26,
+              "median_ms": 0.8213749997594277,
+              "results": {
+                "finished": 26
+              }
+            },
+            "thumbnail.parser": {
+              "count": 26,
+              "median_ms": 233.7670833330776,
+              "results": {
+                "image": 26
+              }
+            },
+            "thumbnail.presentationDelivery": {
+              "count": 26,
+              "median_ms": 281.2144999998054,
+              "results": {
+                "image": 26
+              }
+            },
+            "thumbnail.total": {
+              "count": 26,
+              "median_ms": 236.06512500009558,
+              "results": {
+                "finished": 26
+              }
+            }
+          },
+          "folder_stages_ms": {
+            "discovery.folders": 11.786833333644609,
+            "scan.discoveryAndPublication": 2.102708333040937,
+            "discovery.files": 1.9425416667218087,
+            "discovery.files.enumerate": 0.24129166649800027,
+            "discovery.files.filterAndMetadata": 0.10920833301497623,
+            "discovery.files.sort": 0.04041666670673294,
+            "scan.publishFileList": 0.01516666634415742
+          },
+          "first_model_delivery_ms": 147.75916666621924,
+          "cohort_model_delivery_window_ms": 422.695541666144
+        },
+        "100MSDCF": {
+          "stages": {
+            "preview.diskLookup": {
+              "count": 1,
+              "median_ms": 0.12675000016315607,
+              "results": {
+                "miss": 1
+              }
+            },
+            "preview.extract": {
+              "count": 1,
+              "median_ms": 3.6023749999003485,
+              "results": {
+                "image": 1
+              }
+            },
+            "preview.presentationDelivery": {
+              "count": 1,
+              "median_ms": 385.2669166662963,
+              "results": {
+                "image": 1
+              }
+            },
+            "preview.resize": {
+              "count": 1,
+              "median_ms": 314.7829166664451,
+              "results": {
+                "finished": 1
+              }
+            },
+            "preview.sourceJPEGAndSave": {
+              "count": 1,
+              "median_ms": 4.544083333712479,
+              "results": {
+                "finished": 1
+              }
+            },
+            "preview.total": {
+              "count": 1,
+              "median_ms": 8.619958332928945,
+              "results": {
+                "finished": 1
+              }
+            },
+            "thumbnail.diskLookup": {
+              "count": 56,
+              "median_ms": 1.1753333333217597,
+              "results": {
+                "miss": 56
+              }
+            },
+            "thumbnail.encodeAndSave": {
+              "count": 56,
+              "median_ms": 0.6609166666748933,
+              "results": {
+                "finished": 56
+              }
+            },
+            "thumbnail.parser": {
+              "count": 56,
+              "median_ms": 464.80149999979403,
+              "results": {
+                "image": 56
+              }
+            },
+            "thumbnail.presentationDelivery": {
+              "count": 56,
+              "median_ms": 513.4780208331904,
+              "results": {
+                "image": 56
+              }
+            },
+            "thumbnail.total": {
+              "count": 56,
+              "median_ms": 469.4988750002267,
+              "results": {
+                "finished": 56
+              }
+            }
+          },
+          "folder_stages_ms": {
+            "discovery.folders": 23.284500000045227,
+            "scan.discoveryAndPublication": 41.228250000131084,
+            "discovery.files": 37.30383333277132,
+            "discovery.files.enumerate": 1.0833333335540374,
+            "discovery.files.filterAndMetadata": 2.7928333338422817,
+            "discovery.files.sort": 1.762708333444607,
+            "scan.publishFileList": 0.0864583334987401
+          },
+          "first_model_delivery_ms": 227.8297916664087,
+          "cohort_model_delivery_window_ms": 806.6233333329365
+        }
+      },
+      "pending_image_tasks_at_log_end": 0,
+      "peak_owned_thumbnail_tasks": 56,
+      "shared_waits": 0,
+      "rejected_thumbnail_deliveries": {
+        "cancelled": 15
+      }
+    },
+    {
+      "variant": "baseline",
+      "state": "empty",
+      "trial": 3,
+      "log": "/private/tmp/rawbrowse-app-comparison/RunsFinal/baseline-empty-3.jsonl",
+      "sha256": "7cb74476849553ca7a21dcc9e8558a071e01bd4054ecc8818cce8cd226cb93e9",
+      "workloads": {
+        "06_mai_2026": {
+          "stages": {
+            "preview.diskLookup": {
+              "count": 1,
+              "median_ms": 0.1577916664246004,
+              "results": {
+                "miss": 1
+              }
+            },
+            "preview.extract": {
+              "count": 1,
+              "median_ms": 3.3730833338267985,
+              "results": {
+                "image": 1
+              }
+            },
+            "preview.presentationDelivery": {
+              "count": 1,
+              "median_ms": 74.47820833385776,
+              "results": {
+                "image": 1
+              }
+            },
+            "preview.resize": {
+              "count": 1,
+              "median_ms": 0.0005833335308125243,
+              "results": {
+                "finished": 1
+              }
+            },
+            "preview.sourceJPEGAndSave": {
+              "count": 1,
+              "median_ms": 2.691124999728345,
+              "results": {
+                "finished": 1
+              }
+            },
+            "preview.total": {
+              "count": 1,
+              "median_ms": 6.59316666678933,
+              "results": {
+                "finished": 1
+              }
+            },
+            "thumbnail.diskLookup": {
+              "count": 26,
+              "median_ms": 0.8494166668242542,
+              "results": {
+                "miss": 26
+              }
+            },
+            "thumbnail.encodeAndSave": {
+              "count": 26,
+              "median_ms": 0.8741874994484533,
+              "results": {
+                "finished": 26
+              }
+            },
+            "thumbnail.parser": {
+              "count": 26,
+              "median_ms": 292.5034999998388,
+              "results": {
+                "image": 26
+              }
+            },
+            "thumbnail.presentationDelivery": {
+              "count": 26,
+              "median_ms": 349.47479166658013,
+              "results": {
+                "image": 26
+              }
+            },
+            "thumbnail.total": {
+              "count": 26,
+              "median_ms": 296.9646249998732,
+              "results": {
+                "finished": 26
+              }
+            }
+          },
+          "folder_stages_ms": {
+            "discovery.folders": 7.000041666287871,
+            "scan.discoveryAndPublication": 2.7398749998610583,
+            "discovery.files": 2.5210833327946602,
+            "discovery.files.enumerate": 0.3728750007212511,
+            "discovery.files.filterAndMetadata": 0.10812500022439053,
+            "discovery.files.sort": 0.04570833334582858,
+            "scan.publishFileList": 0.020958334062015638
+          },
+          "first_model_delivery_ms": 211.57820833377627,
+          "cohort_model_delivery_window_ms": 496.19183333379624
+        },
+        "100MSDCF": {
+          "stages": {
+            "preview.diskLookup": {
+              "count": 1,
+              "median_ms": 0.16645833329675952,
+              "results": {
+                "miss": 1
+              }
+            },
+            "preview.extract": {
+              "count": 1,
+              "median_ms": 3.701583333167946,
+              "results": {
+                "image": 1
+              }
+            },
+            "preview.presentationDelivery": {
+              "count": 1,
+              "median_ms": 389.48008333409234,
+              "results": {
+                "image": 1
+              }
+            },
+            "preview.resize": {
+              "count": 1,
+              "median_ms": 317.1999166661408,
+              "results": {
+                "finished": 1
+              }
+            },
+            "preview.sourceJPEGAndSave": {
+              "count": 1,
+              "median_ms": 4.319666667470301,
+              "results": {
+                "finished": 1
+              }
+            },
+            "preview.total": {
+              "count": 1,
+              "median_ms": 8.549458332709037,
+              "results": {
+                "finished": 1
+              }
+            },
+            "thumbnail.diskLookup": {
+              "count": 56,
+              "median_ms": 1.8850000001293665,
+              "results": {
+                "miss": 56
+              }
+            },
+            "thumbnail.encodeAndSave": {
+              "count": 56,
+              "median_ms": 0.6784583338230732,
+              "results": {
+                "finished": 56
+              }
+            },
+            "thumbnail.parser": {
+              "count": 56,
+              "median_ms": 519.8167291664504,
+              "results": {
+                "image": 56
+              }
+            },
+            "thumbnail.presentationDelivery": {
+              "count": 56,
+              "median_ms": 570.1986666663288,
+              "results": {
+                "image": 56
+              }
+            },
+            "thumbnail.total": {
+              "count": 56,
+              "median_ms": 526.2435624999853,
+              "results": {
+                "finished": 56
+              }
+            }
+          },
+          "folder_stages_ms": {
+            "discovery.folders": 23.605000000316068,
+            "scan.discoveryAndPublication": 17.36925000022893,
+            "discovery.files": 14.838458332633309,
+            "discovery.files.enumerate": 1.559958333018585,
+            "discovery.files.filterAndMetadata": 1.3305833326739958,
+            "discovery.files.sort": 1.4000833334648632,
+            "scan.publishFileList": 0.09495833273831522
+          },
+          "first_model_delivery_ms": 282.3374583331315,
+          "cohort_model_delivery_window_ms": 864.4804999994449
+        }
+      },
+      "pending_image_tasks_at_log_end": 0,
+      "peak_owned_thumbnail_tasks": 56,
+      "shared_waits": 0,
+      "rejected_thumbnail_deliveries": {
+        "cancelled": 21
+      }
+    },
+    {
+      "variant": "candidate",
+      "state": "empty",
+      "trial": 1,
+      "log": "/private/tmp/rawbrowse-app-comparison/RunsFinal/candidate-empty-1.jsonl",
+      "sha256": "6366ce71e12ffc82358b5a6270538f568ce7be47539a6362e7ddcb55c4521ea2",
+      "workloads": {
+        "06_mai_2026": {
+          "stages": {
+            "preview.diskLookup": {
+              "count": 1,
+              "median_ms": 0.21116666721354704,
+              "results": {
+                "miss": 1
+              }
+            },
+            "preview.extract": {
+              "count": 1,
+              "median_ms": 4.197833332909795,
+              "results": {
+                "image": 1
+              }
+            },
+            "preview.presentationDelivery": {
+              "count": 1,
+              "median_ms": 73.51333333372168,
+              "results": {
+                "image": 1
+              }
+            },
+            "preview.resize": {
+              "count": 1,
+              "median_ms": 0.0005416668500402011,
+              "results": {
+                "finished": 1
+              }
+            },
+            "preview.sourceJPEGAndSave": {
+              "count": 1,
+              "median_ms": 2.3986249998415587,
+              "results": {
+                "finished": 1
+              }
+            },
+            "preview.total": {
+              "count": 1,
+              "median_ms": 7.3700833336260985,
+              "results": {
+                "finished": 1
+              }
+            },
+            "thumbnail.diskLookup": {
+              "count": 26,
+              "median_ms": 1.186166666684585,
+              "results": {
+                "miss": 26
+              }
+            },
+            "thumbnail.encodeAndSave": {
+              "count": 26,
+              "median_ms": 1.1856875003104506,
+              "results": {
+                "finished": 26
+              }
+            },
+            "thumbnail.parser": {
+              "count": 26,
+              "median_ms": 51.14433333392299,
+              "results": {
+                "image": 26
+              }
+            },
+            "thumbnail.presentationDelivery": {
+              "count": 26,
+              "median_ms": 108.44924999992145,
+              "results": {
+                "image": 26
+              }
+            },
+            "thumbnail.total": {
+              "count": 26,
+              "median_ms": 55.55143750007119,
+              "results": {
+                "finished": 26
+              }
+            }
+          },
+          "folder_stages_ms": {
+            "discovery.folders": 14.591083333471033,
+            "scan.discoveryAndPublication": 2.258416666336416,
+            "discovery.files": 2.063208333311195,
+            "discovery.files.enumerate": 0.3303333332951297,
+            "discovery.files.filterAndMetadata": 0.1048333333528717,
+            "discovery.files.sort": 0.04604166679200716,
+            "scan.publishFileList": 0.015250000615196768
+          },
+          "first_model_delivery_ms": 71.72712499959744,
+          "cohort_model_delivery_window_ms": 142.3774583336126
+        },
+        "100MSDCF": {
+          "stages": {
+            "preview.diskLookup": {
+              "count": 1,
+              "median_ms": 0.20166666672594147,
+              "results": {
+                "miss": 1
+              }
+            },
+            "preview.extract": {
+              "count": 1,
+              "median_ms": 8.943125000769214,
+              "results": {
+                "image": 1
+              }
+            },
+            "preview.presentationDelivery": {
+              "count": 1,
+              "median_ms": 358.0492916671574,
+              "results": {
+                "image": 1
+              }
+            },
+            "preview.resize": {
+              "count": 1,
+              "median_ms": 291.21216666680994,
+              "results": {
+                "finished": 1
+              }
+            },
+            "preview.sourceJPEGAndSave": {
+              "count": 1,
+              "median_ms": 3.79258333305188,
+              "results": {
+                "finished": 1
+              }
+            },
+            "preview.total": {
+              "count": 1,
+              "median_ms": 13.294375000441505,
+              "results": {
+                "finished": 1
+              }
+            },
+            "thumbnail.diskLookup": {
+              "count": 56,
+              "median_ms": 3.3187291664944496,
+              "results": {
+                "miss": 56
+              }
+            },
+            "thumbnail.encodeAndSave": {
+              "count": 56,
+              "median_ms": 1.2614791667147074,
+              "results": {
+                "finished": 56
+              }
+            },
+            "thumbnail.parser": {
+              "count": 56,
+              "median_ms": 213.0283541659992,
+              "results": {
+                "image": 56
+              }
+            },
+            "thumbnail.presentationDelivery": {
+              "count": 56,
+              "median_ms": 290.39525000007416,
+              "results": {
+                "image": 56
+              }
+            },
+            "thumbnail.total": {
+              "count": 56,
+              "median_ms": 221.96297916661933,
+              "results": {
+                "finished": 56
+              }
+            }
+          },
+          "folder_stages_ms": {
+            "discovery.folders": 26.080333333084127,
+            "scan.discoveryAndPublication": 76.42316666624538,
+            "discovery.files": 67.34758333368518,
+            "discovery.files.enumerate": 1.526791666947247,
+            "discovery.files.filterAndMetadata": 1.609499999176478,
+            "discovery.files.sort": 1.4108333334661438,
+            "scan.publishFileList": 0.10179166656598682
+          },
+          "first_model_delivery_ms": 205.98508333387144,
+          "cohort_model_delivery_window_ms": 384.5001666668395
+        }
+      },
+      "pending_image_tasks_at_log_end": 0,
+      "peak_owned_thumbnail_tasks": 56,
+      "shared_waits": 0,
+      "rejected_thumbnail_deliveries": {}
+    },
+    {
+      "variant": "candidate",
+      "state": "empty",
+      "trial": 2,
+      "log": "/private/tmp/rawbrowse-app-comparison/RunsFinal/candidate-empty-2.jsonl",
+      "sha256": "37da7d23404e37b747cc1b5e367c8b598e99f9f05ec8b9803946d598ceadf144",
+      "workloads": {
+        "06_mai_2026": {
+          "stages": {
+            "preview.diskLookup": {
+              "count": 1,
+              "median_ms": 0.14970833308325382,
+              "results": {
+                "miss": 1
+              }
+            },
+            "preview.extract": {
+              "count": 1,
+              "median_ms": 4.2685833332143375,
+              "results": {
+                "image": 1
+              }
+            },
+            "preview.presentationDelivery": {
+              "count": 1,
+              "median_ms": 70.31291666680772,
+              "results": {
+                "image": 1
+              }
+            },
+            "preview.resize": {
+              "count": 1,
+              "median_ms": 0.0005416668500402011,
+              "results": {
+                "finished": 1
+              }
+            },
+            "preview.sourceJPEGAndSave": {
+              "count": 1,
+              "median_ms": 2.2587916664633667,
+              "results": {
+                "finished": 1
+              }
+            },
+            "preview.total": {
+              "count": 1,
+              "median_ms": 7.041666666737001,
+              "results": {
+                "finished": 1
+              }
+            },
+            "thumbnail.diskLookup": {
+              "count": 26,
+              "median_ms": 0.8918749999793363,
+              "results": {
+                "miss": 26
+              }
+            },
+            "thumbnail.encodeAndSave": {
+              "count": 26,
+              "median_ms": 1.4545416665896482,
+              "results": {
+                "finished": 26
+              }
+            },
+            "thumbnail.parser": {
+              "count": 26,
+              "median_ms": 53.121729166832665,
+              "results": {
+                "image": 26
+              }
+            },
+            "thumbnail.presentationDelivery": {
+              "count": 26,
+              "median_ms": 104.34481250058525,
+              "results": {
+                "image": 26
+              }
+            },
+            "thumbnail.total": {
+              "count": 26,
+              "median_ms": 57.48595833347281,
+              "results": {
+                "finished": 26
+              }
+            }
+          },
+          "folder_stages_ms": {
+            "discovery.folders": 11.913499999536725,
+            "scan.discoveryAndPublication": 3.0222499999581487,
+            "discovery.files": 2.813708333633258,
+            "discovery.files.enumerate": 0.4460000000108266,
+            "discovery.files.filterAndMetadata": 0.13179166671761777,
+            "discovery.files.sort": 0.043416666812845506,
+            "scan.publishFileList": 0.018916666704171803
+          },
+          "first_model_delivery_ms": 67.47604166594101,
+          "cohort_model_delivery_window_ms": 140.02649999929417
+        },
+        "100MSDCF": {
+          "stages": {
+            "preview.diskLookup": {
+              "count": 1,
+              "median_ms": 0.13116666650603293,
+              "results": {
+                "miss": 1
+              }
+            },
+            "preview.extract": {
+              "count": 1,
+              "median_ms": 3.7755416669824626,
+              "results": {
+                "image": 1
+              }
+            },
+            "preview.presentationDelivery": {
+              "count": 1,
+              "median_ms": 382.2462500002075,
+              "results": {
+                "image": 1
+              }
+            },
+            "preview.resize": {
+              "count": 1,
+              "median_ms": 314.11962499987567,
+              "results": {
+                "finished": 1
+              }
+            },
+            "preview.sourceJPEGAndSave": {
+              "count": 1,
+              "median_ms": 3.8265000002866145,
+              "results": {
+                "finished": 1
+              }
+            },
+            "preview.total": {
+              "count": 1,
+              "median_ms": 8.055083332692448,
+              "results": {
+                "finished": 1
+              }
+            },
+            "thumbnail.diskLookup": {
+              "count": 56,
+              "median_ms": 4.2767291665768425,
+              "results": {
+                "miss": 56
+              }
+            },
+            "thumbnail.encodeAndSave": {
+              "count": 56,
+              "median_ms": 0.9553125000820728,
+              "results": {
+                "finished": 56
+              }
+            },
+            "thumbnail.parser": {
+              "count": 56,
+              "median_ms": 298.73841666676526,
+              "results": {
+                "image": 56
+              }
+            },
+            "thumbnail.presentationDelivery": {
+              "count": 56,
+              "median_ms": 322.066895833359,
+              "results": {
+                "image": 56
+              }
+            },
+            "thumbnail.total": {
+              "count": 56,
+              "median_ms": 307.19108333323675,
+              "results": {
+                "finished": 56
+              }
+            }
+          },
+          "folder_stages_ms": {
+            "discovery.folders": 24.171791666958597,
+            "scan.discoveryAndPublication": 35.74929166643415,
+            "discovery.files": 27.852041665937577,
+            "discovery.files.enumerate": 1.0688749998735148,
+            "discovery.files.filterAndMetadata": 1.32466666673281,
+            "discovery.files.sort": 1.4197916671037092,
+            "scan.publishFileList": 0.08570833324483829
+          },
+          "first_model_delivery_ms": 234.18220833355008,
+          "cohort_model_delivery_window_ms": 394.07679166743037
+        }
+      },
+      "pending_image_tasks_at_log_end": 0,
+      "peak_owned_thumbnail_tasks": 56,
+      "shared_waits": 0,
+      "rejected_thumbnail_deliveries": {}
+    },
+    {
+      "variant": "candidate",
+      "state": "empty",
+      "trial": 3,
+      "log": "/private/tmp/rawbrowse-app-comparison/RunsFinal/candidate-empty-3.jsonl",
+      "sha256": "0f63ae1c2c285ed018abbd916b33abfd97560111b1f20e5c3eb9c199e7314da5",
+      "workloads": {
+        "06_mai_2026": {
+          "stages": {
+            "preview.diskLookup": {
+              "count": 1,
+              "median_ms": 0.1640833334022318,
+              "results": {
+                "miss": 1
+              }
+            },
+            "preview.extract": {
+              "count": 1,
+              "median_ms": 4.022083333438786,
+              "results": {
+                "image": 1
+              }
+            },
+            "preview.presentationDelivery": {
+              "count": 1,
+              "median_ms": 67.47129166706145,
+              "results": {
+                "image": 1
+              }
+            },
+            "preview.resize": {
+              "count": 1,
+              "median_ms": 0.0007083335731294937,
+              "results": {
+                "finished": 1
+              }
+            },
+            "preview.sourceJPEGAndSave": {
+              "count": 1,
+              "median_ms": 2.5367500002175802,
+              "results": {
+                "finished": 1
+              }
+            },
+            "preview.total": {
+              "count": 1,
+              "median_ms": 7.100374999936321,
+              "results": {
+                "finished": 1
+              }
+            },
+            "thumbnail.diskLookup": {
+              "count": 26,
+              "median_ms": 1.161895833320159,
+              "results": {
+                "miss": 26
+              }
+            },
+            "thumbnail.encodeAndSave": {
+              "count": 26,
+              "median_ms": 1.2076250000063737,
+              "results": {
+                "finished": 26
+              }
+            },
+            "thumbnail.parser": {
+              "count": 26,
+              "median_ms": 47.48272916640417,
+              "results": {
+                "image": 26
+              }
+            },
+            "thumbnail.presentationDelivery": {
+              "count": 26,
+              "median_ms": 97.55512500032637,
+              "results": {
+                "image": 26
+              }
+            },
+            "thumbnail.total": {
+              "count": 26,
+              "median_ms": 52.322937499866384,
+              "results": {
+                "finished": 26
+              }
+            }
+          },
+          "folder_stages_ms": {
+            "discovery.folders": 6.838166666966572,
+            "scan.discoveryAndPublication": 2.728041667069192,
+            "discovery.files": 2.548791666413308,
+            "discovery.files.enumerate": 0.36370833367982414,
+            "discovery.files.filterAndMetadata": 0.1028333326758002,
+            "discovery.files.sort": 0.036374999581312295,
+            "scan.publishFileList": 0.013708333426620811
+          },
+          "first_model_delivery_ms": 61.734958333545364,
+          "cohort_model_delivery_window_ms": 125.52141666674288
+        },
+        "100MSDCF": {
+          "stages": {
+            "preview.diskLookup": {
+              "count": 1,
+              "median_ms": 0.23966666594787966,
+              "results": {
+                "miss": 1
+              }
+            },
+            "preview.extract": {
+              "count": 1,
+              "median_ms": 5.10633333306032,
+              "results": {
+                "image": 1
+              }
+            },
+            "preview.presentationDelivery": {
+              "count": 1,
+              "median_ms": 383.1447083330204,
+              "results": {
+                "image": 1
+              }
+            },
+            "preview.resize": {
+              "count": 1,
+              "median_ms": 317.12733333279175,
+              "results": {
+                "finished": 1
+              }
+            },
+            "preview.sourceJPEGAndSave": {
+              "count": 1,
+              "median_ms": 5.159374999493593,
+              "results": {
+                "finished": 1
+              }
+            },
+            "preview.total": {
+              "count": 1,
+              "median_ms": 10.9142499995869,
+              "results": {
+                "finished": 1
+              }
+            },
+            "thumbnail.diskLookup": {
+              "count": 56,
+              "median_ms": 1.7052291668733233,
+              "results": {
+                "miss": 56
+              }
+            },
+            "thumbnail.encodeAndSave": {
+              "count": 56,
+              "median_ms": 1.1055416666749807,
+              "results": {
+                "finished": 56
+              }
+            },
+            "thumbnail.parser": {
+              "count": 56,
+              "median_ms": 173.73893750027491,
+              "results": {
+                "image": 56
+              }
+            },
+            "thumbnail.presentationDelivery": {
+              "count": 56,
+              "median_ms": 224.93104166687772,
+              "results": {
+                "image": 56
+              }
+            },
+            "thumbnail.total": {
+              "count": 56,
+              "median_ms": 180.5474999996477,
+              "results": {
+                "finished": 56
+              }
+            }
+          },
+          "folder_stages_ms": {
+            "discovery.folders": 24.776500000371016,
+            "scan.discoveryAndPublication": 19.339541666340665,
+            "discovery.files": 12.603333333572664,
+            "discovery.files.enumerate": 1.1334166665619705,
+            "discovery.files.filterAndMetadata": 1.4002500001879525,
+            "discovery.files.sort": 1.3985833329570596,
+            "scan.publishFileList": 0.08424999941780698
+          },
+          "first_model_delivery_ms": 156.39999999984866,
+          "cohort_model_delivery_window_ms": 317.2602499998902
+        }
+      },
+      "pending_image_tasks_at_log_end": 0,
+      "peak_owned_thumbnail_tasks": 56,
+      "shared_waits": 0,
+      "rejected_thumbnail_deliveries": {}
+    }
+  ],
+  "source_sizes_and_mtimes_unchanged_after_trials": true
+}

@@ -15,6 +15,8 @@ Application comparison setup: [matched experiment protocol](Docs/Performance/App
 
 Diagnostic follow-up: corrected configuration-event JSON serialization (enum IDs now use strings; unsupported values are rejected safely). Added regression coverage; full tests and Release build passed. Invalid setup launches were excluded. The corrected first app run verifies actual settings/window identity and 56 image deliveries before interaction measurement.
 
+Sandboxed app result: [three empty-cache pairs](Docs/Performance/Phase4-App-Comparison.md) show initial model-delivery cohort medians of 864→385 ms (large) and 423→140 ms (small) with the temporary parser patch. Both cohorts completed and image tasks drained in all six runs. This is not painted-frame/hitch evidence. Production RawParserKit remains unchanged; warm-disk/interaction checks and final candidate validation remain pending. Work is saved for the usage boundary in [CONTINUATION.md](Docs/Performance/CONTINUATION.md).
+
 ## Purpose
 
 Determine which lessons from RawCull's performance phases 0–6 apply to RawBrowse. Establish a RawBrowse baseline, test individual candidates, and retain only changes supported by measurements and lifecycle checks.

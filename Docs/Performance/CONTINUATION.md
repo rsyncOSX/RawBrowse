@@ -1,6 +1,6 @@
 # Performance investigation continuation
 
-Updated 29 October 2026. User authorized autonomous continuation within available usage, Time Profiler alone for Instruments, and a commit after each completed update. Save/commit and update this handoff before usage is exhausted. Do not ask routine permission questions. No subagents were requested or used.
+Updated 29 October 2026 at the user-reported 7% usage reserve. New experiments stopped; all experiment apps closed normally. Investigation is incomplete. User authorized autonomous continuation within available usage, Time Profiler alone for Instruments, and a commit after each completed update. Save/commit and update this handoff before usage is exhausted. Do not ask routine permission questions. No subagents were requested or used.
 
 ## Committed work
 
@@ -14,18 +14,34 @@ Updated 29 October 2026. User authorized autonomous continuation within availabl
 
 The parser's existing six-slot limit does not itself ensure parallel execution: unchanged probe work overlapped at most once, versus six times with the temporary `@concurrent` helper. At 56 callers, large standalone batches fell from about 399–401 ms to 110–113 ms; small batches from 187–188 ms to 57–60 ms. Output pixels matched for all 82 files. Candidate used about 6 MB more peak memory and more CPU. It is **not adopted in the production dependency**. See the linked reports in updates.md and the patch under `Docs/Performance/Patches/`.
 
-The actual app comparison is in progress. No loading-speed or smoother-frame claim is established yet. Model delivery is not a painted frame. Phase 3 CLIP coalescing remains explicitly deferred; progress optimization has no measured app/UI-cost justification. Existing download correctness fixes predate this work.
+Three matched empty-cache app pairs are complete: large model-delivery cohort medians 864.48→384.50 ms; small 422.70→140.03 ms. See Phase4-App-Comparison.md and its results JSON. This establishes a model-delivery improvement in the temporary candidate, not painted-frame or smoother-frame improvement. Model delivery is not a painted frame. Phase 3 CLIP coalescing remains explicitly deferred; progress optimization has no measured app/UI-cost justification. Existing download correctness fixes predate this work.
 
 ## Local experiment state
 
 - Root: `/tmp/rawbrowse-app-comparison` (canonical `/private/tmp/...`).
 - Apps: `{Baseline,Candidate}Build/Build/Products/Release/RawBrowse.app` under that root. Sources: `{Baseline,Candidate}/App`; local parser copies beside them. Only candidate parser has the uninstrumented review patch. Real project and dependency pins are unchanged.
 - Source identity manifest: `identity.json` (updated after the JSON fix). App sources must match across variants.
-- Initial pre-fix binary UUIDs were Baseline `C6A32C97-5163-365D-A1FC-B14543E6AABC`, Candidate `0E072F9C-91B1-309C-9D17-A5C689B9B93F`. **Re-read current UUIDs after the fix; do not reuse these for final evidence.** Separate dSYMs are next to both apps.
+- Initial pre-fix binary UUIDs were Baseline `C6A32C97-5163-365D-A1FC-B14543E6AABC`, Candidate `0E072F9C-91B1-309C-9D17-A5C689B9B93F`. **These are obsolete. Current fixed UUIDs: Baseline `3407340B-8D34-3294-8A6C-6C3BB744D0F8`; Candidate `3195912B-7FC4-3ADF-BC66-C35E165C0F0C`, both with matching dSYMs.** Separate dSYMs are next to both apps.
 - Full candidate app suite passed before JSON fix (`candidate-tests.log`); after the fix the root full suite passed (`/tmp/rawbrowse-diagnostics-json-tests.log`), and root Release plus both temporary Release builds passed. Candidate full suite should be rerun after the fix for final acceptance.
 - Accepted logs go in `RunsFinal/`; other `Runs/` files and failed launches are setup-only evidence and must not be pooled into trials.
 - First accepted run: `RunsFinal/baseline-empty-1.jsonl` and its `.launch.json`. Big 56 and small 26 image cohorts delivered; owned image tasks drained to zero. Both first-image previews and memory revisits were exercised. The run was closed normally. Its large-startup cohort was separated by a long setup pause before small-folder actions; disclose that or replace with a cleaner trial if necessary.
 - First accepted configuration: grid 200 px, preview 1616 px, full-size 8700 px, cache settings 768 MB, four cached previews, `clip-datacomp`, window 1644×1272 pt, content 1644×1220 pt, 2× scale.
+
+## Latest accepted state and next exact action
+
+All six empty-cache logs and launch metadata exist under `RunsFinal/`: baseline/candidate empty trials 1, 2, 3. Every run delivered both cohorts and drained owned image tasks to zero, then quit normally. No experiment app is left running. No warm trials have been run. Pair order was B1/C1/C2/B2/B3/C3. Baseline 1 has the pacing caveat documented in the report; other trials were compact.
+
+The latest source fix is `dc2b6e2`; handoff snapshot is `36afd3d`. The next commit saves `Phase4-App-Comparison.md`, its results JSON, `summarize-app-comparison.py`, updates.md and this revised handoff. Root worktree should be clean afterward.
+
+Next launch (do not rerun existing empty trial numbers):
+
+```sh
+python3 Scripts/launch-performance-app.py --root /tmp/rawbrowse-app-comparison --variant baseline --state warm --trial 1
+```
+
+Then explicit-target UI sequence, verify `RunsFinal/baseline-warm-1.jsonl` small cohort/drain, quit, and candidate warm 1. Repeat warm 2/3 with alternating variant order. Summarize all accepted logs with `python3 Scripts/summarize-app-comparison.py /tmp/rawbrowse-app-comparison --output Docs/Performance/Phase4-App-Comparison-Results.json`.
+
+Important: every UI helper must take the target object as an argument. In this REPL, old helpers captured the earlier root-project app despite later variable redeclarations. Safe helper `clickOn(target, phrase)` fetches full fresh AX state, finds the phrase's current numeric index, clicks it, fetches fresh state. `sequenceOn(target)` passes the target explicitly for every action. Known correct target handles were `measuredBaseline` and `measuredCandidate`; rebind by their full temporary app paths after compaction if necessary. Verify the diagnostics, not only identical-looking UI. Do not reuse the old `clickLabel`/`state` helpers.
 
 ## Pitfalls already resolved
 
