@@ -232,6 +232,116 @@ struct FullSizeJPGDiskCacheTests {
         #expect(await reopened.previewImage(for: source, maxPixelSize: 20)?.width == 20)
     }
 
+    @Test
+    func `preview memory reuses final images and invalidates source and size changes`() async throws {
+        let root = try makeTestRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let source = root.appendingPathComponent("photo.arw")
+        try Data([1]).write(to: source)
+        let image = try makeTestImage(width: 40, height: 20)
+        let cache = FullSizeJPGDiskCache(cacheDirectory: root.appendingPathComponent("cache"))
+        let loader = BrowserImageLoader(fullSizeCache: cache, extractPreview: { _ in image })
+        let first = try #require(await loader.previewImage(for: source, maxPixelSize: 20))
+        // Remove the disk entry so reuse can only come from memory.
+        try await cache.clear()
+        let again = try #require(await loader.previewImage(for: source, maxPixelSize: 20))
+        #expect(first === again)
+        let smaller = try #require(await loader.previewImage(for: source, maxPixelSize: 10))
+        #expect(smaller.width == 10)
+        #expect(smaller !== first)
+        try Data([1, 2]).write(to: source, options: .atomic)
+        let replaced = try #require(await loader.previewImage(for: source, maxPixelSize: 20))
+        #expect(replaced !== first)
+        var settings = BrowserSettings()
+        settings.maxCachedExtractedJPGs = 0
+        await loader.apply(settings: settings)
+        let uncached = try #require(await loader.previewImage(for: source, maxPixelSize: 20))
+        #expect(uncached !== replaced)
+    }
+
+    @Test
+    func `standalone JPEG preview revisits use memory`() async throws {
+        let root = try makeTestRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let source = root.appendingPathComponent("photo.jpg")
+        try makeJPEGData(from: makeTestImage(width: 40, height: 20), orientation: 6).write(to: source)
+        let loader = BrowserImageLoader(fullSizeCache: FullSizeJPGDiskCache(cacheDirectory: root.appendingPathComponent("cache")))
+        let first = try #require(await loader.previewImage(for: source, maxPixelSize: 20))
+        #expect(first.width == 10)
+        #expect(first.height == 20)
+        let second = try #require(await loader.previewImage(for: source, maxPixelSize: 20))
+        #expect(second === first)
+    }
+
+    @Test @MainActor
+    func `JPG delivery precedes RAW support and sidecar restoration`() async throws {
+        let root = try makeTestRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let source = root.appendingPathComponent("photo.arw")
+        try Data([1]).write(to: source)
+        let image = try makeTestImage(width: 40, height: 20)
+        let gate = PreviewExtractionGate()
+        let loader = BrowserImageLoader(fullSizeCache: FullSizeJPGDiskCache(cacheDirectory: root.appendingPathComponent("cache")),
+                                        extractPreview: { _ in image })
+        let sidecarGate = PreviewExtractionGate()
+        let session = RAW9EditingSession(load: { _ in
+            await sidecarGate.arriveAndWait()
+            return RAW9Adjustments(exposure: 1)
+        })
+        let zoom = ZoomModel(settings: SettingsModel(initialValues: BrowserSettings()), raw9: session,
+                             imageLoader: loader, supportsRAW9: { _ in
+                                 await gate.arriveAndWait()
+                                 return true
+                             })
+        zoom.openZoom(for: BrowserFileItem(url: source))
+        await gate.waitForArrivals(1)
+        #expect(zoom.zoomImage != nil)
+        #expect(zoom.isZoomExifInfoLoaded)
+        #expect(!session.hasRestored(source))
+        await gate.release()
+        await sidecarGate.waitForArrivals(1)
+        #expect(zoom.zoomImage != nil)
+        // Closing while restoration is in flight must reject stale adjustments.
+        zoom.closeZoom()
+        await sidecarGate.release()
+        #expect(zoom.zoomImage == nil)
+        #expect(zoom.file == nil)
+    }
+
+    @Test
+    func `preview memory enforces LRU count byte and disabled limits`() throws {
+        let small = try makeTestImage(width: 40, height: 20)
+        let oversized = try makeTestImage(width: 1024, height: 1024)
+        var settings = BrowserSettings()
+        settings.maxCachedExtractedJPGs = 2
+        settings.memoryCacheSizeMB = 1
+        var cache = PreviewMemoryCache()
+        cache.apply(settings: settings)
+        cache.insert(small, for: "a")
+        cache.insert(small, for: "b")
+        #expect(cache.image(for: "a") != nil)
+        cache.insert(small, for: "c")
+        #expect(cache.image(for: "b") == nil)
+        cache.insert(oversized, for: "large")
+        #expect(cache.image(for: "large") == nil)
+        #expect(cache.byteCount == small.bytesPerRow * small.height * 2)
+        settings.maxCachedExtractedJPGs = 1
+        cache.apply(settings: settings)
+        #expect(cache.image(for: "a") == nil)
+        #expect(cache.image(for: "c") != nil)
+        settings.memoryCacheSizeMB = 0
+        cache.apply(settings: settings)
+        #expect(cache.byteCount == 0)
+        cache.insert(small, for: "disabled")
+        #expect(cache.image(for: "disabled") == nil)
+        settings.memoryCacheSizeMB = 1
+        cache.apply(settings: settings)
+        cache.insert(small, for: "clear")
+        cache.removeAll()
+        #expect(cache.image(for: "clear") == nil)
+        #expect(cache.byteCount == 0)
+    }
+
     private func makeTestRoot() throws -> URL {
         let root = FileManager.default.temporaryDirectory
             .appendingPathComponent("RawBrowseFullSizeCache-\(UUID().uuidString)", isDirectory: true)

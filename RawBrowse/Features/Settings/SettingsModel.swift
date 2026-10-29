@@ -59,6 +59,7 @@ final class SettingsModel {
                 settingsError = "Could not load settings: \(error.localizedDescription)"
             }
             await MemoryImageCache.shared.apply(settings: values)
+            await BrowserImageLoader.shared.apply(settings: values)
         }
         loadTask = task
         await task.value
@@ -88,6 +89,8 @@ final class SettingsModel {
         let save = save
         let task = Task {
             await previous?.value
+            await MemoryImageCache.shared.apply(settings: snapshot)
+            await BrowserImageLoader.shared.apply(settings: snapshot)
             do {
                 try await save(snapshot)
                 if saveRevision == revision {

@@ -17,6 +17,8 @@ final class ZoomModel {
     private(set) var isApplyingRAW9 = false
     @ObservationIgnored private var renderOperationID = UUID()
     @ObservationIgnored private var zoomTask: Task<Void, Never>?
+    @ObservationIgnored private let imageLoader: BrowserImageLoader
+    @ObservationIgnored private let supportsRAW9: @Sendable (URL) async -> Bool
     var rawPreviewBitDepth: RAWPreviewBitDepth {
         get { settingsModel.values.rawPreviewBitDepth }
         set {
@@ -29,9 +31,13 @@ final class ZoomModel {
         }
     }
 
-    init(settings: SettingsModel, raw9: RAW9EditingSession) {
+    init(settings: SettingsModel, raw9: RAW9EditingSession,
+         imageLoader: BrowserImageLoader = .shared,
+         supportsRAW9: @escaping @Sendable (URL) async -> Bool = { await RAW9Support.isSupported(for: $0) }) {
         settingsModel = settings
         self.raw9 = raw9
+        self.imageLoader = imageLoader
+        self.supportsRAW9 = supportsRAW9
     }
 
     func pasteRAW9Adjustments() {
@@ -68,6 +74,7 @@ final class ZoomModel {
         }
         presentation.zoomOverlayVisible = true
         let previewSize = settingsModel.values.thumbnailSizeFullSize
+        let cacheSettings = settingsModel.values
         let access = CatalogAccess.shared.lease(for: selectedFile.url)
         zoomTask = Task {
             let diagnostic = BrowserPerformance.begin("preview.presentationDelivery", selectedFile.url,
@@ -81,24 +88,20 @@ final class ZoomModel {
                 }
             }
             guard !Task.isCancelled else { return }
-            async let exifInfo = BrowserImageLoader.shared.metadata(for: selectedFile.url)
+            async let exifInfo = imageLoader.metadata(for: selectedFile.url)
+            let developRAW = useDevelopedRAW && !SupportedFileType.isRenderedImage(selectedFile.url)
             do {
-                let supportsRAW9 = await RAW9Support.isSupported(for: selectedFile.url)
-                try Task.checkCancellation()
-                if shouldLoadSidecar, supportsRAW9 {
-                    try await raw9.restore(for: selectedFile.url, initialAdjustments: initialAdjustments)
-                }
-                try Task.checkCancellation()
-                let adjustments = raw9.raw9Adjustments
-                let developRAW = useDevelopedRAW && !SupportedFileType.isRenderedImage(selectedFile.url)
-                let loadedImage: CGImage? = if developRAW {
-                    if supportsRAW9 {
-                        try await raw9.render(url: selectedFile.url, adjustments: adjustments, bitDepth: settingsModel.values.rawPreviewBitDepth)
+                let loadedImage: CGImage?
+                if developRAW {
+                    if try await prepareRAW9(for: selectedFile.url, shouldLoadSidecar: shouldLoadSidecar,
+                                             initialAdjustments: initialAdjustments) {
+                        loadedImage = try await raw9.render(url: selectedFile.url, adjustments: raw9.raw9Adjustments, bitDepth: settingsModel.values.rawPreviewBitDepth)
                     } else {
-                        try await BrowserImageLoader.shared.developedPreview(for: selectedFile.url)
+                        loadedImage = try await imageLoader.developedPreview(for: selectedFile.url)
                     }
                 } else {
-                    await BrowserImageLoader.shared.previewImage(
+                    await imageLoader.apply(settings: cacheSettings)
+                    loadedImage = await imageLoader.previewImage(
                         for: selectedFile.url, maxPixelSize: previewSize,
                     )
                 }
@@ -117,7 +120,33 @@ final class ZoomModel {
             guard !Task.isCancelled else { return }
             zoomExifInfo = loadedExifInfo
             isZoomExifInfoLoaded = true
+            // Restore editing state after delivering the JPG and its metadata.
+            if !developRAW, !SupportedFileType.isRenderedImage(selectedFile.url) {
+                do {
+                    _ = try await prepareRAW9(for: selectedFile.url, shouldLoadSidecar: shouldLoadSidecar,
+                                               initialAdjustments: initialAdjustments)
+                } catch {
+                    // Restoration only propagates cancellation; the session
+                    // reports sidecar read failures without hiding the JPG.
+                    return
+                }
+            }
         }
+    }
+
+    private func prepareRAW9(for url: URL, shouldLoadSidecar: Bool,
+                             initialAdjustments: RAW9Adjustments) async throws -> Bool {
+        let probe = BrowserPerformance.begin("preview.raw9Support", url)
+        let supported = await supportsRAW9(url)
+        probe?.end(supported ? "supported" : "unsupported")
+        try Task.checkCancellation()
+        if shouldLoadSidecar, supported {
+            let restoration = BrowserPerformance.begin("preview.raw9Sidecar", url)
+            defer { restoration?.end(Task.isCancelled ? "cancelled" : "finished") }
+            try await raw9.restore(for: url, initialAdjustments: initialAdjustments)
+        }
+        try Task.checkCancellation()
+        return supported
     }
 
     func refreshRAW9Preview() {

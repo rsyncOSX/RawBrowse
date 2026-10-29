@@ -23,6 +23,7 @@ actor BrowserImageLoader {
 
     private var isClearingCaches = false
     private var cacheGeneration = 0
+    private var previewMemoryCache = PreviewMemoryCache()
 
     private let extractPreview: @Sendable (URL) async -> CGImage?
 
@@ -34,6 +35,10 @@ actor BrowserImageLoader {
     }
 
     private let fullSizeCache: FullSizeJPGDiskCache
+
+    func apply(settings: BrowserSettings) {
+        previewMemoryCache.apply(settings: settings)
+    }
 
     func discoverFolders(at folderURL: URL) async -> [BrowserFolderItem] {
         let diagnostic = BrowserPerformance.begin("discovery.folders", folderURL)
@@ -190,10 +195,24 @@ actor BrowserImageLoader {
     }
 
     func previewImage(for url: URL, maxPixelSize: Int) async -> CGImage? {
-        guard !Task.isCancelled, let image = await fullSizePreview(for: url), !Task.isCancelled else { return nil }
+        guard !Task.isCancelled, !isClearingCaches else { return nil }
+        let key = "\(ImageSourceFingerprint.key(for: url))|\(max(1, maxPixelSize))"
+        if let image = previewMemoryCache.image(for: key) {
+            BrowserPerformance.event("preview.memoryHit", fields: ["path": url.path, "target_pixels": maxPixelSize])
+            return image
+        }
+        let generation = cacheGeneration
+        guard let image = await fullSizePreview(for: url), !Task.isCancelled,
+              generation == cacheGeneration else { return nil }
         let resize = BrowserPerformance.begin("preview.resize", url, details: ["target_pixels": String(maxPixelSize)])
         defer { resize?.end(Task.isCancelled ? "cancelled" : "finished") }
-        return await Self.resizedPreview(image, maxPixelSize: maxPixelSize)
+        let resized = await Self.resizedPreview(image, maxPixelSize: maxPixelSize)
+        guard !Task.isCancelled, generation == cacheGeneration, !isClearingCaches else { return nil }
+        // Do not retain an image if its source changed while it was loading.
+        if let resized, key == "\(ImageSourceFingerprint.key(for: url))|\(max(1, maxPixelSize))" {
+            previewMemoryCache.insert(resized, for: key)
+        }
+        return resized
     }
 
     private func fullSizePreview(for url: URL) async -> CGImage? {
@@ -211,7 +230,10 @@ actor BrowserImageLoader {
             guard !Task.isCancelled else { return nil }
 
             if SupportedFileType.isRenderedImage(url) {
-                return await Self.loadCGImage(from: url)
+                let timing = BrowserPerformance.begin("preview.originalImage", url)
+                let image = await Self.loadCGImage(from: url)
+                timing?.end(image == nil ? "failed" : "image")
+                return image
             }
 
             let lookup = BrowserPerformance.begin("preview.diskLookup", url)
@@ -297,6 +319,7 @@ actor BrowserImageLoader {
         guard !isClearingCaches else { return }
         isClearingCaches = true
         cacheGeneration += 1
+        previewMemoryCache.removeAll()
         defer { isClearingCaches = false }
         let tasks = Array(thumbnailTasks.values)
         let previews = Array(extractedJPGTasks.values)
