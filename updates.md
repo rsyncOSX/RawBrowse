@@ -13,6 +13,8 @@ Executor candidate: [standalone experiment](Docs/Performance/Phase4-Executor-Can
 
 Application comparison setup: [matched experiment protocol](Docs/Performance/Application-Experiment-Protocol.md) records the new opt-in settings/window, stage, task-count and model-delivery diagnostics. Diagnostic Release build and full macOS tests passed. Isolated baseline/candidate projects use identical app sources and separate local copies of the pinned parser; the real dependency pin remains unchanged.
 
+Diagnostic follow-up: corrected configuration-event JSON serialization (enum IDs now use strings; unsupported values are rejected safely). Added regression coverage; full tests and Release build passed. Invalid setup launches were excluded. The corrected first app run verifies actual settings/window identity and 56 image deliveries before interaction measurement.
+
 ## Purpose
 
 Determine which lessons from RawCull's performance phases 0–6 apply to RawBrowse. Establish a RawBrowse baseline, test individual candidates, and retain only changes supported by measurements and lifecycle checks.

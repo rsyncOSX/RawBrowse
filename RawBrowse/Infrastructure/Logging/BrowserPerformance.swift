@@ -17,9 +17,23 @@ nonisolated enum BrowserPerformance {
 
     private static func write(_ record: [String: Any]) {
         guard isEnabled,
-              var data = try? JSONSerialization.data(withJSONObject: record, options: [.sortedKeys]) else { return }
+              var data = serializedRecord(record) else { return }
         data.append(0x0A)
         output.withLock { handle in try? handle?.write(contentsOf: data) }
+    }
+
+    static func serializedRecord(_ record: [String: Any]) -> Data? {
+        // Foundation can raise an Objective-C exception for unsupported Swift values.
+        guard JSONSerialization.isValidJSONObject(record) else { return nil }
+        return try? JSONSerialization.data(withJSONObject: record, options: [.sortedKeys])
+    }
+
+    static func workspaceSettingsFields(_ settings: BrowserSettings) -> [String: Any] {
+        ["grid_pixels": settings.thumbnailSizeGrid, "preview_pixels": settings.thumbnailSizePreview,
+         "full_size_pixels": settings.thumbnailSizeFullSize, "grid_cache_mb": settings.gridCacheSizeMB,
+         "memory_cache_mb": settings.memoryCacheSizeMB,
+         "max_cached_previews": settings.maxCachedExtractedJPGs,
+         "selected_clip_model": settings.selectedCLIPModel.downloadID.rawValue]
     }
 
     static func event(_ name: String, fields: [String: Any]) {
@@ -33,13 +47,10 @@ nonisolated enum BrowserPerformance {
              "content_width": window.contentLayoutRect.width, "content_height": window.contentLayoutRect.height,
              "backing_scale": window.backingScaleFactor]
         }
-        event("workspace.configuration", fields: ["windows": windows,
-            "executable": Bundle.main.executableURL?.path ?? "unknown",
-            "grid_pixels": settings.thumbnailSizeGrid, "preview_pixels": settings.thumbnailSizePreview,
-            "full_size_pixels": settings.thumbnailSizeFullSize, "grid_cache_mb": settings.gridCacheSizeMB,
-            "memory_cache_mb": settings.memoryCacheSizeMB,
-            "max_cached_previews": settings.maxCachedExtractedJPGs,
-            "selected_clip_model": settings.selectedCLIPModel.downloadID])
+        var fields = workspaceSettingsFields(settings)
+        fields["windows"] = windows
+        fields["executable"] = Bundle.main.executableURL?.path ?? "unknown"
+        event("workspace.configuration", fields: fields)
     }
 
     static func cacheDirectory(_ component: String) -> URL? {
