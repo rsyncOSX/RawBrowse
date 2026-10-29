@@ -9,6 +9,7 @@ final class ZoomModel {
     let raw9: RAW9EditingSession
     let presentation = ZoomPresentationState()
     private(set) var file: BrowserFileItem?
+    private(set) var raw9SupportedURL: URL?
     var useDevelopedRAW = false
     var zoomImageError: String?
     var zoomImage: CGImage?
@@ -53,6 +54,7 @@ final class ZoomModel {
         preserveViewport: Bool = false,
     ) {
         file = selectedFile
+        raw9SupportedURL = nil
 
         let shouldLoadSidecar = raw9.prepare(for: selectedFile.url)
         let initialAdjustments = raw9.raw9Adjustments
@@ -146,6 +148,8 @@ final class ZoomModel {
             try await raw9.restore(for: url, initialAdjustments: initialAdjustments)
         }
         try Task.checkCancellation()
+        // Publish only after restoration, so RAW controls use the selected file's state.
+        raw9SupportedURL = supported ? url : nil
         return supported
     }
 
@@ -181,6 +185,7 @@ final class ZoomModel {
     func closeZoom() {
         raw9.close()
         file = nil
+        raw9SupportedURL = nil
         zoomTask?.cancel()
         zoomTask = nil
         renderOperationID = UUID()

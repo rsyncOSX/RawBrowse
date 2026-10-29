@@ -67,3 +67,13 @@ The focused JPEG cache suite passed, then the full macOS suite passed: 153 test 
 The optimized Release build succeeded and `git diff --check` passed. Test result: `/tmp/rawbrowse-zoom-validation/Logs/Test/Test-RawBrowse-2026.10.29_15-07-40-+0100.xcresult`. Build: `/tmp/rawbrowse-zoom-validation/Build/Products/Release/RawBrowse.app`. These are transient local artifacts. Existing sendable-capture warnings in unrelated settings tests remain; no new warning was reported for the changed production files.
 
 No source photos or dependencies were edited, and application cache directories were not manually cleared. No timed improvement or first-painted-frame claim is made; matched photo browsing in both apps remains the next performance validation.
+
+## Follow-up: RAW 9 work overlapping JPG browsing
+
+Source review on 29 October found a second path in `BrowserZoomOverlayView`: its selection task independently checked RAW 9 support, then read camera white balance and tone defaults even in JPG mode. Those three operations each constructed a `CIRAWFilter`. Together with the model's deferred support check, a compatible selection could construct four filters. These are decoder setup/default reads, not an explicit full RAW render, but the overlay work could overlap JPG loading. The existing `preview.raw9Support` interval covered only the model's probe.
+
+The follow-up change makes `ZoomModel` own the current file's support result. The overlay reuses that result and loads white balance/tone defaults only when developed RAW is selected. The result is published after sidecar restoration and cleared on navigation/close; cancelled setup cannot publish stale support. JPG mode therefore retains one support probe after image and metadata delivery, with no overlay decoder/default reads. Folder compatibility scans remain independent background work.
+
+Validation extends the JPG delivery regression to check that support remains unavailable during blocked probing/restoration and after closing. Actual photo browsing and first-painted-frame timings still require a matched runtime workload; filter-count reduction alone is not a measured latency improvement.
+
+The full macOS test suite passed after this change (`xcodebuild test`, arm64, existing pinned dependencies); `git diff --check` passed. Existing sendable-capture warnings remain in unrelated tests. Test log: `/tmp/rawbrowse-raw9-browsing-tests.log`.

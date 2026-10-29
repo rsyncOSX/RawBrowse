@@ -297,15 +297,18 @@ struct FullSizeJPGDiskCacheTests {
         await gate.waitForArrivals(1)
         #expect(zoom.zoomImage != nil)
         #expect(zoom.isZoomExifInfoLoaded)
+        #expect(zoom.raw9SupportedURL == nil)
         #expect(!session.hasRestored(source))
         await gate.release()
         await sidecarGate.waitForArrivals(1)
         #expect(zoom.zoomImage != nil)
+        #expect(zoom.raw9SupportedURL == nil)
         // Closing while restoration is in flight must reject stale adjustments.
         zoom.closeZoom()
         await sidecarGate.release()
         #expect(zoom.zoomImage == nil)
         #expect(zoom.file == nil)
+        #expect(zoom.raw9SupportedURL == nil)
     }
 
     @Test

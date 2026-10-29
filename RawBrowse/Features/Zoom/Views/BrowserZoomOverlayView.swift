@@ -19,6 +19,12 @@ struct BrowserZoomOverlayView: View {
         raw9SupportedURL != nil && raw9SupportedURL == selection.selectedFile?.url
     }
 
+    private var raw9SupportedURL: URL? { zoom.raw9SupportedURL }
+
+    private var raw9DefaultsURL: URL? {
+        zoom.useDevelopedRAW && supportsRAW9 ? raw9SupportedURL : nil
+    }
+
     private static let whiteBalanceCursor: NSCursor = {
         let image = NSImage(systemSymbolName: "eyedropper", accessibilityDescription: "White balance picker")!
         image.size = NSSize(width: 24, height: 24)
@@ -56,7 +62,6 @@ struct BrowserZoomOverlayView: View {
     @State private var cameraTemperature: Double = 6500
     @State private var cameraTint: Double = 0
     @State private var toneDefaults = RAW9ToneDefaults()
-    @State private var raw9SupportedURL: URL?
     @State private var isEditingRAWAdjustment = false
     @State private var isRAWAdjustmentRefreshPending = false
     @State private var adjustmentRefreshTask: Task<Void, Never>?
@@ -331,21 +336,23 @@ struct BrowserZoomOverlayView: View {
             whiteBalanceTask?.cancel()
             isPickingWhiteBalance = false
             isSamplingWhiteBalance = false
-            raw9SupportedURL = nil
             toneDefaults = RAW9ToneDefaults()
-            guard let url = selection.selectedFile?.url else { return }
-            let supported = await RAW9Support.isSupported(for: url)
-            guard !Task.isCancelled else { return }
-            if supported, let balance = try? await raw9.raw9WhiteBalance() {
+            cameraTemperature = 6500
+            cameraTint = 0
+        }
+        .task(id: raw9DefaultsURL) {
+            // JPG browsing needs neither white balance nor tone decoder setup.
+            guard let url = raw9DefaultsURL else { return }
+            if let balance = try? await raw9.raw9WhiteBalance() {
                 guard !Task.isCancelled, selection.selectedFile?.url == url else { return }
                 cameraTemperature = balance.temperature
                 cameraTint = balance.tint
             }
-            if supported, let defaults = try? await raw9.raw9ToneSettings() {
+            guard !Task.isCancelled else { return }
+            if let defaults = try? await raw9.raw9ToneSettings() {
                 guard !Task.isCancelled, selection.selectedFile?.url == url else { return }
                 toneDefaults = defaults
             }
-            raw9SupportedURL = supported ? url : nil
         }
         .onChange(of: isPickingWhiteBalance) {
             if !isPickingWhiteBalance {
