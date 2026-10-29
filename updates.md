@@ -21,6 +21,8 @@ Rebuilt comparison follow-up: [three new empty/warm pairs per variant](Docs/Perf
 
 Interaction follow-up: [validation and recommendation](Docs/Performance/Phase4-Interaction-Validation.md) completes one matched scroll/keyboard/preview/folder-switch sequence per variant. Both switch with 152 thumbnail requests in flight, reject 152 cancelled deliveries and drain all image tasks. Time Profiler-only captures save and export nonempty samples; differing action coverage prevents a CPU or smoothness comparison. Candidate full tests and both Release builds pass. Retain the parser review patch for upstream review; defer the production dependency pin until an upstream reviewed revision/release is available. This candidate evaluation is complete within its stated scope; the broader phases remain partial.
 
+Upstream review submitted: [RawParserKit PR #8](https://github.com/rsyncOSX/RawParserKit/pull/8), commit `9b9f51280f9a55619dfcb4459b8f44d5493813ff`, extracts the existing bounded decode body into the measured concurrent helper. Current upstream Debug and Release suites each pass 105 tests without warnings. The PR includes a benchmark/limitations document; no release, merge or RawBrowse production pin change is performed. Prepared from an isolated temporary clone; sibling repository is untouched.
+
 ## Purpose
 
 Determine which lessons from RawCull's performance phases 0–6 apply to RawBrowse. Establish a RawBrowse baseline, test individual candidates, and retain only changes supported by measurements and lifecycle checks.

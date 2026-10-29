@@ -2,6 +2,10 @@
 
 Updated 29 October 2026 after completing rebuilt empty/warm comparisons and separate interaction checks. All experiment apps quit normally. Work is saved in reports linked from updates.md. No production dependency or sibling RawParserKit checkout was changed.
 
+## Upstream review submitted
+
+RawParserKit PR #8: https://github.com/rsyncOSX/RawParserKit/pull/8. Head `9b9f51280f9a55619dfcb4459b8f44d5493813ff`, branch `codex/bounded-thumbnail-executor`, base main `4b3bf40`. Prepared in `/tmp/rawparserkit-upstream-review`; sibling checkout unchanged. Current upstream loader/package settings match the evaluated baseline. Only implementation addition beyond the measured patch is an explanatory comment. The PR contains `Docs/ThumbnailExecutorEvaluation.md` with individual measurements and limitations. Both full Debug/Release package suites passed 105 tests with no warnings. No GitHub checks were reported at PR verification. No merge or release has been performed; production dependency pin remains unchanged. Next integration action depends on upstream review/release, not another executor experiment.
+
 ## Current decision
 
 The temporary explicit concurrent-executor helper with the existing six-slot bound is supported for upstream review. Three rebuilt empty/warm pairs per variant show empty-cache model-delivery medians 978→382 ms (large) and 430→122 ms (small). Warm disk bypasses the parser and establishes no benefit. One matched interaction sequence per variant completed with equal accepted/cancelled assignment counts and task drain. Retain the review patch; defer production adoption until an upstream reviewed dependency revision/release is available and validated.
