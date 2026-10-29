@@ -17,6 +17,8 @@ Diagnostic follow-up: corrected configuration-event JSON serialization (enum IDs
 
 Sandboxed app result: [three empty-cache pairs](Docs/Performance/Phase4-App-Comparison.md) show initial model-delivery cohort medians of 864→385 ms (large) and 423→140 ms (small) with the temporary parser patch. Both cohorts completed and image tasks drained in all six runs. This is not painted-frame/hitch evidence. Production RawParserKit remains unchanged; warm-disk/interaction checks and final candidate validation remain pending. Work is saved for the usage boundary in [CONTINUATION.md](Docs/Performance/CONTINUATION.md).
 
+Rebuilt comparison follow-up: [three new empty/warm pairs per variant](Docs/Performance/Phase4-App-Warm-Comparison.md) reproduce empty-cache cohort median improvements of 978→382 ms (large) and 430→122 ms (small). Warm disk bypasses the parser and shows no candidate benefit (60→73 ms and 56→57 ms). All 12 cohorts complete and image tasks drain. Both Release builds and the post-fix candidate full macOS suite pass. Previous temporary evidence was absent, so new source-matched binaries and trials 4–6 are summarized separately. Interaction/profiler acceptance remains pending.
+
 ## Purpose
 
 Determine which lessons from RawCull's performance phases 0–6 apply to RawBrowse. Establish a RawBrowse baseline, test individual candidates, and retain only changes supported by measurements and lifecycle checks.

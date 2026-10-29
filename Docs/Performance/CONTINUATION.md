@@ -2,6 +2,10 @@
 
 Updated 29 October 2026 at the user-reported 7% usage reserve. New experiments stopped; all experiment apps closed normally. Investigation is incomplete. User authorized autonomous continuation within available usage, Time Profiler alone for Instruments, and a commit after each completed update. Save/commit and update this handoff before usage is exhausted. Do not ask routine permission questions. No subagents were requested or used.
 
+## Latest resumption — rebuilt trials 4–6
+
+The prior temporary evidence directory was absent. Rebuilt under the same root with identical app/parser source hashes; new UUIDs and results are in Phase4-App-Warm-Comparison.md and Phase4-App-Warm-Comparison-Results.json. All three empty/warm pairs per variant completed. Candidate full post-fix macOS suite and both Release builds passed. Current running process: candidate warm 6, settled on large folder; quit normally before interaction launches. All 12 runs drained. Do not rerun or overwrite trials 4–6. Earlier instructions below referring to missing trials 1–3 or obsolete binaries are historical. Next: separate matched interaction/Time Profiler runs, then final recommendation and save.
+
 ## Committed work
 
 - `c94b8b8`: first browsing baseline and opt-in diagnostics (user committed).

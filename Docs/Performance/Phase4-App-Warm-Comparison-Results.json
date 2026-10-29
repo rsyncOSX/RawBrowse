@@ -1,0 +1,2266 @@
+{
+  "scope": "Initial accepted model image delivery, not painted frames",
+  "configuration": {
+    "full_size_pixels": 8700,
+    "grid_cache_mb": 768,
+    "grid_pixels": 200,
+    "max_cached_previews": 4,
+    "memory_cache_mb": 768,
+    "preview_pixels": 1616,
+    "selected_clip_model": "clip-datacomp",
+    "windows": [
+      {
+        "backing_scale": 2,
+        "content_height": 1220,
+        "content_width": 1644,
+        "height": 1272,
+        "title": "RawBrowse",
+        "width": 1644
+      }
+    ]
+  },
+  "build_identity": {
+    "Baseline": {
+      "executable": "/private/tmp/rawbrowse-app-comparison/BaselineBuild/Build/Products/Release/RawBrowse.app/Contents/MacOS/RawBrowse",
+      "sha256": "333f798d8f10d8dcf3000ab4e25413a11369645ca60dd7873b8ecb918a8ca207",
+      "binary_uuid": "UUID: B3FEFB15-AA66-3495-A29A-E6C3FB375C6E (arm64) /tmp/rawbrowse-app-comparison/BaselineBuild/Build/Products/Release/RawBrowse.app/Contents/MacOS/RawBrowse",
+      "dsym_uuid": "UUID: B3FEFB15-AA66-3495-A29A-E6C3FB375C6E (arm64) /tmp/rawbrowse-app-comparison/BaselineBuild/Build/Products/Release/RawBrowse.app.dSYM/Contents/Resources/DWARF/RawBrowse"
+    },
+    "Candidate": {
+      "executable": "/private/tmp/rawbrowse-app-comparison/CandidateBuild/Build/Products/Release/RawBrowse.app/Contents/MacOS/RawBrowse",
+      "sha256": "f083676d7064e840bc3a28e4d7d04eea309c8848f4296d52143e2cbacddbd2ee",
+      "binary_uuid": "UUID: FE1CD43E-E92E-36E4-8EF2-8DB6D2F4989D (arm64) /tmp/rawbrowse-app-comparison/CandidateBuild/Build/Products/Release/RawBrowse.app/Contents/MacOS/RawBrowse",
+      "dsym_uuid": "UUID: FE1CD43E-E92E-36E4-8EF2-8DB6D2F4989D (arm64) /tmp/rawbrowse-app-comparison/CandidateBuild/Build/Products/Release/RawBrowse.app.dSYM/Contents/Resources/DWARF/RawBrowse"
+    }
+  },
+  "source_identity": {
+    "Baseline": {
+      "app": "/private/tmp/rawbrowse-app-comparison/Baseline/App",
+      "package": "/private/tmp/rawbrowse-app-comparison/Baseline/RawParserKit",
+      "swift_source_hashes": {
+        "RawBrowse/Features/About/Views/AboutRawBrowseView.swift": "e5e4989427b3446cc1e87d56fc9f606a6b0a6e6de33ae3740934439ad24f1f57",
+        "RawBrowse/Features/About/Views/ShortcutRow.swift": "51de11ab9640c13e51932043ec74e47eed7fbda5d12fd1bcf7ce439874e19ca2",
+        "RawBrowse/Features/Browser/BrowserContentsModel.swift": "0d494ed3bf3167d9ba6174dad06efbb665a46b5c8e98c4c84f913a45749abbdc",
+        "RawBrowse/Features/Browser/BrowserFileItem.swift": "24586b5bd530674f9bd9ba52e8034f90a4555b5ecebefa8ed212e550326e3e7e",
+        "RawBrowse/Features/Browser/BrowserFolderItem.swift": "dc309906c2c7492e9333c4e810a01edd5e13b8e54064c4bbcdc40fbf93db0d2f",
+        "RawBrowse/Features/Browser/CatalogStore.swift": "59605c386feb4c6e0e8706e277fa6652b64a47eb77c429e14c1509ad265d7a64",
+        "RawBrowse/Features/Browser/Grid/BrowserGridView.swift": "354e7d73676734dbe65b4cdb8ccb0dc42ee34070f10495508429f1ab7dd057cf",
+        "RawBrowse/Features/Browser/Grid/BrowserThumbnailCell.swift": "39f2ed490cbf9a7f0f153d8a9a094fc0c4fa93567178580a1985a45de9a6e1f5",
+        "RawBrowse/Features/Browser/Grid/ThumbnailPresentationModel.swift": "d3f25b80bc9e4d7ad2f6571b80346a0ec0fecc07233ba747ba68b039208cdde3",
+        "RawBrowse/Features/Browser/Histogram/BrowserHistogramCalculator.swift": "a129780c9e1df9dae83cfc81ee887943fef4ac25b9d3af5bc526b0de4b6d52d9",
+        "RawBrowse/Features/Browser/Histogram/BrowserHistogramPath.swift": "e71775fc0b4c42e05fbc930d4f126a67ea48d426cc6da6aaa47d59e664b9ae38",
+        "RawBrowse/Features/Browser/Histogram/BrowserHistogramView.swift": "0d820d2cc4fedb6d40b4942ff25c09be26f07e1be23d3fb0e8e93ca8331a68fa",
+        "RawBrowse/Features/Browser/Presentation/BrowserPresentationState.swift": "750169e9dc70b3fd21faa5f65f50e14a4751559d8aa8e9c2fa6df77f1cc428b5",
+        "RawBrowse/Features/Browser/RememberedCatalog.swift": "0d0f126fcae0786d0bd5a0fd84a64657d7cfd7c8c418e826d1e5be7429b4ce14",
+        "RawBrowse/Features/Browser/RememberedCatalogStore.swift": "290f00d1a7f21785e43c10c975d8e5ffee1e278125605e482f6622b72e8412e2",
+        "RawBrowse/Features/Browser/SelectionModel.swift": "58147bdbe1986bfe84e521d5a4a50e69703a1e77a2e79cd5ed8a912362cccb31",
+        "RawBrowse/Features/Browser/Sidebar/BrowserSidebarView.swift": "62c85972e7dfdfdc5c3c39beb3613741c0001b535561d14da48a42a66c60ed56",
+        "RawBrowse/Features/Browser/Sidebar/FolderOutlineRow.swift": "58d55815565e45c987cb19e05be1461c474a560a9350d6ae2263aeac3ae9efdd",
+        "RawBrowse/Features/Browser/Sidebar/SidebarPresentationModel.swift": "fd92172274f060dd33ca0a37270f04ba6af5ca76de334cf5649adb8e241c2645",
+        "RawBrowse/Features/Browser/SupportedFileType.swift": "f002c86f6c121d857738eedbd807b7811698bb183e24c8939b2706b8c8cbc813",
+        "RawBrowse/Features/Browser/Views/BrowserAIWorkspaceView.swift": "5c6b0a197d8c78be569483780e3586de3f58ba4f99def6d8fabb0e1743dfe806",
+        "RawBrowse/Features/Browser/Views/BrowserNavigationTitle.swift": "3628e2a813faaf67d372985c52662506d9b4d9b2c8ca19c5822c1352312198b1",
+        "RawBrowse/Features/Browser/Views/FileBrowserView.swift": "592abcae446604b1a3a5e63f23cdb38393f4d92fd47689590907cc24ab39059f",
+        "RawBrowse/Features/CLIP/CLIPFeatureModel.swift": "b278b965d4263328f21da5f0a350591e7b2eff465972534afe51774681f6174f",
+        "RawBrowse/Features/CLIP/CLIPImageDiscovery.swift": "4bdbbe087b752617a5f375df47183d4b35f44a12727aeb866801e4359173117b",
+        "RawBrowse/Features/CLIP/CLIPIndex.swift": "c04ed7b7d53628c06e128f59a9b6373cc94f7e64e31b924aa6c34823c36d36a7",
+        "RawBrowse/Features/CLIP/CLIPModelManager.swift": "2e583c567f66412eee2ef09c5e825905fe8f4e14cd04ae0d43e902f88111b061",
+        "RawBrowse/Features/CLIP/CLIPSearchEngine.swift": "f9d8fc05bb60f3beb916704782a9d47705eddea307a94df16ddb3b3fb462d36c",
+        "RawBrowse/Features/CLIP/CLIPSimilaritySearch.swift": "ac334fc1ad9073d6e316ed1c227fdd0e1e391c32ffa8929fd0d51ad9787d88eb",
+        "RawBrowse/Features/DeepReview/DeepAIReviewController.swift": "01f2527e8ce24211f020d3867e0b8efe5b34ecb41d42f8559fbee794f50b3b64",
+        "RawBrowse/Features/DeepReview/DeepAIReviewFeature.swift": "e4e189a5b1982b1a2c1d1f3bfc4b0e7b83521edfc442ce28c416098b17e87fab",
+        "RawBrowse/Features/DeepReview/DeepAIReviewMaskOutlineRenderer.swift": "d98dc49e2ac2529f9c0035a2099a679d7cbfca4e599d4da178c38ecdc928044e",
+        "RawBrowse/Features/DeepReview/DeepAIReviewRuntime.swift": "cd1b02881a2c1762678d0c9fd1723cc59c34be08aeb9a8fe329b2435f11e9851",
+        "RawBrowse/Features/DeepReview/DeepAIReviewSupport.swift": "ef8654a3c1c708c047950ef4694b87a10286c7d65a9ddb82e8bf1c4e3ff3f8a8",
+        "RawBrowse/Features/DeepReview/DeepReviewModel.swift": "5489717e15c01de659c4d6e211cd20f51b234ba4631765be2f0e9a1a989d807c",
+        "RawBrowse/Features/DeepReview/SubjectMaskFocusScorer.swift": "0158fd23bf12870c30e6008383e48f7fa81fbe5eda286f2ac74197ccc8d3e53f",
+        "RawBrowse/Features/DeepReview/SubjectMaskForeground.swift": "f711597972f889c1acdd334523bb912ec6815602a3b728933a6131f1d4bf97e7",
+        "RawBrowse/Features/DeepReview/Views/DeepAIReviewSheetView.swift": "1c07675a1eb5a6c0d72f94c356c28e056657e254392888a470f841d56f8de4ac",
+        "RawBrowse/Features/DeepReview/WholeImageSharpnessScorer.swift": "51119801e34e24e7d03ebe5cfe2e6a71e804abeb20aaea79e829bc187c512de5",
+        "RawBrowse/Features/ModelDownloads/CLIPManagedModels.swift": "fc3e4b6de3f7e2d1b5d91c6da915b08d5743ee896d865ea62722fda1e18ee807",
+        "RawBrowse/Features/ModelDownloads/CLIPModelDownloadCatalog.swift": "74ff41cb1cca428d964094bb85b301f50b944d2039f2cb466cd83b4a3d45b4c6",
+        "RawBrowse/Features/ModelDownloads/ModelDownloadsModel.swift": "e17c38f4171ed7294b88cfe2190a506f84936c0ff42398b839c02a56bbe74061",
+        "RawBrowse/Features/ModelDownloads/RawBrowseAIModelLicenceAcceptance.swift": "6550564d71fa65839147cc2f5a77acb0adf77e0276bffbbb7cce99e8b925bb10",
+        "RawBrowse/Features/ModelDownloads/Views/CLIPModelDownloadsView.swift": "9a75d97adeb654a6b7d32015697d72a0b3eddee51a147c1efc647a0c41c56d2b",
+        "RawBrowse/Features/RAW9/RAW9EditingSession.swift": "69a56b4e15a56555e5b5668f5c8eceb97ba2da9dbb0ba8a6f142893f925077be",
+        "RawBrowse/Features/RAW9/RAW9ExportQueue.swift": "61663fd657a6e72ae8daeea7d38cdf5c772aa52409c3bf44eccde33593d4e02c",
+        "RawBrowse/Features/RAW9/RAW9Support.swift": "a963a0770bf9c9104b8b3fa847ca1b6f618554b428006ba928a41bb265d54528",
+        "RawBrowse/Features/RAW9/Views/RAW9CropEditor.swift": "64c43500a2a06064ff2bce311765aeffeee7be0aeba0b77cf11400c175aa993e",
+        "RawBrowse/Features/RAW9/Views/RAW9ExportQueueView.swift": "8f836a167dca4bf078aa5662629f02a8a096fc76cb2766496b9bc0df638a527a",
+        "RawBrowse/Features/Settings/BrowserSettings.swift": "bd8bea728972de6232d1bd70d810a0a8afab5f954581801c6706316d27081307",
+        "RawBrowse/Features/Settings/BrowserSettingsStore.swift": "4a851dfa7160fc06a3982224f2d1e0c13f08a8943a42f401ac04981825de51aa",
+        "RawBrowse/Features/Settings/MemoryViewModel.swift": "006d57fae9b50a24f16cc8f0b9f0b22a35c00bdc4864b939924b91723d433bac",
+        "RawBrowse/Features/Settings/SettingsModel.swift": "e7996b75d1fdb5a1caa0c59c0bbb911865c9e7f40adacf3188406f42d28bbca3",
+        "RawBrowse/Features/Settings/Views/AISettingsTab.swift": "d43dbf027957f46c8c4e4d13eb4310cbb72dda457b2e77401a171c1ca1f6fc65",
+        "RawBrowse/Features/Settings/Views/CLIPIndexesSettingsTab.swift": "d9880d9de365e88ba548ae8f0f9da7fd53d992630e56093e3c852b841d76e1be",
+        "RawBrowse/Features/Settings/Views/ImageCacheSettingsTab.swift": "bb967e48b4b68650117574c981ba318c9cd1d87e5bcf00ac8b1ba42fb1e9f50a",
+        "RawBrowse/Features/Settings/Views/ImagePreviewSettingsTab.swift": "52c39ab91de8613224237bf5d428b834e235590bc55928ca0426bc7b4ea265fc",
+        "RawBrowse/Features/Settings/Views/MemoryTab.swift": "e50c35d54ea5a9e8d36ed2fe7e6f6a7065169538d0f9d49112239d8995882f77",
+        "RawBrowse/Features/Settings/Views/SettingsView.swift": "c91891a03ca0e98a38ab00c081eef1374deaa10f7dfedaf6e12e8d621abe51ce",
+        "RawBrowse/Features/Zoom/Presentation/BrowserZoomInitialMode.swift": "40dee8a57f7900fbb753ccc404e30928ddadd3896dd1241733d22e7e2f09b39b",
+        "RawBrowse/Features/Zoom/Presentation/BrowserZoomLaunchContext.swift": "7d8719a0bfc00fbe021cb535a76cd28aac5d19199c1b1314f9002c8e1f0a21af",
+        "RawBrowse/Features/Zoom/Presentation/ZoomPresentationState.swift": "49743489e1c8a4fd14047462a66b6bfcdbeefb660b4cdf332680ef980c86330e",
+        "RawBrowse/Features/Zoom/Views/BrowserZoomGeometry.swift": "cd44bacee0d3317482eeeb22903055ce9e583567808197dc2a191f8355d6b259",
+        "RawBrowse/Features/Zoom/Views/BrowserZoomOverlayView.swift": "95bc276bfcca8e5b0ce21655789834a6a3b2b0e3d2d32d03f5dd5f3a12776aa6",
+        "RawBrowse/Features/Zoom/Views/BrowserZoomViewportTransform.swift": "f3274299ebb124933d778cd5e188a9078c6bc9ee39c8f30c15265642eabfda71",
+        "RawBrowse/Features/Zoom/Views/FocusPointBracketMarker.swift": "c549983ffa9f1182248e6f6413c08bbb6befde2f2858751e7d6d6063efac9b58",
+        "RawBrowse/Features/Zoom/Views/FocusPointMarker.swift": "2dec3daa056bc62e92d368056af2bc9c6d04e496662cabb2acf44d2aa20c8cb7",
+        "RawBrowse/Features/Zoom/Views/ZoomBadgeStyle.swift": "7d2f8cc0ea48a2c1dce4d96b57761512edc9809bc6da1da5832b20e04a44018a",
+        "RawBrowse/Features/Zoom/Views/ZoomControlBadge.swift": "3879cf3308afcd724ca63f89fd72d22e40de7735cde85c267d2c92172ddd6b9a",
+        "RawBrowse/Features/Zoom/Views/ZoomMetadataPanel.swift": "e56e2e86472f436c3c31547ae9246e56acc39fe9ac81f9380df3cb83175037c4",
+        "RawBrowse/Features/Zoom/Views/ZoomOverlayKeyAction.swift": "c1ce3b473f3377acb24c35374fc96a6d4ee82943c337dc98d7769ba8f99977da",
+        "RawBrowse/Features/Zoom/Views/ZoomOverlayNavigationAxis.swift": "b5441bfe6dc6e2552cf715cbb465399c0c29a63f777874db81531cef1031d5f0",
+        "RawBrowse/Features/Zoom/ZoomModel.swift": "2bc8480c9e01a72c013a2c0b109eec9bf4dc517c326442a07e414b58a5a934db",
+        "RawBrowse/Infrastructure/CatalogAccess/CatalogAccess.swift": "4568e3296d5623c1b8f001be5532e85c6c6e7af9ae6798a8139bd0f36128b5ee",
+        "RawBrowse/Infrastructure/CatalogAccess/URL+BrowserHierarchy.swift": "f97eb4fa04ab9309d4f181ad9bd437588a99b584ce68cdb22cee2be95df38abe",
+        "RawBrowse/Infrastructure/Concurrency/LatestTaskRunner.swift": "8f3e4a535a60121ef63ab8897ec48ecaaedf1f210998b2749d8a516a6c76bc0e",
+        "RawBrowse/Infrastructure/ImageLoading/BrowserImageLoader.swift": "2cafbc61e6fca07b8b936af871dd5bd6708a5817b1981ee1ebebe869e0b1119f",
+        "RawBrowse/Infrastructure/ImageLoading/CachedNSImage.swift": "2392601541436b9546a8fc611f31f032c2abc0ac8e98c7fa9f37f3d35dee032e",
+        "RawBrowse/Infrastructure/ImageLoading/DiskCachePolicy.swift": "bc768f463d15a17748fca8391bc40dc62ed6809c7114ef0b29eb99e0e236dd19",
+        "RawBrowse/Infrastructure/ImageLoading/FullSizeJPGDiskCache.swift": "5657078600687aeea3a9b982277209e4ee6cbc72c1f8e310bf06131ee4b22976",
+        "RawBrowse/Infrastructure/ImageLoading/MemoryImageCache.swift": "335bb6f8dd581352c7087708562767719644bccd42551595dd81d23c77c755cd",
+        "RawBrowse/Infrastructure/ImageLoading/ThumbnailDiskCache.swift": "9415d1840ac19ebcb70d387e0e7ccc2924e3482820130b2bed2cade48984dd61",
+        "RawBrowse/Infrastructure/Logging/BrowserPerformance.swift": "836a61212d93a8d148cf5070eb116dc06215a1624f6b7a098d538ad6066ecbfc",
+        "RawBrowse/Infrastructure/Logging/extension+Thread+Logger.swift": "e71ade1a101fa3c06207c2def99e96b593626b55f182f5208418eecf9e0e2e47",
+        "RawBrowse/Infrastructure/ReviewKeyboardScope.swift": "6b3ce13ed1b6bb9c451aabd0265dfe31c2e812ccec5e209bce92cc8457327dd9",
+        "RawBrowse/Main/AppDelegate.swift": "d6a23f5d1bb78fca9b8c0fbf43940f217226cd1339f39984282a57c81744194b",
+        "RawBrowse/Main/BrowserWorkspaceEnvironment.swift": "f0531502db5b0133223721b4475ed1286c35797c17b9e0ead860fbcf8d0e1180",
+        "RawBrowse/Main/FileBrowserViewModel.swift": "03d3f5da2886167d8031706cbd5106ed826995f4f74fb788d6c31a61bfe3e78e",
+        "RawBrowse/Main/RawBrowseApp.swift": "13d248b5153c4dfb061f51420cea0c5ec6a00c1e4255ced3165f5f9137424a8b",
+        "RawBrowse/Main/RawBrowseCommands.swift": "0dac7fc669ed048a651f7c96db2d07587e7d7bed8a583b03f09e51c46ae341d6"
+      },
+      "parser_loader_sha256": "cb85df0b8462aac57dace0ed35de7edb028eb02269450b7032d951cebeeb70b3"
+    },
+    "Candidate": {
+      "app": "/private/tmp/rawbrowse-app-comparison/Candidate/App",
+      "package": "/private/tmp/rawbrowse-app-comparison/Candidate/RawParserKit",
+      "swift_source_hashes": {
+        "RawBrowse/Features/About/Views/AboutRawBrowseView.swift": "e5e4989427b3446cc1e87d56fc9f606a6b0a6e6de33ae3740934439ad24f1f57",
+        "RawBrowse/Features/About/Views/ShortcutRow.swift": "51de11ab9640c13e51932043ec74e47eed7fbda5d12fd1bcf7ce439874e19ca2",
+        "RawBrowse/Features/Browser/BrowserContentsModel.swift": "0d494ed3bf3167d9ba6174dad06efbb665a46b5c8e98c4c84f913a45749abbdc",
+        "RawBrowse/Features/Browser/BrowserFileItem.swift": "24586b5bd530674f9bd9ba52e8034f90a4555b5ecebefa8ed212e550326e3e7e",
+        "RawBrowse/Features/Browser/BrowserFolderItem.swift": "dc309906c2c7492e9333c4e810a01edd5e13b8e54064c4bbcdc40fbf93db0d2f",
+        "RawBrowse/Features/Browser/CatalogStore.swift": "59605c386feb4c6e0e8706e277fa6652b64a47eb77c429e14c1509ad265d7a64",
+        "RawBrowse/Features/Browser/Grid/BrowserGridView.swift": "354e7d73676734dbe65b4cdb8ccb0dc42ee34070f10495508429f1ab7dd057cf",
+        "RawBrowse/Features/Browser/Grid/BrowserThumbnailCell.swift": "39f2ed490cbf9a7f0f153d8a9a094fc0c4fa93567178580a1985a45de9a6e1f5",
+        "RawBrowse/Features/Browser/Grid/ThumbnailPresentationModel.swift": "d3f25b80bc9e4d7ad2f6571b80346a0ec0fecc07233ba747ba68b039208cdde3",
+        "RawBrowse/Features/Browser/Histogram/BrowserHistogramCalculator.swift": "a129780c9e1df9dae83cfc81ee887943fef4ac25b9d3af5bc526b0de4b6d52d9",
+        "RawBrowse/Features/Browser/Histogram/BrowserHistogramPath.swift": "e71775fc0b4c42e05fbc930d4f126a67ea48d426cc6da6aaa47d59e664b9ae38",
+        "RawBrowse/Features/Browser/Histogram/BrowserHistogramView.swift": "0d820d2cc4fedb6d40b4942ff25c09be26f07e1be23d3fb0e8e93ca8331a68fa",
+        "RawBrowse/Features/Browser/Presentation/BrowserPresentationState.swift": "750169e9dc70b3fd21faa5f65f50e14a4751559d8aa8e9c2fa6df77f1cc428b5",
+        "RawBrowse/Features/Browser/RememberedCatalog.swift": "0d0f126fcae0786d0bd5a0fd84a64657d7cfd7c8c418e826d1e5be7429b4ce14",
+        "RawBrowse/Features/Browser/RememberedCatalogStore.swift": "290f00d1a7f21785e43c10c975d8e5ffee1e278125605e482f6622b72e8412e2",
+        "RawBrowse/Features/Browser/SelectionModel.swift": "58147bdbe1986bfe84e521d5a4a50e69703a1e77a2e79cd5ed8a912362cccb31",
+        "RawBrowse/Features/Browser/Sidebar/BrowserSidebarView.swift": "62c85972e7dfdfdc5c3c39beb3613741c0001b535561d14da48a42a66c60ed56",
+        "RawBrowse/Features/Browser/Sidebar/FolderOutlineRow.swift": "58d55815565e45c987cb19e05be1461c474a560a9350d6ae2263aeac3ae9efdd",
+        "RawBrowse/Features/Browser/Sidebar/SidebarPresentationModel.swift": "fd92172274f060dd33ca0a37270f04ba6af5ca76de334cf5649adb8e241c2645",
+        "RawBrowse/Features/Browser/SupportedFileType.swift": "f002c86f6c121d857738eedbd807b7811698bb183e24c8939b2706b8c8cbc813",
+        "RawBrowse/Features/Browser/Views/BrowserAIWorkspaceView.swift": "5c6b0a197d8c78be569483780e3586de3f58ba4f99def6d8fabb0e1743dfe806",
+        "RawBrowse/Features/Browser/Views/BrowserNavigationTitle.swift": "3628e2a813faaf67d372985c52662506d9b4d9b2c8ca19c5822c1352312198b1",
+        "RawBrowse/Features/Browser/Views/FileBrowserView.swift": "592abcae446604b1a3a5e63f23cdb38393f4d92fd47689590907cc24ab39059f",
+        "RawBrowse/Features/CLIP/CLIPFeatureModel.swift": "b278b965d4263328f21da5f0a350591e7b2eff465972534afe51774681f6174f",
+        "RawBrowse/Features/CLIP/CLIPImageDiscovery.swift": "4bdbbe087b752617a5f375df47183d4b35f44a12727aeb866801e4359173117b",
+        "RawBrowse/Features/CLIP/CLIPIndex.swift": "c04ed7b7d53628c06e128f59a9b6373cc94f7e64e31b924aa6c34823c36d36a7",
+        "RawBrowse/Features/CLIP/CLIPModelManager.swift": "2e583c567f66412eee2ef09c5e825905fe8f4e14cd04ae0d43e902f88111b061",
+        "RawBrowse/Features/CLIP/CLIPSearchEngine.swift": "f9d8fc05bb60f3beb916704782a9d47705eddea307a94df16ddb3b3fb462d36c",
+        "RawBrowse/Features/CLIP/CLIPSimilaritySearch.swift": "ac334fc1ad9073d6e316ed1c227fdd0e1e391c32ffa8929fd0d51ad9787d88eb",
+        "RawBrowse/Features/DeepReview/DeepAIReviewController.swift": "01f2527e8ce24211f020d3867e0b8efe5b34ecb41d42f8559fbee794f50b3b64",
+        "RawBrowse/Features/DeepReview/DeepAIReviewFeature.swift": "e4e189a5b1982b1a2c1d1f3bfc4b0e7b83521edfc442ce28c416098b17e87fab",
+        "RawBrowse/Features/DeepReview/DeepAIReviewMaskOutlineRenderer.swift": "d98dc49e2ac2529f9c0035a2099a679d7cbfca4e599d4da178c38ecdc928044e",
+        "RawBrowse/Features/DeepReview/DeepAIReviewRuntime.swift": "cd1b02881a2c1762678d0c9fd1723cc59c34be08aeb9a8fe329b2435f11e9851",
+        "RawBrowse/Features/DeepReview/DeepAIReviewSupport.swift": "ef8654a3c1c708c047950ef4694b87a10286c7d65a9ddb82e8bf1c4e3ff3f8a8",
+        "RawBrowse/Features/DeepReview/DeepReviewModel.swift": "5489717e15c01de659c4d6e211cd20f51b234ba4631765be2f0e9a1a989d807c",
+        "RawBrowse/Features/DeepReview/SubjectMaskFocusScorer.swift": "0158fd23bf12870c30e6008383e48f7fa81fbe5eda286f2ac74197ccc8d3e53f",
+        "RawBrowse/Features/DeepReview/SubjectMaskForeground.swift": "f711597972f889c1acdd334523bb912ec6815602a3b728933a6131f1d4bf97e7",
+        "RawBrowse/Features/DeepReview/Views/DeepAIReviewSheetView.swift": "1c07675a1eb5a6c0d72f94c356c28e056657e254392888a470f841d56f8de4ac",
+        "RawBrowse/Features/DeepReview/WholeImageSharpnessScorer.swift": "51119801e34e24e7d03ebe5cfe2e6a71e804abeb20aaea79e829bc187c512de5",
+        "RawBrowse/Features/ModelDownloads/CLIPManagedModels.swift": "fc3e4b6de3f7e2d1b5d91c6da915b08d5743ee896d865ea62722fda1e18ee807",
+        "RawBrowse/Features/ModelDownloads/CLIPModelDownloadCatalog.swift": "74ff41cb1cca428d964094bb85b301f50b944d2039f2cb466cd83b4a3d45b4c6",
+        "RawBrowse/Features/ModelDownloads/ModelDownloadsModel.swift": "e17c38f4171ed7294b88cfe2190a506f84936c0ff42398b839c02a56bbe74061",
+        "RawBrowse/Features/ModelDownloads/RawBrowseAIModelLicenceAcceptance.swift": "6550564d71fa65839147cc2f5a77acb0adf77e0276bffbbb7cce99e8b925bb10",
+        "RawBrowse/Features/ModelDownloads/Views/CLIPModelDownloadsView.swift": "9a75d97adeb654a6b7d32015697d72a0b3eddee51a147c1efc647a0c41c56d2b",
+        "RawBrowse/Features/RAW9/RAW9EditingSession.swift": "69a56b4e15a56555e5b5668f5c8eceb97ba2da9dbb0ba8a6f142893f925077be",
+        "RawBrowse/Features/RAW9/RAW9ExportQueue.swift": "61663fd657a6e72ae8daeea7d38cdf5c772aa52409c3bf44eccde33593d4e02c",
+        "RawBrowse/Features/RAW9/RAW9Support.swift": "a963a0770bf9c9104b8b3fa847ca1b6f618554b428006ba928a41bb265d54528",
+        "RawBrowse/Features/RAW9/Views/RAW9CropEditor.swift": "64c43500a2a06064ff2bce311765aeffeee7be0aeba0b77cf11400c175aa993e",
+        "RawBrowse/Features/RAW9/Views/RAW9ExportQueueView.swift": "8f836a167dca4bf078aa5662629f02a8a096fc76cb2766496b9bc0df638a527a",
+        "RawBrowse/Features/Settings/BrowserSettings.swift": "bd8bea728972de6232d1bd70d810a0a8afab5f954581801c6706316d27081307",
+        "RawBrowse/Features/Settings/BrowserSettingsStore.swift": "4a851dfa7160fc06a3982224f2d1e0c13f08a8943a42f401ac04981825de51aa",
+        "RawBrowse/Features/Settings/MemoryViewModel.swift": "006d57fae9b50a24f16cc8f0b9f0b22a35c00bdc4864b939924b91723d433bac",
+        "RawBrowse/Features/Settings/SettingsModel.swift": "e7996b75d1fdb5a1caa0c59c0bbb911865c9e7f40adacf3188406f42d28bbca3",
+        "RawBrowse/Features/Settings/Views/AISettingsTab.swift": "d43dbf027957f46c8c4e4d13eb4310cbb72dda457b2e77401a171c1ca1f6fc65",
+        "RawBrowse/Features/Settings/Views/CLIPIndexesSettingsTab.swift": "d9880d9de365e88ba548ae8f0f9da7fd53d992630e56093e3c852b841d76e1be",
+        "RawBrowse/Features/Settings/Views/ImageCacheSettingsTab.swift": "bb967e48b4b68650117574c981ba318c9cd1d87e5bcf00ac8b1ba42fb1e9f50a",
+        "RawBrowse/Features/Settings/Views/ImagePreviewSettingsTab.swift": "52c39ab91de8613224237bf5d428b834e235590bc55928ca0426bc7b4ea265fc",
+        "RawBrowse/Features/Settings/Views/MemoryTab.swift": "e50c35d54ea5a9e8d36ed2fe7e6f6a7065169538d0f9d49112239d8995882f77",
+        "RawBrowse/Features/Settings/Views/SettingsView.swift": "c91891a03ca0e98a38ab00c081eef1374deaa10f7dfedaf6e12e8d621abe51ce",
+        "RawBrowse/Features/Zoom/Presentation/BrowserZoomInitialMode.swift": "40dee8a57f7900fbb753ccc404e30928ddadd3896dd1241733d22e7e2f09b39b",
+        "RawBrowse/Features/Zoom/Presentation/BrowserZoomLaunchContext.swift": "7d8719a0bfc00fbe021cb535a76cd28aac5d19199c1b1314f9002c8e1f0a21af",
+        "RawBrowse/Features/Zoom/Presentation/ZoomPresentationState.swift": "49743489e1c8a4fd14047462a66b6bfcdbeefb660b4cdf332680ef980c86330e",
+        "RawBrowse/Features/Zoom/Views/BrowserZoomGeometry.swift": "cd44bacee0d3317482eeeb22903055ce9e583567808197dc2a191f8355d6b259",
+        "RawBrowse/Features/Zoom/Views/BrowserZoomOverlayView.swift": "95bc276bfcca8e5b0ce21655789834a6a3b2b0e3d2d32d03f5dd5f3a12776aa6",
+        "RawBrowse/Features/Zoom/Views/BrowserZoomViewportTransform.swift": "f3274299ebb124933d778cd5e188a9078c6bc9ee39c8f30c15265642eabfda71",
+        "RawBrowse/Features/Zoom/Views/FocusPointBracketMarker.swift": "c549983ffa9f1182248e6f6413c08bbb6befde2f2858751e7d6d6063efac9b58",
+        "RawBrowse/Features/Zoom/Views/FocusPointMarker.swift": "2dec3daa056bc62e92d368056af2bc9c6d04e496662cabb2acf44d2aa20c8cb7",
+        "RawBrowse/Features/Zoom/Views/ZoomBadgeStyle.swift": "7d2f8cc0ea48a2c1dce4d96b57761512edc9809bc6da1da5832b20e04a44018a",
+        "RawBrowse/Features/Zoom/Views/ZoomControlBadge.swift": "3879cf3308afcd724ca63f89fd72d22e40de7735cde85c267d2c92172ddd6b9a",
+        "RawBrowse/Features/Zoom/Views/ZoomMetadataPanel.swift": "e56e2e86472f436c3c31547ae9246e56acc39fe9ac81f9380df3cb83175037c4",
+        "RawBrowse/Features/Zoom/Views/ZoomOverlayKeyAction.swift": "c1ce3b473f3377acb24c35374fc96a6d4ee82943c337dc98d7769ba8f99977da",
+        "RawBrowse/Features/Zoom/Views/ZoomOverlayNavigationAxis.swift": "b5441bfe6dc6e2552cf715cbb465399c0c29a63f777874db81531cef1031d5f0",
+        "RawBrowse/Features/Zoom/ZoomModel.swift": "2bc8480c9e01a72c013a2c0b109eec9bf4dc517c326442a07e414b58a5a934db",
+        "RawBrowse/Infrastructure/CatalogAccess/CatalogAccess.swift": "4568e3296d5623c1b8f001be5532e85c6c6e7af9ae6798a8139bd0f36128b5ee",
+        "RawBrowse/Infrastructure/CatalogAccess/URL+BrowserHierarchy.swift": "f97eb4fa04ab9309d4f181ad9bd437588a99b584ce68cdb22cee2be95df38abe",
+        "RawBrowse/Infrastructure/Concurrency/LatestTaskRunner.swift": "8f3e4a535a60121ef63ab8897ec48ecaaedf1f210998b2749d8a516a6c76bc0e",
+        "RawBrowse/Infrastructure/ImageLoading/BrowserImageLoader.swift": "2cafbc61e6fca07b8b936af871dd5bd6708a5817b1981ee1ebebe869e0b1119f",
+        "RawBrowse/Infrastructure/ImageLoading/CachedNSImage.swift": "2392601541436b9546a8fc611f31f032c2abc0ac8e98c7fa9f37f3d35dee032e",
+        "RawBrowse/Infrastructure/ImageLoading/DiskCachePolicy.swift": "bc768f463d15a17748fca8391bc40dc62ed6809c7114ef0b29eb99e0e236dd19",
+        "RawBrowse/Infrastructure/ImageLoading/FullSizeJPGDiskCache.swift": "5657078600687aeea3a9b982277209e4ee6cbc72c1f8e310bf06131ee4b22976",
+        "RawBrowse/Infrastructure/ImageLoading/MemoryImageCache.swift": "335bb6f8dd581352c7087708562767719644bccd42551595dd81d23c77c755cd",
+        "RawBrowse/Infrastructure/ImageLoading/ThumbnailDiskCache.swift": "9415d1840ac19ebcb70d387e0e7ccc2924e3482820130b2bed2cade48984dd61",
+        "RawBrowse/Infrastructure/Logging/BrowserPerformance.swift": "836a61212d93a8d148cf5070eb116dc06215a1624f6b7a098d538ad6066ecbfc",
+        "RawBrowse/Infrastructure/Logging/extension+Thread+Logger.swift": "e71ade1a101fa3c06207c2def99e96b593626b55f182f5208418eecf9e0e2e47",
+        "RawBrowse/Infrastructure/ReviewKeyboardScope.swift": "6b3ce13ed1b6bb9c451aabd0265dfe31c2e812ccec5e209bce92cc8457327dd9",
+        "RawBrowse/Main/AppDelegate.swift": "d6a23f5d1bb78fca9b8c0fbf43940f217226cd1339f39984282a57c81744194b",
+        "RawBrowse/Main/BrowserWorkspaceEnvironment.swift": "f0531502db5b0133223721b4475ed1286c35797c17b9e0ead860fbcf8d0e1180",
+        "RawBrowse/Main/FileBrowserViewModel.swift": "03d3f5da2886167d8031706cbd5106ed826995f4f74fb788d6c31a61bfe3e78e",
+        "RawBrowse/Main/RawBrowseApp.swift": "13d248b5153c4dfb061f51420cea0c5ec6a00c1e4255ced3165f5f9137424a8b",
+        "RawBrowse/Main/RawBrowseCommands.swift": "0dac7fc669ed048a651f7c96db2d07587e7d7bed8a583b03f09e51c46ae341d6"
+      },
+      "parser_loader_sha256": "dbe2ad7bc487ee584988c3726f8d75f9b362ec953dc1aea88e279c5592ab25d1"
+    }
+  },
+  "trials": [
+    {
+      "variant": "baseline",
+      "state": "empty",
+      "trial": 4,
+      "log": "/private/tmp/rawbrowse-app-comparison/RunsFinal/baseline-empty-4.jsonl",
+      "sha256": "99952602d1969387fc76dc8c14db7d4bd293acc7441be0d2d4034b20c9a6db56",
+      "workloads": {
+        "06_mai_2026": {
+          "stages": {
+            "preview.diskLookup": {
+              "count": 1,
+              "median_ms": 0.34062500026266207,
+              "results": {
+                "miss": 1
+              }
+            },
+            "preview.extract": {
+              "count": 1,
+              "median_ms": 4.760208333209448,
+              "results": {
+                "image": 1
+              }
+            },
+            "preview.presentationDelivery": {
+              "count": 1,
+              "median_ms": 77.01712500011126,
+              "results": {
+                "image": 1
+              }
+            },
+            "preview.resize": {
+              "count": 1,
+              "median_ms": 0.0005833335308125243,
+              "results": {
+                "finished": 1
+              }
+            },
+            "preview.sourceJPEGAndSave": {
+              "count": 1,
+              "median_ms": 2.410250000139058,
+              "results": {
+                "finished": 1
+              }
+            },
+            "preview.total": {
+              "count": 1,
+              "median_ms": 8.201166666367499,
+              "results": {
+                "finished": 1
+              }
+            },
+            "thumbnail.diskLookup": {
+              "count": 26,
+              "median_ms": 1.2181666666037927,
+              "results": {
+                "miss": 26
+              }
+            },
+            "thumbnail.encodeAndSave": {
+              "count": 26,
+              "median_ms": 0.7717291666722303,
+              "results": {
+                "finished": 26
+              }
+            },
+            "thumbnail.parser": {
+              "count": 26,
+              "median_ms": 189.38841666658845,
+              "results": {
+                "image": 26
+              }
+            },
+            "thumbnail.presentationDelivery": {
+              "count": 26,
+              "median_ms": 238.31866666637325,
+              "results": {
+                "image": 26
+              }
+            },
+            "thumbnail.total": {
+              "count": 26,
+              "median_ms": 193.51575000018784,
+              "results": {
+                "finished": 26
+              }
+            }
+          },
+          "folder_stages_ms": {
+            "discovery.folders": 7.764541666801961,
+            "scan.discoveryAndPublication": 5.01679166654867,
+            "discovery.files": 4.722958333331917,
+            "discovery.files.enumerate": 2.646291666678735,
+            "discovery.files.filterAndMetadata": 0.13291666664372315,
+            "discovery.files.sort": 0.05175000023882603,
+            "scan.publishFileList": 0.01566666696817265
+          },
+          "first_model_delivery_ms": 64.64262500003315,
+          "cohort_model_delivery_window_ms": 429.52920833340613
+        },
+        "100MSDCF": {
+          "stages": {
+            "preview.diskLookup": {
+              "count": 1,
+              "median_ms": 0.12329166656854795,
+              "results": {
+                "miss": 1
+              }
+            },
+            "preview.extract": {
+              "count": 1,
+              "median_ms": 8.713374999842927,
+              "results": {
+                "image": 1
+              }
+            },
+            "preview.presentationDelivery": {
+              "count": 1,
+              "median_ms": 373.4322500004055,
+              "results": {
+                "image": 1
+              }
+            },
+            "preview.resize": {
+              "count": 1,
+              "median_ms": 296.3112083334636,
+              "results": {
+                "finished": 1
+              }
+            },
+            "preview.sourceJPEGAndSave": {
+              "count": 1,
+              "median_ms": 4.018583333163406,
+              "results": {
+                "finished": 1
+              }
+            },
+            "preview.total": {
+              "count": 1,
+              "median_ms": 13.294500000029075,
+              "results": {
+                "finished": 1
+              }
+            },
+            "thumbnail.diskLookup": {
+              "count": 56,
+              "median_ms": 0.8968958331934118,
+              "results": {
+                "miss": 56
+              }
+            },
+            "thumbnail.encodeAndSave": {
+              "count": 56,
+              "median_ms": 0.6976041667030586,
+              "results": {
+                "finished": 56
+              }
+            },
+            "thumbnail.parser": {
+              "count": 56,
+              "median_ms": 555.6506249999984,
+              "results": {
+                "image": 56
+              }
+            },
+            "thumbnail.presentationDelivery": {
+              "count": 56,
+              "median_ms": 606.1404791665836,
+              "results": {
+                "image": 56
+              }
+            },
+            "thumbnail.total": {
+              "count": 56,
+              "median_ms": 560.1256666667496,
+              "results": {
+                "finished": 56
+              }
+            }
+          },
+          "folder_stages_ms": {
+            "discovery.folders": 24.503333333314004,
+            "scan.discoveryAndPublication": 29.32791666671619,
+            "discovery.files": 26.03770833343333,
+            "discovery.files.enumerate": 1.6343333331860777,
+            "discovery.files.filterAndMetadata": 1.364750000220738,
+            "discovery.files.sort": 1.388249999990876,
+            "scan.publishFileList": 0.0809999999091815
+          },
+          "first_model_delivery_ms": 197.7031666667699,
+          "cohort_model_delivery_window_ms": 991.5570833334186
+        }
+      },
+      "pending_image_tasks_at_log_end": 0,
+      "peak_owned_thumbnail_tasks": 56,
+      "shared_waits": 0,
+      "rejected_thumbnail_deliveries": {}
+    },
+    {
+      "variant": "baseline",
+      "state": "empty",
+      "trial": 5,
+      "log": "/private/tmp/rawbrowse-app-comparison/RunsFinal/baseline-empty-5.jsonl",
+      "sha256": "a73958fab966ae398511f441f5d501fb23731c076a4bf9a1af978f47ad358b3b",
+      "workloads": {
+        "06_mai_2026": {
+          "stages": {
+            "preview.diskLookup": {
+              "count": 1,
+              "median_ms": 0.15870833340159152,
+              "results": {
+                "miss": 1
+              }
+            },
+            "preview.extract": {
+              "count": 1,
+              "median_ms": 3.242833333388262,
+              "results": {
+                "image": 1
+              }
+            },
+            "preview.presentationDelivery": {
+              "count": 1,
+              "median_ms": 74.23345833331041,
+              "results": {
+                "image": 1
+              }
+            },
+            "preview.resize": {
+              "count": 1,
+              "median_ms": 0.0005416668500402011,
+              "results": {
+                "finished": 1
+              }
+            },
+            "preview.sourceJPEGAndSave": {
+              "count": 1,
+              "median_ms": 2.7552083333830524,
+              "results": {
+                "finished": 1
+              }
+            },
+            "preview.total": {
+              "count": 1,
+              "median_ms": 6.629250000059983,
+              "results": {
+                "finished": 1
+              }
+            },
+            "thumbnail.diskLookup": {
+              "count": 26,
+              "median_ms": 0.505895833384784,
+              "results": {
+                "miss": 26
+              }
+            },
+            "thumbnail.encodeAndSave": {
+              "count": 26,
+              "median_ms": 0.8601458332577749,
+              "results": {
+                "finished": 26
+              }
+            },
+            "thumbnail.parser": {
+              "count": 26,
+              "median_ms": 341.4789999999357,
+              "results": {
+                "image": 26
+              }
+            },
+            "thumbnail.presentationDelivery": {
+              "count": 26,
+              "median_ms": 394.57991666677117,
+              "results": {
+                "image": 26
+              }
+            },
+            "thumbnail.total": {
+              "count": 26,
+              "median_ms": 345.0790624999627,
+              "results": {
+                "finished": 26
+              }
+            }
+          },
+          "folder_stages_ms": {
+            "discovery.folders": 12.147375000040483,
+            "scan.discoveryAndPublication": 2.155541666525096,
+            "discovery.files": 1.9324999998389103,
+            "discovery.files.enumerate": 0.19299999985378236,
+            "discovery.files.filterAndMetadata": 0.10220833337371005,
+            "discovery.files.sort": 0.04041666670673294,
+            "scan.publishFileList": 0.01699999984339229
+          },
+          "first_model_delivery_ms": 256.45133333364356,
+          "cohort_model_delivery_window_ms": 540.7098750001751
+        },
+        "100MSDCF": {
+          "stages": {
+            "preview.diskLookup": {
+              "count": 1,
+              "median_ms": 0.13774999979432323,
+              "results": {
+                "miss": 1
+              }
+            },
+            "preview.extract": {
+              "count": 1,
+              "median_ms": 4.23779166658278,
+              "results": {
+                "image": 1
+              }
+            },
+            "preview.presentationDelivery": {
+              "count": 1,
+              "median_ms": 423.1416249999711,
+              "results": {
+                "image": 1
+              }
+            },
+            "preview.resize": {
+              "count": 1,
+              "median_ms": 354.2987916666789,
+              "results": {
+                "finished": 1
+              }
+            },
+            "preview.sourceJPEGAndSave": {
+              "count": 1,
+              "median_ms": 4.380791666790174,
+              "results": {
+                "finished": 1
+              }
+            },
+            "preview.total": {
+              "count": 1,
+              "median_ms": 9.174916666779609,
+              "results": {
+                "finished": 1
+              }
+            },
+            "thumbnail.diskLookup": {
+              "count": 56,
+              "median_ms": 1.949604166611607,
+              "results": {
+                "miss": 56
+              }
+            },
+            "thumbnail.encodeAndSave": {
+              "count": 56,
+              "median_ms": 0.6805208333844348,
+              "results": {
+                "finished": 56
+              }
+            },
+            "thumbnail.parser": {
+              "count": 56,
+              "median_ms": 572.1794166668133,
+              "results": {
+                "image": 56
+              }
+            },
+            "thumbnail.presentationDelivery": {
+              "count": 56,
+              "median_ms": 635.1120208332759,
+              "results": {
+                "image": 56
+              }
+            },
+            "thumbnail.total": {
+              "count": 56,
+              "median_ms": 584.1085416666374,
+              "results": {
+                "finished": 56
+              }
+            }
+          },
+          "folder_stages_ms": {
+            "discovery.folders": 24.72200000011071,
+            "scan.discoveryAndPublication": 29.817000000093685,
+            "discovery.files": 29.22479166636549,
+            "discovery.files.enumerate": 1.3466666664498916,
+            "discovery.files.filterAndMetadata": 1.3976666664348159,
+            "discovery.files.sort": 1.3938333336227515,
+            "scan.publishFileList": 0.07533333337050863
+          },
+          "first_model_delivery_ms": 296.98470833318424,
+          "cohort_model_delivery_window_ms": 978.464458333292
+        }
+      },
+      "pending_image_tasks_at_log_end": 0,
+      "peak_owned_thumbnail_tasks": 56,
+      "shared_waits": 0,
+      "rejected_thumbnail_deliveries": {
+        "cancelled": 25
+      }
+    },
+    {
+      "variant": "baseline",
+      "state": "empty",
+      "trial": 6,
+      "log": "/private/tmp/rawbrowse-app-comparison/RunsFinal/baseline-empty-6.jsonl",
+      "sha256": "5567e13247ed052f602b49e69afd1f8117f5497da91f830a93aa2d8ed945d3a3",
+      "workloads": {
+        "06_mai_2026": {
+          "stages": {
+            "preview.diskLookup": {
+              "count": 1,
+              "median_ms": 0.1506666662862699,
+              "results": {
+                "miss": 1
+              }
+            },
+            "preview.extract": {
+              "count": 1,
+              "median_ms": 3.326250000100117,
+              "results": {
+                "image": 1
+              }
+            },
+            "preview.presentationDelivery": {
+              "count": 1,
+              "median_ms": 76.84529166635912,
+              "results": {
+                "image": 1
+              }
+            },
+            "preview.resize": {
+              "count": 1,
+              "median_ms": 0.0004166668077232316,
+              "results": {
+                "finished": 1
+              }
+            },
+            "preview.sourceJPEGAndSave": {
+              "count": 1,
+              "median_ms": 3.3654583335192,
+              "results": {
+                "finished": 1
+              }
+            },
+            "preview.total": {
+              "count": 1,
+              "median_ms": 7.2247916668857215,
+              "results": {
+                "finished": 1
+              }
+            },
+            "thumbnail.diskLookup": {
+              "count": 26,
+              "median_ms": 1.090916666726116,
+              "results": {
+                "miss": 26
+              }
+            },
+            "thumbnail.encodeAndSave": {
+              "count": 26,
+              "median_ms": 0.7853333333969204,
+              "results": {
+                "finished": 26
+              }
+            },
+            "thumbnail.parser": {
+              "count": 26,
+              "median_ms": 203.67150000038237,
+              "results": {
+                "image": 26
+              }
+            },
+            "thumbnail.presentationDelivery": {
+              "count": 26,
+              "median_ms": 251.90162500007318,
+              "results": {
+                "image": 26
+              }
+            },
+            "thumbnail.total": {
+              "count": 26,
+              "median_ms": 207.39691666653925,
+              "results": {
+                "finished": 26
+              }
+            }
+          },
+          "folder_stages_ms": {
+            "discovery.folders": 11.529833333042916,
+            "scan.discoveryAndPublication": 3.3133333336081705,
+            "discovery.files": 3.0130000000099244,
+            "discovery.files.enumerate": 0.3341666665619414,
+            "discovery.files.filterAndMetadata": 0.10299999985363684,
+            "discovery.files.sort": 0.04279166660126066,
+            "scan.publishFileList": 0.01862499993876554
+          },
+          "first_model_delivery_ms": 111.4850833332639,
+          "cohort_model_delivery_window_ms": 391.46337500005757
+        },
+        "100MSDCF": {
+          "stages": {
+            "preview.diskLookup": {
+              "count": 1,
+              "median_ms": 0.13895833308197325,
+              "results": {
+                "miss": 1
+              }
+            },
+            "preview.extract": {
+              "count": 1,
+              "median_ms": 4.027291666716337,
+              "results": {
+                "image": 1
+              }
+            },
+            "preview.presentationDelivery": {
+              "count": 1,
+              "median_ms": 395.5067916667758,
+              "results": {
+                "image": 1
+              }
+            },
+            "preview.resize": {
+              "count": 1,
+              "median_ms": 321.44179166652975,
+              "results": {
+                "finished": 1
+              }
+            },
+            "preview.sourceJPEGAndSave": {
+              "count": 1,
+              "median_ms": 6.078166666611651,
+              "results": {
+                "finished": 1
+              }
+            },
+            "preview.total": {
+              "count": 1,
+              "median_ms": 10.701083333060524,
+              "results": {
+                "finished": 1
+              }
+            },
+            "thumbnail.diskLookup": {
+              "count": 56,
+              "median_ms": 0.9815833334414492,
+              "results": {
+                "miss": 56
+              }
+            },
+            "thumbnail.encodeAndSave": {
+              "count": 56,
+              "median_ms": 0.6688333332931506,
+              "results": {
+                "finished": 56
+              }
+            },
+            "thumbnail.parser": {
+              "count": 56,
+              "median_ms": 503.8242083332989,
+              "results": {
+                "image": 56
+              }
+            },
+            "thumbnail.presentationDelivery": {
+              "count": 56,
+              "median_ms": 565.2148333333571,
+              "results": {
+                "image": 56
+              }
+            },
+            "thumbnail.total": {
+              "count": 56,
+              "median_ms": 514.366791666589,
+              "results": {
+                "finished": 56
+              }
+            }
+          },
+          "folder_stages_ms": {
+            "discovery.folders": 24.928708333391114,
+            "scan.discoveryAndPublication": 18.774458333155053,
+            "discovery.files": 18.394083333532762,
+            "discovery.files.enumerate": 1.607125000191445,
+            "discovery.files.filterAndMetadata": 1.4233749998311396,
+            "discovery.files.sort": 1.4241666667658137,
+            "scan.publishFileList": 0.08129166690196143
+          },
+          "first_model_delivery_ms": 219.37424999987343,
+          "cohort_model_delivery_window_ms": 904.8675416665901
+        }
+      },
+      "pending_image_tasks_at_log_end": 0,
+      "peak_owned_thumbnail_tasks": 56,
+      "shared_waits": 0,
+      "rejected_thumbnail_deliveries": {
+        "cancelled": 14
+      }
+    },
+    {
+      "variant": "baseline",
+      "state": "warm",
+      "trial": 4,
+      "log": "/private/tmp/rawbrowse-app-comparison/RunsFinal/baseline-warm-4.jsonl",
+      "sha256": "19e01f5d3db272619ff7981061d9be8b7b031a98b4b386ce17fa3442d028621e",
+      "workloads": {
+        "06_mai_2026": {
+          "stages": {
+            "preview.diskLookup": {
+              "count": 1,
+              "median_ms": 5.682333333425049,
+              "results": {
+                "hit": 1
+              }
+            },
+            "preview.presentationDelivery": {
+              "count": 1,
+              "median_ms": 74.73212499962756,
+              "results": {
+                "image": 1
+              }
+            },
+            "preview.resize": {
+              "count": 1,
+              "median_ms": 0.0014166666915116366,
+              "results": {
+                "finished": 1
+              }
+            },
+            "preview.total": {
+              "count": 1,
+              "median_ms": 6.060583333237446,
+              "results": {
+                "finished": 1
+              }
+            },
+            "thumbnail.diskLookup": {
+              "count": 26,
+              "median_ms": 3.5490208333612827,
+              "results": {
+                "hit": 26
+              }
+            },
+            "thumbnail.presentationDelivery": {
+              "count": 26,
+              "median_ms": 53.032999999913955,
+              "results": {
+                "image": 26
+              }
+            },
+            "thumbnail.total": {
+              "count": 26,
+              "median_ms": 5.54131249987222,
+              "results": {
+                "finished": 26
+              }
+            }
+          },
+          "folder_stages_ms": {
+            "discovery.folders": 7.011708333266142,
+            "scan.discoveryAndPublication": 26.438833333031653,
+            "discovery.files": 2.7669999999488937,
+            "discovery.files.enumerate": 0.3498333330753667,
+            "discovery.files.filterAndMetadata": 0.12583333318616496,
+            "discovery.files.sort": 0.041166666505887406,
+            "scan.publishFileList": 0.021625000044878107
+          },
+          "first_model_delivery_ms": 52.17933333324254,
+          "cohort_model_delivery_window_ms": 56.14862499987794
+        },
+        "100MSDCF": {
+          "stages": {
+            "preview.diskLookup": {
+              "count": 1,
+              "median_ms": 6.717666666645528,
+              "results": {
+                "hit": 1
+              }
+            },
+            "preview.presentationDelivery": {
+              "count": 1,
+              "median_ms": 389.8991249998289,
+              "results": {
+                "image": 1
+              }
+            },
+            "preview.resize": {
+              "count": 1,
+              "median_ms": 321.7365000000427,
+              "results": {
+                "finished": 1
+              }
+            },
+            "preview.total": {
+              "count": 1,
+              "median_ms": 7.143833333429939,
+              "results": {
+                "finished": 1
+              }
+            },
+            "thumbnail.diskLookup": {
+              "count": 56,
+              "median_ms": 2.7076250000845903,
+              "results": {
+                "hit": 56
+              }
+            },
+            "thumbnail.presentationDelivery": {
+              "count": 56,
+              "median_ms": 53.5116249998282,
+              "results": {
+                "image": 56
+              }
+            },
+            "thumbnail.total": {
+              "count": 56,
+              "median_ms": 5.94458333307557,
+              "results": {
+                "finished": 56
+              }
+            }
+          },
+          "folder_stages_ms": {
+            "discovery.folders": 25.24737500016272,
+            "scan.discoveryAndPublication": 27.871999999661057,
+            "discovery.files": 21.10599999969054,
+            "discovery.files.enumerate": 1.1175000004186586,
+            "discovery.files.filterAndMetadata": 1.3800000001538137,
+            "discovery.files.sort": 1.436083333373972,
+            "scan.publishFileList": 0.08533333357263473
+          },
+          "first_model_delivery_ms": 52.91116666649032,
+          "cohort_model_delivery_window_ms": 59.787166666410485
+        }
+      },
+      "pending_image_tasks_at_log_end": 0,
+      "peak_owned_thumbnail_tasks": 56,
+      "shared_waits": 0,
+      "rejected_thumbnail_deliveries": {}
+    },
+    {
+      "variant": "baseline",
+      "state": "warm",
+      "trial": 5,
+      "log": "/private/tmp/rawbrowse-app-comparison/RunsFinal/baseline-warm-5.jsonl",
+      "sha256": "e0e6f4f419130f4417d61678f960eec8e57bd06743bd32592db61d05031a81c0",
+      "workloads": {
+        "06_mai_2026": {
+          "stages": {
+            "preview.diskLookup": {
+              "count": 1,
+              "median_ms": 3.98245833321198,
+              "results": {
+                "hit": 1
+              }
+            },
+            "preview.presentationDelivery": {
+              "count": 1,
+              "median_ms": 67.02475000020058,
+              "results": {
+                "image": 1
+              }
+            },
+            "preview.resize": {
+              "count": 1,
+              "median_ms": 0.000749999799154466,
+              "results": {
+                "finished": 1
+              }
+            },
+            "preview.total": {
+              "count": 1,
+              "median_ms": 4.294374999972206,
+              "results": {
+                "finished": 1
+              }
+            },
+            "thumbnail.diskLookup": {
+              "count": 26,
+              "median_ms": 1.6519583334684285,
+              "results": {
+                "hit": 26
+              }
+            },
+            "thumbnail.presentationDelivery": {
+              "count": 26,
+              "median_ms": 52.522937500043554,
+              "results": {
+                "image": 26
+              }
+            },
+            "thumbnail.total": {
+              "count": 26,
+              "median_ms": 3.3888958334955532,
+              "results": {
+                "finished": 26
+              }
+            }
+          },
+          "folder_stages_ms": {
+            "discovery.folders": 11.881208333306859,
+            "scan.discoveryAndPublication": 2.7070416667811514,
+            "discovery.files": 2.4677083333699557,
+            "discovery.files.enumerate": 0.2934166668637772,
+            "discovery.files.filterAndMetadata": 0.1094999997803825,
+            "discovery.files.sort": 0.03787500008911593,
+            "scan.publishFileList": 0.01474999999118154
+          },
+          "first_model_delivery_ms": 45.54587500024354,
+          "cohort_model_delivery_window_ms": 52.94054166688511
+        },
+        "100MSDCF": {
+          "stages": {
+            "preview.diskLookup": {
+              "count": 1,
+              "median_ms": 3.9702083336123906,
+              "results": {
+                "hit": 1
+              }
+            },
+            "preview.presentationDelivery": {
+              "count": 1,
+              "median_ms": 374.7787916663583,
+              "results": {
+                "image": 1
+              }
+            },
+            "preview.resize": {
+              "count": 1,
+              "median_ms": 315.69058333298017,
+              "results": {
+                "finished": 1
+              }
+            },
+            "preview.total": {
+              "count": 1,
+              "median_ms": 4.212166666548001,
+              "results": {
+                "finished": 1
+              }
+            },
+            "thumbnail.diskLookup": {
+              "count": 56,
+              "median_ms": 3.300937499716383,
+              "results": {
+                "hit": 56
+              }
+            },
+            "thumbnail.presentationDelivery": {
+              "count": 56,
+              "median_ms": 68.59879166677274,
+              "results": {
+                "image": 56
+              }
+            },
+            "thumbnail.total": {
+              "count": 56,
+              "median_ms": 13.887166666563644,
+              "results": {
+                "finished": 56
+              }
+            }
+          },
+          "folder_stages_ms": {
+            "discovery.folders": 24.1886250000789,
+            "scan.discoveryAndPublication": 27.7873750001163,
+            "discovery.files": 27.428583333403367,
+            "discovery.files.enumerate": 1.394708333464223,
+            "discovery.files.filterAndMetadata": 1.4688333335470816,
+            "discovery.files.sort": 1.4266666667026584,
+            "scan.publishFileList": 0.07679166674279259
+          },
+          "first_model_delivery_ms": 60.89549999978772,
+          "cohort_model_delivery_window_ms": 69.34770833322546
+        }
+      },
+      "pending_image_tasks_at_log_end": 0,
+      "peak_owned_thumbnail_tasks": 54,
+      "shared_waits": 0,
+      "rejected_thumbnail_deliveries": {}
+    },
+    {
+      "variant": "baseline",
+      "state": "warm",
+      "trial": 6,
+      "log": "/private/tmp/rawbrowse-app-comparison/RunsFinal/baseline-warm-6.jsonl",
+      "sha256": "ae84f6846f47230ac13cb09fb1486b74cffa5c5c61fbfa53ac7732d190a23de8",
+      "workloads": {
+        "06_mai_2026": {
+          "stages": {
+            "preview.diskLookup": {
+              "count": 1,
+              "median_ms": 3.683541666759993,
+              "results": {
+                "hit": 1
+              }
+            },
+            "preview.presentationDelivery": {
+              "count": 1,
+              "median_ms": 73.79225000022416,
+              "results": {
+                "image": 1
+              }
+            },
+            "preview.resize": {
+              "count": 1,
+              "median_ms": 0.0005000001692678779,
+              "results": {
+                "finished": 1
+              }
+            },
+            "preview.total": {
+              "count": 1,
+              "median_ms": 4.248291666499426,
+              "results": {
+                "finished": 1
+              }
+            },
+            "thumbnail.diskLookup": {
+              "count": 26,
+              "median_ms": 1.6734999999243882,
+              "results": {
+                "hit": 26
+              }
+            },
+            "thumbnail.presentationDelivery": {
+              "count": 26,
+              "median_ms": 60.04939583340274,
+              "results": {
+                "image": 26
+              }
+            },
+            "thumbnail.total": {
+              "count": 26,
+              "median_ms": 3.629999999930078,
+              "results": {
+                "finished": 26
+              }
+            }
+          },
+          "folder_stages_ms": {
+            "discovery.folders": 7.425916666761623,
+            "scan.discoveryAndPublication": 5.558374999964144,
+            "discovery.files": 3.0846666668367106,
+            "discovery.files.enumerate": 0.5830416666867677,
+            "discovery.files.filterAndMetadata": 0.11387499989723437,
+            "discovery.files.sort": 0.036875000205327524,
+            "scan.publishFileList": 0.015250000160449417
+          },
+          "first_model_delivery_ms": 49.9189166666838,
+          "cohort_model_delivery_window_ms": 60.4043333332811
+        },
+        "100MSDCF": {
+          "stages": {
+            "preview.diskLookup": {
+              "count": 1,
+              "median_ms": 4.901958332993672,
+              "results": {
+                "hit": 1
+              }
+            },
+            "preview.presentationDelivery": {
+              "count": 1,
+              "median_ms": 363.27270833317016,
+              "results": {
+                "image": 1
+              }
+            },
+            "preview.resize": {
+              "count": 1,
+              "median_ms": 297.18658333331405,
+              "results": {
+                "finished": 1
+              }
+            },
+            "preview.total": {
+              "count": 1,
+              "median_ms": 5.1330833330212045,
+              "results": {
+                "finished": 1
+              }
+            },
+            "thumbnail.diskLookup": {
+              "count": 56,
+              "median_ms": 4.370562500071173,
+              "results": {
+                "hit": 56
+              }
+            },
+            "thumbnail.presentationDelivery": {
+              "count": 56,
+              "median_ms": 57.68533333321102,
+              "results": {
+                "image": 56
+              }
+            },
+            "thumbnail.total": {
+              "count": 56,
+              "median_ms": 9.830979166736142,
+              "results": {
+                "finished": 56
+              }
+            }
+          },
+          "folder_stages_ms": {
+            "discovery.folders": 25.074916666653735,
+            "scan.discoveryAndPublication": 25.631500000145024,
+            "discovery.files": 20.701500000086526,
+            "discovery.files.enumerate": 1.1487499996292172,
+            "discovery.files.filterAndMetadata": 1.3597083334389026,
+            "discovery.files.sort": 1.3893333330088353,
+            "scan.publishFileList": 0.08179166661648196
+          },
+          "first_model_delivery_ms": 50.638249999792606,
+          "cohort_model_delivery_window_ms": 58.40733333343451
+        }
+      },
+      "pending_image_tasks_at_log_end": 0,
+      "peak_owned_thumbnail_tasks": 55,
+      "shared_waits": 0,
+      "rejected_thumbnail_deliveries": {}
+    },
+    {
+      "variant": "candidate",
+      "state": "empty",
+      "trial": 4,
+      "log": "/private/tmp/rawbrowse-app-comparison/RunsFinal/candidate-empty-4.jsonl",
+      "sha256": "3f3ad5fdd7e5e2dd98cad1450e39e037103446c9a4c93492420239df5b27803b",
+      "workloads": {
+        "06_mai_2026": {
+          "stages": {
+            "preview.diskLookup": {
+              "count": 1,
+              "median_ms": 0.17070833337129443,
+              "results": {
+                "miss": 1
+              }
+            },
+            "preview.extract": {
+              "count": 1,
+              "median_ms": 4.877625000062835,
+              "results": {
+                "image": 1
+              }
+            },
+            "preview.presentationDelivery": {
+              "count": 1,
+              "median_ms": 72.78924999991432,
+              "results": {
+                "image": 1
+              }
+            },
+            "preview.resize": {
+              "count": 1,
+              "median_ms": 0.0006249997568374965,
+              "results": {
+                "finished": 1
+              }
+            },
+            "preview.sourceJPEGAndSave": {
+              "count": 1,
+              "median_ms": 2.6291250001122535,
+              "results": {
+                "finished": 1
+              }
+            },
+            "preview.total": {
+              "count": 1,
+              "median_ms": 8.112833333598246,
+              "results": {
+                "finished": 1
+              }
+            },
+            "thumbnail.diskLookup": {
+              "count": 26,
+              "median_ms": 1.2107500001548033,
+              "results": {
+                "miss": 26
+              }
+            },
+            "thumbnail.encodeAndSave": {
+              "count": 26,
+              "median_ms": 1.1190000000169675,
+              "results": {
+                "finished": 26
+              }
+            },
+            "thumbnail.parser": {
+              "count": 26,
+              "median_ms": 47.052104166368736,
+              "results": {
+                "image": 26
+              }
+            },
+            "thumbnail.presentationDelivery": {
+              "count": 26,
+              "median_ms": 95.91691666673796,
+              "results": {
+                "image": 26
+              }
+            },
+            "thumbnail.total": {
+              "count": 26,
+              "median_ms": 51.37883333327409,
+              "results": {
+                "finished": 26
+              }
+            }
+          },
+          "folder_stages_ms": {
+            "discovery.folders": 7.314416666758916,
+            "scan.discoveryAndPublication": 2.2310833337542135,
+            "discovery.files": 2.0453749998523563,
+            "discovery.files.enumerate": 0.2857916665561788,
+            "discovery.files.filterAndMetadata": 0.10120833348992164,
+            "discovery.files.sort": 0.044875000185129466,
+            "scan.publishFileList": 0.016375000086554792
+          },
+          "first_model_delivery_ms": 64.50179166677117,
+          "cohort_model_delivery_window_ms": 126.16462500000125
+        },
+        "100MSDCF": {
+          "stages": {
+            "preview.diskLookup": {
+              "count": 1,
+              "median_ms": 0.12754166664308286,
+              "results": {
+                "miss": 1
+              }
+            },
+            "preview.extract": {
+              "count": 1,
+              "median_ms": 8.316458333410992,
+              "results": {
+                "image": 1
+              }
+            },
+            "preview.presentationDelivery": {
+              "count": 1,
+              "median_ms": 421.7697499998394,
+              "results": {
+                "image": 1
+              }
+            },
+            "preview.resize": {
+              "count": 1,
+              "median_ms": 351.8429583332363,
+              "results": {
+                "finished": 1
+              }
+            },
+            "preview.sourceJPEGAndSave": {
+              "count": 1,
+              "median_ms": 4.668499999752385,
+              "results": {
+                "finished": 1
+              }
+            },
+            "preview.total": {
+              "count": 1,
+              "median_ms": 13.48216666656299,
+              "results": {
+                "finished": 1
+              }
+            },
+            "thumbnail.diskLookup": {
+              "count": 56,
+              "median_ms": 1.580479166477744,
+              "results": {
+                "miss": 56
+              }
+            },
+            "thumbnail.encodeAndSave": {
+              "count": 56,
+              "median_ms": 0.9763541668235121,
+              "results": {
+                "finished": 56
+              }
+            },
+            "thumbnail.parser": {
+              "count": 56,
+              "median_ms": 245.0821874997473,
+              "results": {
+                "image": 56
+              }
+            },
+            "thumbnail.presentationDelivery": {
+              "count": 56,
+              "median_ms": 302.5886458331115,
+              "results": {
+                "image": 56
+              }
+            },
+            "thumbnail.total": {
+              "count": 56,
+              "median_ms": 251.33210416652219,
+              "results": {
+                "finished": 56
+              }
+            }
+          },
+          "folder_stages_ms": {
+            "discovery.folders": 27.22662499991202,
+            "scan.discoveryAndPublication": 20.0703750001594,
+            "discovery.files": 19.745999999940977,
+            "discovery.files.enumerate": 1.158291666797595,
+            "discovery.files.filterAndMetadata": 1.268750000235741,
+            "discovery.files.sort": 1.4568333331226313,
+            "scan.publishFileList": 0.06795833314754418
+          },
+          "first_model_delivery_ms": 214.26220833291154,
+          "cohort_model_delivery_window_ms": 381.8349166663211
+        }
+      },
+      "pending_image_tasks_at_log_end": 0,
+      "peak_owned_thumbnail_tasks": 56,
+      "shared_waits": 0,
+      "rejected_thumbnail_deliveries": {}
+    },
+    {
+      "variant": "candidate",
+      "state": "empty",
+      "trial": 5,
+      "log": "/private/tmp/rawbrowse-app-comparison/RunsFinal/candidate-empty-5.jsonl",
+      "sha256": "07511ff9c1a88b85ee9aff29e1b2007107edf08c9b53176a2137d08a0500ae2e",
+      "workloads": {
+        "06_mai_2026": {
+          "stages": {
+            "preview.diskLookup": {
+              "count": 1,
+              "median_ms": 0.15341666676249588,
+              "results": {
+                "miss": 1
+              }
+            },
+            "preview.extract": {
+              "count": 1,
+              "median_ms": 4.298291666600562,
+              "results": {
+                "image": 1
+              }
+            },
+            "preview.presentationDelivery": {
+              "count": 1,
+              "median_ms": 71.75499999993917,
+              "results": {
+                "image": 1
+              }
+            },
+            "preview.resize": {
+              "count": 1,
+              "median_ms": 0.0006666668923571706,
+              "results": {
+                "finished": 1
+              }
+            },
+            "preview.sourceJPEGAndSave": {
+              "count": 1,
+              "median_ms": 2.5527083330416644,
+              "results": {
+                "finished": 1
+              }
+            },
+            "preview.total": {
+              "count": 1,
+              "median_ms": 7.437083333115879,
+              "results": {
+                "finished": 1
+              }
+            },
+            "thumbnail.diskLookup": {
+              "count": 26,
+              "median_ms": 0.8705625000402506,
+              "results": {
+                "miss": 26
+              }
+            },
+            "thumbnail.encodeAndSave": {
+              "count": 26,
+              "median_ms": 1.1576458334729978,
+              "results": {
+                "finished": 26
+              }
+            },
+            "thumbnail.parser": {
+              "count": 26,
+              "median_ms": 45.16587500006608,
+              "results": {
+                "image": 26
+              }
+            },
+            "thumbnail.presentationDelivery": {
+              "count": 26,
+              "median_ms": 93.17939583343104,
+              "results": {
+                "image": 26
+              }
+            },
+            "thumbnail.total": {
+              "count": 26,
+              "median_ms": 49.50356249992183,
+              "results": {
+                "finished": 26
+              }
+            }
+          },
+          "folder_stages_ms": {
+            "discovery.folders": 7.2014583333839255,
+            "scan.discoveryAndPublication": 2.8640833334065974,
+            "discovery.files": 2.6523333335717325,
+            "discovery.files.enumerate": 0.28933333305758424,
+            "discovery.files.filterAndMetadata": 0.108875000023545,
+            "discovery.files.sort": 0.04337499967732583,
+            "scan.publishFileList": 0.0200833333110495
+          },
+          "first_model_delivery_ms": 59.63333333329501,
+          "cohort_model_delivery_window_ms": 118.96529166642722
+        },
+        "100MSDCF": {
+          "stages": {
+            "preview.diskLookup": {
+              "count": 1,
+              "median_ms": 0.34766666703944793,
+              "results": {
+                "miss": 1
+              }
+            },
+            "preview.extract": {
+              "count": 1,
+              "median_ms": 8.024000000204978,
+              "results": {
+                "image": 1
+              }
+            },
+            "preview.presentationDelivery": {
+              "count": 1,
+              "median_ms": 418.67358333320226,
+              "results": {
+                "image": 1
+              }
+            },
+            "preview.resize": {
+              "count": 1,
+              "median_ms": 350.15583333324685,
+              "results": {
+                "finished": 1
+              }
+            },
+            "preview.sourceJPEGAndSave": {
+              "count": 1,
+              "median_ms": 4.276916666640318,
+              "results": {
+                "finished": 1
+              }
+            },
+            "preview.total": {
+              "count": 1,
+              "median_ms": 13.232000000243715,
+              "results": {
+                "finished": 1
+              }
+            },
+            "thumbnail.diskLookup": {
+              "count": 56,
+              "median_ms": 1.4466666666521633,
+              "results": {
+                "miss": 56
+              }
+            },
+            "thumbnail.encodeAndSave": {
+              "count": 56,
+              "median_ms": 1.0788541667352547,
+              "results": {
+                "finished": 56
+              }
+            },
+            "thumbnail.parser": {
+              "count": 56,
+              "median_ms": 223.5241875000611,
+              "results": {
+                "image": 56
+              }
+            },
+            "thumbnail.presentationDelivery": {
+              "count": 56,
+              "median_ms": 285.4228124999736,
+              "results": {
+                "image": 56
+              }
+            },
+            "thumbnail.total": {
+              "count": 56,
+              "median_ms": 233.8079999999536,
+              "results": {
+                "finished": 56
+              }
+            }
+          },
+          "folder_stages_ms": {
+            "discovery.folders": 24.402583333085204,
+            "scan.discoveryAndPublication": 36.21183333325462,
+            "discovery.files": 35.889791666704696,
+            "discovery.files.enumerate": 1.4927500001249427,
+            "discovery.files.filterAndMetadata": 1.3376666665863013,
+            "discovery.files.sort": 1.38941666637038,
+            "scan.publishFileList": 0.06979166664677905
+          },
+          "first_model_delivery_ms": 217.76349999981903,
+          "cohort_model_delivery_window_ms": 362.1444166665242
+        }
+      },
+      "pending_image_tasks_at_log_end": 0,
+      "peak_owned_thumbnail_tasks": 56,
+      "shared_waits": 0,
+      "rejected_thumbnail_deliveries": {}
+    },
+    {
+      "variant": "candidate",
+      "state": "empty",
+      "trial": 6,
+      "log": "/private/tmp/rawbrowse-app-comparison/RunsFinal/candidate-empty-6.jsonl",
+      "sha256": "f48f12f39214f96fb825b6af747bf66f246e7422a7c121fa0bf39692c4922dfd",
+      "workloads": {
+        "06_mai_2026": {
+          "stages": {
+            "preview.diskLookup": {
+              "count": 1,
+              "median_ms": 0.1845000001594599,
+              "results": {
+                "miss": 1
+              }
+            },
+            "preview.extract": {
+              "count": 1,
+              "median_ms": 3.957750000154192,
+              "results": {
+                "image": 1
+              }
+            },
+            "preview.presentationDelivery": {
+              "count": 1,
+              "median_ms": 72.833291666484,
+              "results": {
+                "image": 1
+              }
+            },
+            "preview.resize": {
+              "count": 1,
+              "median_ms": 0.0013750000107393134,
+              "results": {
+                "finished": 1
+              }
+            },
+            "preview.sourceJPEGAndSave": {
+              "count": 1,
+              "median_ms": 2.9759583330815076,
+              "results": {
+                "finished": 1
+              }
+            },
+            "preview.total": {
+              "count": 1,
+              "median_ms": 7.635708333054936,
+              "results": {
+                "finished": 1
+              }
+            },
+            "thumbnail.diskLookup": {
+              "count": 26,
+              "median_ms": 0.9860000000116997,
+              "results": {
+                "miss": 26
+              }
+            },
+            "thumbnail.encodeAndSave": {
+              "count": 26,
+              "median_ms": 1.1989791664746008,
+              "results": {
+                "finished": 26
+              }
+            },
+            "thumbnail.parser": {
+              "count": 26,
+              "median_ms": 45.29470833335836,
+              "results": {
+                "image": 26
+              }
+            },
+            "thumbnail.presentationDelivery": {
+              "count": 26,
+              "median_ms": 95.24725000028411,
+              "results": {
+                "image": 26
+              }
+            },
+            "thumbnail.total": {
+              "count": 26,
+              "median_ms": 49.33922916688971,
+              "results": {
+                "finished": 26
+              }
+            }
+          },
+          "folder_stages_ms": {
+            "discovery.folders": 11.833458333057933,
+            "scan.discoveryAndPublication": 2.6707916663326614,
+            "discovery.files": 2.482291666638048,
+            "discovery.files.enumerate": 0.2724166665757366,
+            "discovery.files.filterAndMetadata": 0.1038333334690833,
+            "discovery.files.sort": 0.040500000068277586,
+            "scan.publishFileList": 0.014374999864230631
+          },
+          "first_model_delivery_ms": 61.79458333326693,
+          "cohort_model_delivery_window_ms": 121.77387499968972
+        },
+        "100MSDCF": {
+          "stages": {
+            "preview.diskLookup": {
+              "count": 1,
+              "median_ms": 0.1245416665369703,
+              "results": {
+                "miss": 1
+              }
+            },
+            "preview.extract": {
+              "count": 1,
+              "median_ms": 3.7005416666033852,
+              "results": {
+                "image": 1
+              }
+            },
+            "preview.presentationDelivery": {
+              "count": 1,
+              "median_ms": 389.273041666911,
+              "results": {
+                "image": 1
+              }
+            },
+            "preview.resize": {
+              "count": 1,
+              "median_ms": 323.16458333298215,
+              "results": {
+                "finished": 1
+              }
+            },
+            "preview.sourceJPEGAndSave": {
+              "count": 1,
+              "median_ms": 4.511583333169256,
+              "results": {
+                "finished": 1
+              }
+            },
+            "preview.total": {
+              "count": 1,
+              "median_ms": 8.660166666686564,
+              "results": {
+                "finished": 1
+              }
+            },
+            "thumbnail.diskLookup": {
+              "count": 56,
+              "median_ms": 1.0704375001751032,
+              "results": {
+                "miss": 56
+              }
+            },
+            "thumbnail.encodeAndSave": {
+              "count": 56,
+              "median_ms": 1.0759166666503006,
+              "results": {
+                "finished": 56
+              }
+            },
+            "thumbnail.parser": {
+              "count": 56,
+              "median_ms": 245.99029166665787,
+              "results": {
+                "image": 56
+              }
+            },
+            "thumbnail.presentationDelivery": {
+              "count": 56,
+              "median_ms": 306.73977083324644,
+              "results": {
+                "image": 56
+              }
+            },
+            "thumbnail.total": {
+              "count": 56,
+              "median_ms": 255.5209375002505,
+              "results": {
+                "finished": 56
+              }
+            }
+          },
+          "folder_stages_ms": {
+            "discovery.folders": 24.396541666646954,
+            "scan.discoveryAndPublication": 15.674875000058819,
+            "discovery.files": 15.311708333683782,
+            "discovery.files.enumerate": 1.553625000269676,
+            "discovery.files.filterAndMetadata": 1.4840416665720113,
+            "discovery.files.sort": 1.3672916670657287,
+            "scan.publishFileList": 0.07679166674279259
+          },
+          "first_model_delivery_ms": 238.64512499994817,
+          "cohort_model_delivery_window_ms": 382.7467083333431
+        }
+      },
+      "pending_image_tasks_at_log_end": 0,
+      "peak_owned_thumbnail_tasks": 56,
+      "shared_waits": 0,
+      "rejected_thumbnail_deliveries": {}
+    },
+    {
+      "variant": "candidate",
+      "state": "warm",
+      "trial": 4,
+      "log": "/private/tmp/rawbrowse-app-comparison/RunsFinal/candidate-warm-4.jsonl",
+      "sha256": "689c9cab5670a5435323c47c74cd57df26ec6976e3241325301165ebf73a3c50",
+      "workloads": {
+        "06_mai_2026": {
+          "stages": {
+            "preview.diskLookup": {
+              "count": 1,
+              "median_ms": 3.7979583335072675,
+              "results": {
+                "hit": 1
+              }
+            },
+            "preview.presentationDelivery": {
+              "count": 1,
+              "median_ms": 73.88920833363954,
+              "results": {
+                "image": 1
+              }
+            },
+            "preview.resize": {
+              "count": 1,
+              "median_ms": 0.0005833330760651734,
+              "results": {
+                "finished": 1
+              }
+            },
+            "preview.total": {
+              "count": 1,
+              "median_ms": 4.106666666302772,
+              "results": {
+                "finished": 1
+              }
+            },
+            "thumbnail.diskLookup": {
+              "count": 26,
+              "median_ms": 1.4881041665830708,
+              "results": {
+                "hit": 26
+              }
+            },
+            "thumbnail.presentationDelivery": {
+              "count": 26,
+              "median_ms": 58.74506249983824,
+              "results": {
+                "image": 26
+              }
+            },
+            "thumbnail.total": {
+              "count": 26,
+              "median_ms": 3.8651874999686697,
+              "results": {
+                "finished": 26
+              }
+            }
+          },
+          "folder_stages_ms": {
+            "discovery.folders": 11.931124999591702,
+            "scan.discoveryAndPublication": 5.576458333507617,
+            "discovery.files": 2.9471249999915017,
+            "discovery.files.enumerate": 0.6260000000111177,
+            "discovery.files.filterAndMetadata": 0.12829166644223733,
+            "discovery.files.sort": 0.03687499975058017,
+            "scan.publishFileList": 0.01529166638647439
+          },
+          "first_model_delivery_ms": 48.324124999908236,
+          "cohort_model_delivery_window_ms": 59.08220833316591
+        },
+        "100MSDCF": {
+          "stages": {
+            "preview.diskLookup": {
+              "count": 1,
+              "median_ms": 3.9969999997993,
+              "results": {
+                "hit": 1
+              }
+            },
+            "preview.presentationDelivery": {
+              "count": 1,
+              "median_ms": 401.24645833338946,
+              "results": {
+                "image": 1
+              }
+            },
+            "preview.resize": {
+              "count": 1,
+              "median_ms": 332.7564166670527,
+              "results": {
+                "finished": 1
+              }
+            },
+            "preview.total": {
+              "count": 1,
+              "median_ms": 4.241666666530364,
+              "results": {
+                "finished": 1
+              }
+            },
+            "thumbnail.diskLookup": {
+              "count": 56,
+              "median_ms": 3.0904791667580866,
+              "results": {
+                "hit": 56
+              }
+            },
+            "thumbnail.presentationDelivery": {
+              "count": 56,
+              "median_ms": 57.86375000025146,
+              "results": {
+                "image": 56
+              }
+            },
+            "thumbnail.total": {
+              "count": 56,
+              "median_ms": 9.148937500185639,
+              "results": {
+                "finished": 56
+              }
+            }
+          },
+          "folder_stages_ms": {
+            "discovery.folders": 26.736916666777688,
+            "scan.discoveryAndPublication": 27.910625000004075,
+            "discovery.files": 27.547000000140542,
+            "discovery.files.enumerate": 1.3777499998468556,
+            "discovery.files.filterAndMetadata": 1.3653750002049492,
+            "discovery.files.sort": 1.4104166666584206,
+            "scan.publishFileList": 0.08691666653248831
+          },
+          "first_model_delivery_ms": 51.64408333348547,
+          "cohort_model_delivery_window_ms": 72.54837500022404
+        }
+      },
+      "pending_image_tasks_at_log_end": 0,
+      "peak_owned_thumbnail_tasks": 55,
+      "shared_waits": 0,
+      "rejected_thumbnail_deliveries": {}
+    },
+    {
+      "variant": "candidate",
+      "state": "warm",
+      "trial": 5,
+      "log": "/private/tmp/rawbrowse-app-comparison/RunsFinal/candidate-warm-5.jsonl",
+      "sha256": "983d6ac54e96a9ada40fb2b5dc44a80b1bb7085ef271eca15a5d7d1e3e72e14f",
+      "workloads": {
+        "06_mai_2026": {
+          "stages": {
+            "preview.diskLookup": {
+              "count": 1,
+              "median_ms": 3.8935833335926873,
+              "results": {
+                "hit": 1
+              }
+            },
+            "preview.presentationDelivery": {
+              "count": 1,
+              "median_ms": 74.49120833325651,
+              "results": {
+                "image": 1
+              }
+            },
+            "preview.resize": {
+              "count": 1,
+              "median_ms": 0.0009583332030160818,
+              "results": {
+                "finished": 1
+              }
+            },
+            "preview.total": {
+              "count": 1,
+              "median_ms": 4.298958333492919,
+              "results": {
+                "finished": 1
+              }
+            },
+            "thumbnail.diskLookup": {
+              "count": 26,
+              "median_ms": 1.3740833333031333,
+              "results": {
+                "hit": 26
+              }
+            },
+            "thumbnail.presentationDelivery": {
+              "count": 26,
+              "median_ms": 57.12031249981919,
+              "results": {
+                "image": 26
+              }
+            },
+            "thumbnail.total": {
+              "count": 26,
+              "median_ms": 9.418687500101441,
+              "results": {
+                "finished": 26
+              }
+            }
+          },
+          "folder_stages_ms": {
+            "discovery.folders": 11.983916666849836,
+            "scan.discoveryAndPublication": 2.803208333261864,
+            "discovery.files": 2.577041666427249,
+            "discovery.files.enumerate": 0.40549999994254904,
+            "discovery.files.filterAndMetadata": 0.21633333335557836,
+            "discovery.files.sort": 0.03891666665367666,
+            "scan.publishFileList": 0.02262499992866651
+          },
+          "first_model_delivery_ms": 45.69395833368617,
+          "cohort_model_delivery_window_ms": 57.434125000327185
+        },
+        "100MSDCF": {
+          "stages": {
+            "preview.diskLookup": {
+              "count": 1,
+              "median_ms": 4.834625000057713,
+              "results": {
+                "hit": 1
+              }
+            },
+            "preview.presentationDelivery": {
+              "count": 1,
+              "median_ms": 381.6184166662424,
+              "results": {
+                "image": 1
+              }
+            },
+            "preview.resize": {
+              "count": 1,
+              "median_ms": 315.66437500032407,
+              "results": {
+                "finished": 1
+              }
+            },
+            "preview.total": {
+              "count": 1,
+              "median_ms": 5.069124999863561,
+              "results": {
+                "finished": 1
+              }
+            },
+            "thumbnail.diskLookup": {
+              "count": 56,
+              "median_ms": 3.575416666762976,
+              "results": {
+                "hit": 56
+              }
+            },
+            "thumbnail.presentationDelivery": {
+              "count": 56,
+              "median_ms": 57.89233333325683,
+              "results": {
+                "image": 56
+              }
+            },
+            "thumbnail.total": {
+              "count": 56,
+              "median_ms": 8.273687499922744,
+              "results": {
+                "finished": 56
+              }
+            }
+          },
+          "folder_stages_ms": {
+            "discovery.folders": 23.730541666736826,
+            "scan.discoveryAndPublication": 38.21041666651581,
+            "discovery.files": 33.13937499979147,
+            "discovery.files.enumerate": 0.9625416664675868,
+            "discovery.files.filterAndMetadata": 1.3450416668092657,
+            "discovery.files.sort": 1.4509166667266982,
+            "scan.publishFileList": 0.09512499991615186
+          },
+          "first_model_delivery_ms": 48.10616666691203,
+          "cohort_model_delivery_window_ms": 58.603041666629
+        }
+      },
+      "pending_image_tasks_at_log_end": 0,
+      "peak_owned_thumbnail_tasks": 55,
+      "shared_waits": 0,
+      "rejected_thumbnail_deliveries": {}
+    },
+    {
+      "variant": "candidate",
+      "state": "warm",
+      "trial": 6,
+      "log": "/private/tmp/rawbrowse-app-comparison/RunsFinal/candidate-warm-6.jsonl",
+      "sha256": "3ea7797e47b23380b5ec964b6cc4a6c4dd569278ca2bea3d6e585b341e061411",
+      "workloads": {
+        "06_mai_2026": {
+          "stages": {
+            "preview.diskLookup": {
+              "count": 1,
+              "median_ms": 3.9047083332661714,
+              "results": {
+                "hit": 1
+              }
+            },
+            "preview.presentationDelivery": {
+              "count": 1,
+              "median_ms": 72.83283333345025,
+              "results": {
+                "image": 1
+              }
+            },
+            "preview.resize": {
+              "count": 1,
+              "median_ms": 0.0005833335308125243,
+              "results": {
+                "finished": 1
+              }
+            },
+            "preview.total": {
+              "count": 1,
+              "median_ms": 4.3761249999079155,
+              "results": {
+                "finished": 1
+              }
+            },
+            "thumbnail.diskLookup": {
+              "count": 26,
+              "median_ms": 0.8149375000812142,
+              "results": {
+                "hit": 26
+              }
+            },
+            "thumbnail.presentationDelivery": {
+              "count": 26,
+              "median_ms": 48.71931250022499,
+              "results": {
+                "image": 26
+              }
+            },
+            "thumbnail.total": {
+              "count": 26,
+              "median_ms": 2.560208333306946,
+              "results": {
+                "finished": 26
+              }
+            }
+          },
+          "folder_stages_ms": {
+            "discovery.folders": 7.693749999816646,
+            "scan.discoveryAndPublication": 2.43158333341853,
+            "discovery.files": 2.169250000406464,
+            "discovery.files.enumerate": 0.2671666666174133,
+            "discovery.files.filterAndMetadata": 0.11012499999196734,
+            "discovery.files.sort": 0.03724999987753108,
+            "scan.publishFileList": 0.016791666439530673
+          },
+          "first_model_delivery_ms": 47.04320833343445,
+          "cohort_model_delivery_window_ms": 52.7130833334013
+        },
+        "100MSDCF": {
+          "stages": {
+            "preview.diskLookup": {
+              "count": 1,
+              "median_ms": 4.286083333226998,
+              "results": {
+                "hit": 1
+              }
+            },
+            "preview.presentationDelivery": {
+              "count": 1,
+              "median_ms": 354.62620833322944,
+              "results": {
+                "image": 1
+              }
+            },
+            "preview.resize": {
+              "count": 1,
+              "median_ms": 292.53116666632195,
+              "results": {
+                "finished": 1
+              }
+            },
+            "preview.total": {
+              "count": 1,
+              "median_ms": 4.5315416668927355,
+              "results": {
+                "finished": 1
+              }
+            },
+            "thumbnail.diskLookup": {
+              "count": 56,
+              "median_ms": 3.308583333136994,
+              "results": {
+                "hit": 56
+              }
+            },
+            "thumbnail.presentationDelivery": {
+              "count": 56,
+              "median_ms": 63.15002083351828,
+              "results": {
+                "image": 56
+              }
+            },
+            "thumbnail.total": {
+              "count": 56,
+              "median_ms": 13.286520833162285,
+              "results": {
+                "finished": 56
+              }
+            }
+          },
+          "folder_stages_ms": {
+            "discovery.folders": 25.044833333595307,
+            "scan.discoveryAndPublication": 37.63970833369967,
+            "discovery.files": 37.26491666702714,
+            "discovery.files.enumerate": 1.0001666664720688,
+            "discovery.files.filterAndMetadata": 1.4051666667000973,
+            "discovery.files.sort": 1.393250000091939,
+            "scan.publishFileList": 0.0776249999034917
+          },
+          "first_model_delivery_ms": 57.06662500006132,
+          "cohort_model_delivery_window_ms": 73.88958333331175
+        }
+      },
+      "pending_image_tasks_at_log_end": 0,
+      "peak_owned_thumbnail_tasks": 50,
+      "shared_waits": 0,
+      "rejected_thumbnail_deliveries": {}
+    }
+  ]
+}
