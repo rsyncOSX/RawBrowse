@@ -40,6 +40,30 @@ struct ParserRoundTripProbe {
     }
 
     static func main() async throws {
+        // A GUI app initializes AppKit on its main thread before image work.
+        // Do the same here, outside the measured region, to avoid headless first-use waits.
+        _ = NSApplication.shared
+        NSApplication.shared.setActivationPolicy(.prohibited)
+        let context = CGContext(data: nil, width: 1, height: 1, bitsPerComponent: 8,
+            bytesPerRow: 4, space: CGColorSpaceCreateDeviceRGB(),
+            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)!
+        _ = NSImage(cgImage: context.makeImage()!, size: NSSize(width: 1, height: 1))
+        let environment = ProcessInfo.processInfo.environment
+        if let gate = environment["RAWBROWSE_PROBE_GATE"] {
+            try String(ProcessInfo.processInfo.processIdentifier).write(
+                toFile: gate + ".pid", atomically: true, encoding: .utf8)
+            let deadline = ProcessInfo.processInfo.systemUptime + 180
+            while !FileManager.default.fileExists(atPath: gate) {
+                guard ProcessInfo.processInfo.systemUptime < deadline else { fatalError("Profiling gate timed out") }
+                try await Task.sleep(for: .milliseconds(100))
+            }
+        }
+        let repetitions = Int(environment["RAWBROWSE_PROBE_REPEATS"] ?? "1") ?? 1
+        guard (1 ... 1000).contains(repetitions) else { fatalError("Invalid repetitions") }
+        for _ in 0 ..< repetitions { try await measure() }
+    }
+
+    static func measure() async throws {
         let args = CommandLine.arguments
         guard args.count == 6, let count = Int(args[2]), let concurrency = Int(args[3]),
               let pixels = Int(args[4]), count > 0, concurrency > 0, pixels > 0 else {

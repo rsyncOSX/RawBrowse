@@ -12,8 +12,8 @@ import statistics
 import subprocess
 
 
-def run(args):
-    subprocess.run([str(x) for x in args], check=True)
+def run(args, timeout=180, cwd=None):
+    subprocess.run([str(x) for x in args], check=True, timeout=timeout, cwd=cwd)
 
 
 parser = argparse.ArgumentParser(description=__doc__)
@@ -21,7 +21,11 @@ parser.add_argument("--products", required=True, type=Path)
 parser.add_argument("--package", required=True, type=Path)
 parser.add_argument("--output", required=True, type=Path)
 parser.add_argument("--build-only", action="store_true")
+parser.add_argument("--candidate", action="store_true", help="Also test a temporary concurrent-executor decode helper")
 args = parser.parse_args()
+args.products = args.products.resolve()
+args.package = args.package.resolve()
+args.output = args.output.resolve()
 args.output.mkdir(parents=True, exist_ok=False)
 sources = args.output / "InstrumentedSources"
 shutil.copytree(args.package / "Sources" / "RawParserKit", sources)
@@ -64,11 +68,40 @@ common = ["xcrun", "swiftc", "-parse-as-library", "-swift-version", "6", "-O", "
           "-default-isolation", "MainActor", "-enable-upcoming-feature", "NonisolatedNonsendingByDefault",
           "-enable-upcoming-feature", "InferIsolatedConformances", "-sdk", sdk,
           "-target", "arm64-apple-macos27.0", "-module-cache-path", args.output / "ModuleCache"]
-harness = Path(__file__).with_name("ParserRoundTripProbe.swift")
-run(common + ["-I", args.products, harness, args.products / "RawParserKit.o",
-              "-o", args.output / "production-probe"])
-run(common + ["-D", "PARSER_METRICS", "-module-name", "RawParserProbe", harness,
-              *sorted(sources.rglob("*.swift")), "-o", args.output / "instrumented-probe"])
+harness = Path(__file__).with_name("ParserRoundTripProbe.swift").resolve()
+def compile_probe(variant, inputs):
+    objects = args.output / (variant + "-objects")
+    objects.mkdir()
+    run(common + ["-save-temps", *inputs, "-o", args.output / (variant + "-probe")], cwd=objects)
+compile_probe("production", ["-I", args.products, harness, args.products / "RawParserKit.o"])
+compile_probe("instrumented", ["-D", "PARSER_METRICS", "-module-name", "RawParserProbe", harness,
+                              *sorted(sources.rglob("*.swift"))])
+variants = ["production", "instrumented"]
+if args.candidate:
+    candidate = args.output / "CandidateSources"
+    shutil.copytree(sources, candidate)
+    candidate_loader = candidate / "RawImageLoader.swift"
+    candidate_text = candidate_loader.read_text()
+    begin = candidate_text.index("let cgImage: CGImage? = await limiter.run {")
+    body_start = begin + len("let cgImage: CGImage? = await limiter.run {")
+    body_end = candidate_text.index("            }\n            \n            guard let cgImage", body_start)
+    body = candidate_text[body_start:body_end]
+    replacement = '''let cgImage: CGImage? = await limiter.run {
+                await Self.decodeProbeThumbnail(for: url, boundedTargetSize: boundedTargetSize,
+                    useRAW9: useRAW9, queueStart: queueStart)
+'''
+    candidate_text = candidate_text[:begin] + replacement + candidate_text[body_end:]
+    marker = "    public func thumbnailCGImage("
+    helper = '''    @concurrent private static func decodeProbeThumbnail(
+        for url: URL, boundedTargetSize: Int, useRAW9: Bool, queueStart: Double
+    ) async -> CGImage? {''' + body + "    }\n\n"
+    assert candidate_text.count(marker) == 1
+    candidate_text = candidate_text.replace(marker, helper + marker)
+    candidate_loader.write_text(candidate_text)
+    compile_probe("candidate", ["-D", "PARSER_METRICS", "-module-name", "RawParserCandidate", harness,
+                                *sorted(candidate.rglob("*.swift"))])
+    run(["xcrun", "dsymutil", args.output / "candidate-probe"])
+    variants.append("candidate")
 run(["xcrun", "dsymutil", args.output / "production-probe"])
 run(["xcrun", "dsymutil", args.output / "instrumented-probe"])
 identity = {"package_revision": subprocess.check_output(
@@ -77,6 +110,8 @@ identity = {"package_revision": subprocess.check_output(
     "harness_sha256": hashlib.sha256(harness.read_bytes()).hexdigest(),
     "source_hashes": {str(p.relative_to(sources)): hashlib.sha256(p.read_bytes()).hexdigest()
                       for p in sorted(sources.rglob("*.swift"))}}
+if args.candidate:
+    identity["candidate_loader_sha256"] = hashlib.sha256(candidate_loader.read_bytes()).hexdigest()
 (args.output / "identity.json").write_text(json.dumps(identity, indent=2) + "\n")
 if args.build_only:
     raise SystemExit(0)
@@ -87,9 +122,9 @@ checksums = {}
 for trial in range(1, 4):
     for label, folder, count in workloads:
         for concurrency in ([1, 6, 56] if trial % 2 else [56, 6, 1]):
-            for variant in (["production", "instrumented"] if trial % 2 else ["instrumented", "production"]):
+            for variant in (variants if trial % 2 else list(reversed(variants))):
                 dest = args.output / f"{label}-{variant}-c{concurrency}-t{trial}.json"
-                run([args.output / f"{variant}-probe", folder, count, concurrency, 200, dest])
+                run([args.output / f"{variant}-probe", folder, count, concurrency, 200, dest], timeout=30)
                 data = json.loads(dest.read_text())
                 data.update(workload=label, variant=variant, trial=trial)
                 for image in data["images"]:
@@ -108,3 +143,22 @@ for trial in range(1, 4):
                 print(label, variant, trial, concurrency, round(data["batch_ms"], 2), flush=True)
 (args.output / "results.json").write_text(json.dumps({"identity": identity,
     "pixel_checksums_match": True, "trials": trials}, indent=2) + "\n")
+summary_trials = []
+for trial in trials:
+    item = {key: value for key, value in trial.items() if key not in {"images", "intervals"}}
+    if "intervals" in trial:
+        active = peak = 0
+        events = sorted([(x["work_start"], 1) for x in trial["intervals"]]
+                        + [(x["end"], -1) for x in trial["intervals"]])
+        for _, delta in events:
+            active += delta
+            peak = max(peak, active)
+        item["peak_work_overlap"] = peak
+        item["main_thread_at_work_end_count"] = sum(x["main_thread_at_end"] for x in trial["intervals"])
+    summary_trials.append(item)
+summary = {"identity": identity, "pixel_checksums_match": True, "trials": summary_trials,
+    "outputs": [{"workload": key[0], "name": key[1], "width": value[0], "height": value[1],
+                 "rgba_sha256": value[2]} for key, value in sorted(checksums.items())],
+    "raw_results_path": str(args.output / "results.json"),
+    "raw_results_sha256": hashlib.sha256((args.output / "results.json").read_bytes()).hexdigest()}
+(args.output / "summary.json").write_text(json.dumps(summary, indent=2) + "\n")

@@ -9,6 +9,8 @@ Phase 4 exploratory baseline (29 October): [browsing baseline report](Docs/Perfo
 
 Parser follow-up: [round-trip investigation](Docs/Performance/Phase4-Parser-Investigation.md) and [36-trial results](Docs/Performance/Phase4-Parser-Results.json) reproduce increasing request latency with similar batch throughput. A temporary instrumented dependency copy observes serialized work and substantial waiting before it; all 82 files have identical output pixels across variants. No application or dependency change is retained. Next experiment: concurrent-executor placement with the existing six-slot bound, first in temporary sources.
 
+Executor candidate: [standalone experiment](Docs/Performance/Phase4-Executor-Candidate.md) shows lower batch latency when a temporary parser helper explicitly uses the concurrent executor while preserving six slots. All 54 runs completed with matching pixels; the temporary uninstrumented package passed 105 tests. Candidate CPU and memory usage increase. A review patch is retained as experiment evidence only; no dependency change is adopted. Next: paired sandboxed app copies with matching diagnostics and settings.
+
 ## Purpose
 
 Determine which lessons from RawCull's performance phases 0–6 apply to RawBrowse. Establish a RawBrowse baseline, test individual candidates, and retain only changes supported by measurements and lifecycle checks.

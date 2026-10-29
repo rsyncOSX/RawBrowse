@@ -1,0 +1,1428 @@
+{
+  "identity": {
+    "package_revision": "07801a34a82d7720d301a80724c36a5b8c9f1d6c",
+    "production_object_sha256": "e1d6b4c3ffbe084636de92107c9154fca3b2444572af490748b5df4b6432d445",
+    "harness_sha256": "efe5cf7f29cc0011551ce491d968ec9737c1d7072bfd7177326867f6b27c32dd",
+    "source_hashes": {
+      "BrowserExifInfo.swift": "944b7d6c63796b89f9da3e80a18598689d72166c66435dd4a89e868baf48e74d",
+      "BrowserFocusPoint.swift": "f80796b20ea331bbd291247d9381475e5b46bd0425b66bf3d14109a9be4e4e62",
+      "CancellableImageIOWork.swift": "56e23b4c8aad098196e0abca5d33ad610e18260d7e4e8da96676a90cc49a8a82",
+      "DNEmbeddedJPEGExtractor.swift": "666e5f78990afad8d9ff2eb201fac24bdf6ce8cddd37506f2c00d90d191becc5",
+      "DNGMakerNoteParser.swift": "1443507a6c6cb94e9264184b124d675a9ff888afabc2198edfa4994bfa277a97",
+      "DNGRawFormat.swift": "7275834d746b9ae84b73b2e925a8715afa958b293c2a0e3fe1c0009c40486b70",
+      "DNGThumbnailExtractor.swift": "d45feb0bd2b0e867623ecc818f1755ca8ef0d38a823a706cce120432156e40e8",
+      "DecodeConcurrencyLimiter.swift": "8b0c3561300599bcde0d3995477e0455b05b6e080750143e8525af6f854acb3d",
+      "GenericEmbeddedPreviewExtractor.swift": "6f6143e9d6285721a2678aaa5c5137502580231d4f2ac0ba3707797c4cb611f1",
+      "GenericRawFormat.swift": "4e2ec9a37bfcfdb8efd7796ad78743f34bac32db6ae257b95a03085de8bbf112",
+      "GenericRawThumbnailExtractor.swift": "a31bba02fd70e78109fd53af523851514795595bf84e759aa461f40c88259ffd",
+      "Internal/PackageLogger.swift": "438046b4d4704eda1321d73078e58a7532bc1a0d4cb7e80114d2e4c6c7c997ae",
+      "Internal/RAWDecoder.swift": "9c3a0773d584315d74dc8741922fd2a8d5452111c76d0ed99a98982b7e9bd570",
+      "JPGNikonNEFExtractor.swift": "bf7370233fc4d2b6f4de439f7da67fdd90591f0e8ea5f7d15ce25641d628069f",
+      "JPGSonyARWExtractor.swift": "e280e638ac39ff0fb4449c1794cedf2688c1d7851c8fe565e471a8ed7136e981",
+      "NikonMakerNoteParser.swift": "70b2027ac7363398d995e2044c0728064eab01c3ce7a3b502fdd5e65d8c243aa",
+      "NikonRawFormat.swift": "f79956c7fcb3e48b874d7436e0d1b6ed61588a0900e69348d0acc0fa6ba6a302",
+      "NikonThumbnailExtractor.swift": "39a7096c1872e4c9239cc908cc3f693b52fb50f9dfb3e8190aa0c53f310ba6c4",
+      "OrientationNormalizedImageLoader.swift": "5ec15aab44a4e28a5446c5cb2bd5807ae849980b864852edaa5124b123774c01",
+      "ParserExperimentMetrics.swift": "b104ccde43499bc056e845196b1c76ce46265189e63101a2777284b9d46ef938",
+      "RawFormat.swift": "310d478d7346278800c9cfb77525253bbc4da43c6db362e3237812af11ec8319",
+      "RawFormatRegistry.swift": "b0ffa0245aae565ee28af35988e403e343331607af6fcdd10403950c8c0f3484",
+      "RawImageLoader.swift": "f75d3c15b6b471506975998f439e935beb18c469f545ef4a7b4279955b6df2b4",
+      "RawParserDiagnostics.swift": "a2885203ec8c30e5d5f4251e918b8036576700809d1594f81ab1c17fce49b9d0",
+      "RawParserKitLog.swift": "656a3020cf8172635ff88a59e41f8b139d833922c4a284727ab982b61c8160d8",
+      "SonyMakerNoteParser.swift": "ae40fb7d1ef5a2678b8201f21d784d1177562f62217d673d4b908168b955eea3",
+      "SonyRAWJPEGCreator.swift": "ebf11ab170549b2751dab51d65be176d05a213e617ed23cb2445559094a93798",
+      "SonyRawFormat.swift": "bcc20bc08e2ab46b1b5d436c46987af1a3b9f8a7cc31b46e3aef12e46c601472",
+      "SonyThumbnailExtractor.swift": "0eafc110170761d83b440641cd5401c627e1660fa3cb0661c890b5fac54a2eae",
+      "ThumbnailError.swift": "8ff9fb179fac51f6336f436b3d0a5479e8337a33606f7f6a00b8e6f74a9253b7",
+      "ThumbnailSharpener.swift": "c1cceb0f6418bacf5ee76bd0a55520f3f081142cb5841a04b9d9f87d6f8f2080"
+    },
+    "candidate_loader_sha256": "bb55af18590ca6e5a8f1432d21cdcfcc09267028761ba00a45894931acd69000"
+  },
+  "pixel_checksums_match": true,
+  "trials": [
+    {
+      "batch_ms": 410.59150000000955,
+      "caller_concurrency": 1,
+      "count": 56,
+      "folder": "/Volumes/MacMini4/Lundfug_7juli_2026/DCIM_A7R6/100MSDCF",
+      "pixels": 200,
+      "workload": "large",
+      "variant": "production",
+      "trial": 1,
+      "median_request_ms": 6.969708333372182
+    },
+    {
+      "batch_ms": 406.409000000167,
+      "caller_concurrency": 1,
+      "count": 56,
+      "folder": "/Volumes/MacMini4/Lundfug_7juli_2026/DCIM_A7R6/100MSDCF",
+      "pixels": 200,
+      "workload": "large",
+      "variant": "instrumented",
+      "trial": 1,
+      "median_request_ms": 6.853041666545323,
+      "median_slot_wait_ms": 0.00025000008463393897,
+      "median_work_ms": 6.838979166786885,
+      "peak_work_overlap": 1,
+      "main_thread_at_work_end_count": 0
+    },
+    {
+      "batch_ms": 405.84779166692897,
+      "caller_concurrency": 1,
+      "count": 56,
+      "folder": "/Volumes/MacMini4/Lundfug_7juli_2026/DCIM_A7R6/100MSDCF",
+      "pixels": 200,
+      "workload": "large",
+      "variant": "candidate",
+      "trial": 1,
+      "median_request_ms": 6.854499999917607,
+      "median_slot_wait_ms": 0.00029166676540626213,
+      "median_work_ms": 6.8413333333410264,
+      "peak_work_overlap": 1,
+      "main_thread_at_work_end_count": 0
+    },
+    {
+      "batch_ms": 397.5362916667109,
+      "caller_concurrency": 6,
+      "count": 56,
+      "folder": "/Volumes/MacMini4/Lundfug_7juli_2026/DCIM_A7R6/100MSDCF",
+      "pixels": 200,
+      "workload": "large",
+      "variant": "production",
+      "trial": 1,
+      "median_request_ms": 40.70372916658016
+    },
+    {
+      "batch_ms": 397.91466666702036,
+      "caller_concurrency": 6,
+      "count": 56,
+      "folder": "/Volumes/MacMini4/Lundfug_7juli_2026/DCIM_A7R6/100MSDCF",
+      "pixels": 200,
+      "workload": "large",
+      "variant": "instrumented",
+      "trial": 1,
+      "median_request_ms": 41.07166666676676,
+      "median_slot_wait_ms": 34.21306249992995,
+      "median_work_ms": 6.960312500041255,
+      "peak_work_overlap": 1,
+      "main_thread_at_work_end_count": 0
+    },
+    {
+      "batch_ms": 111.2770833333343,
+      "caller_concurrency": 6,
+      "count": 56,
+      "folder": "/Volumes/MacMini4/Lundfug_7juli_2026/DCIM_A7R6/100MSDCF",
+      "pixels": 200,
+      "workload": "large",
+      "variant": "candidate",
+      "trial": 1,
+      "median_request_ms": 9.799020833497707,
+      "median_slot_wait_ms": 0.0003333334461785853,
+      "median_work_ms": 9.777937499848122,
+      "peak_work_overlap": 6,
+      "main_thread_at_work_end_count": 0
+    },
+    {
+      "batch_ms": 398.9618333330327,
+      "caller_concurrency": 56,
+      "count": 56,
+      "folder": "/Volumes/MacMini4/Lundfug_7juli_2026/DCIM_A7R6/100MSDCF",
+      "pixels": 200,
+      "workload": "large",
+      "variant": "production",
+      "trial": 1,
+      "median_request_ms": 210.54512500018063
+    },
+    {
+      "batch_ms": 398.38637499997276,
+      "caller_concurrency": 56,
+      "count": 56,
+      "folder": "/Volumes/MacMini4/Lundfug_7juli_2026/DCIM_A7R6/100MSDCF",
+      "pixels": 200,
+      "workload": "large",
+      "variant": "instrumented",
+      "trial": 1,
+      "median_request_ms": 209.970229166629,
+      "median_slot_wait_ms": 203.1318541667133,
+      "median_work_ms": 6.993979166736608,
+      "peak_work_overlap": 1,
+      "main_thread_at_work_end_count": 0
+    },
+    {
+      "batch_ms": 110.47716666644192,
+      "caller_concurrency": 56,
+      "count": 56,
+      "folder": "/Volumes/MacMini4/Lundfug_7juli_2026/DCIM_A7R6/100MSDCF",
+      "pixels": 200,
+      "workload": "large",
+      "variant": "candidate",
+      "trial": 1,
+      "median_request_ms": 63.135437499795444,
+      "median_slot_wait_ms": 54.29516666640666,
+      "median_work_ms": 10.778958333276023,
+      "peak_work_overlap": 6,
+      "main_thread_at_work_end_count": 0
+    },
+    {
+      "batch_ms": 195.24216666695793,
+      "caller_concurrency": 1,
+      "count": 26,
+      "folder": "/Volumes/MacMini4/Pictures_raw/2026/06_mai_2026",
+      "pixels": 200,
+      "workload": "small",
+      "variant": "production",
+      "trial": 1,
+      "median_request_ms": 7.030958333189119
+    },
+    {
+      "batch_ms": 191.12758333358215,
+      "caller_concurrency": 1,
+      "count": 26,
+      "folder": "/Volumes/MacMini4/Pictures_raw/2026/06_mai_2026",
+      "pixels": 200,
+      "workload": "small",
+      "variant": "instrumented",
+      "trial": 1,
+      "median_request_ms": 6.913291666705845,
+      "median_slot_wait_ms": 0.0002708331976464251,
+      "median_work_ms": 6.900041666995094,
+      "peak_work_overlap": 1,
+      "main_thread_at_work_end_count": 0
+    },
+    {
+      "batch_ms": 191.34837499996138,
+      "caller_concurrency": 1,
+      "count": 26,
+      "folder": "/Volumes/MacMini4/Pictures_raw/2026/06_mai_2026",
+      "pixels": 200,
+      "workload": "small",
+      "variant": "candidate",
+      "trial": 1,
+      "median_request_ms": 6.792541666754914,
+      "median_slot_wait_ms": 0.0003333334461785853,
+      "median_work_ms": 6.776791666652571,
+      "peak_work_overlap": 1,
+      "main_thread_at_work_end_count": 0
+    },
+    {
+      "batch_ms": 187.797541666896,
+      "caller_concurrency": 6,
+      "count": 26,
+      "folder": "/Volumes/MacMini4/Pictures_raw/2026/06_mai_2026",
+      "pixels": 200,
+      "workload": "small",
+      "variant": "production",
+      "trial": 1,
+      "median_request_ms": 40.87741666671718
+    },
+    {
+      "batch_ms": 186.989041666493,
+      "caller_concurrency": 6,
+      "count": 26,
+      "folder": "/Volumes/MacMini4/Pictures_raw/2026/06_mai_2026",
+      "pixels": 200,
+      "workload": "small",
+      "variant": "instrumented",
+      "trial": 1,
+      "median_request_ms": 33.89077083329539,
+      "median_slot_wait_ms": 27.040895833351897,
+      "median_work_ms": 6.809541666598307,
+      "peak_work_overlap": 1,
+      "main_thread_at_work_end_count": 0
+    },
+    {
+      "batch_ms": 59.14075000009689,
+      "caller_concurrency": 6,
+      "count": 26,
+      "folder": "/Volumes/MacMini4/Pictures_raw/2026/06_mai_2026",
+      "pixels": 200,
+      "workload": "small",
+      "variant": "candidate",
+      "trial": 1,
+      "median_request_ms": 11.056375000180196,
+      "median_slot_wait_ms": 0.0004999999418942025,
+      "median_work_ms": 11.026166666624704,
+      "peak_work_overlap": 6,
+      "main_thread_at_work_end_count": 0
+    },
+    {
+      "batch_ms": 187.6553749998493,
+      "caller_concurrency": 56,
+      "count": 26,
+      "folder": "/Volumes/MacMini4/Pictures_raw/2026/06_mai_2026",
+      "pixels": 200,
+      "workload": "small",
+      "variant": "production",
+      "trial": 1,
+      "median_request_ms": 99.45552083331677
+    },
+    {
+      "batch_ms": 186.9459999998071,
+      "caller_concurrency": 56,
+      "count": 26,
+      "folder": "/Volumes/MacMini4/Pictures_raw/2026/06_mai_2026",
+      "pixels": 200,
+      "workload": "small",
+      "variant": "instrumented",
+      "trial": 1,
+      "median_request_ms": 99.65312500025902,
+      "median_slot_wait_ms": 92.8596458334141,
+      "median_work_ms": 6.755958333314993,
+      "peak_work_overlap": 1,
+      "main_thread_at_work_end_count": 0
+    },
+    {
+      "batch_ms": 56.781541666623525,
+      "caller_concurrency": 56,
+      "count": 26,
+      "folder": "/Volumes/MacMini4/Pictures_raw/2026/06_mai_2026",
+      "pixels": 200,
+      "workload": "small",
+      "variant": "candidate",
+      "trial": 1,
+      "median_request_ms": 36.573854166590536,
+      "median_slot_wait_ms": 28.22452083319149,
+      "median_work_ms": 11.01458333323535,
+      "peak_work_overlap": 6,
+      "main_thread_at_work_end_count": 0
+    },
+    {
+      "batch_ms": 112.77837499983434,
+      "caller_concurrency": 56,
+      "count": 56,
+      "folder": "/Volumes/MacMini4/Lundfug_7juli_2026/DCIM_A7R6/100MSDCF",
+      "pixels": 200,
+      "workload": "large",
+      "variant": "candidate",
+      "trial": 2,
+      "median_request_ms": 67.75052083321498,
+      "median_slot_wait_ms": 56.71177083308976,
+      "median_work_ms": 10.750083333505245,
+      "peak_work_overlap": 6,
+      "main_thread_at_work_end_count": 0
+    },
+    {
+      "batch_ms": 400.022374999935,
+      "caller_concurrency": 56,
+      "count": 56,
+      "folder": "/Volumes/MacMini4/Lundfug_7juli_2026/DCIM_A7R6/100MSDCF",
+      "pixels": 200,
+      "workload": "large",
+      "variant": "instrumented",
+      "trial": 2,
+      "median_request_ms": 210.93485416668045,
+      "median_slot_wait_ms": 203.93650000005437,
+      "median_work_ms": 7.00493750014175,
+      "peak_work_overlap": 1,
+      "main_thread_at_work_end_count": 0
+    },
+    {
+      "batch_ms": 397.76495833348235,
+      "caller_concurrency": 56,
+      "count": 56,
+      "folder": "/Volumes/MacMini4/Lundfug_7juli_2026/DCIM_A7R6/100MSDCF",
+      "pixels": 200,
+      "workload": "large",
+      "variant": "production",
+      "trial": 2,
+      "median_request_ms": 210.02324999994926
+    },
+    {
+      "batch_ms": 114.33708333333925,
+      "caller_concurrency": 6,
+      "count": 56,
+      "folder": "/Volumes/MacMini4/Lundfug_7juli_2026/DCIM_A7R6/100MSDCF",
+      "pixels": 200,
+      "workload": "large",
+      "variant": "candidate",
+      "trial": 2,
+      "median_request_ms": 10.847041666693258,
+      "median_slot_wait_ms": 0.0003333334461785853,
+      "median_work_ms": 10.814624999966327,
+      "peak_work_overlap": 6,
+      "main_thread_at_work_end_count": 0
+    },
+    {
+      "batch_ms": 397.980500000358,
+      "caller_concurrency": 6,
+      "count": 56,
+      "folder": "/Volumes/MacMini4/Lundfug_7juli_2026/DCIM_A7R6/100MSDCF",
+      "pixels": 200,
+      "workload": "large",
+      "variant": "instrumented",
+      "trial": 2,
+      "median_request_ms": 41.08845833320629,
+      "median_slot_wait_ms": 34.286812499885855,
+      "median_work_ms": 6.961291666584657,
+      "peak_work_overlap": 1,
+      "main_thread_at_work_end_count": 0
+    },
+    {
+      "batch_ms": 397.5387083332862,
+      "caller_concurrency": 6,
+      "count": 56,
+      "folder": "/Volumes/MacMini4/Lundfug_7juli_2026/DCIM_A7R6/100MSDCF",
+      "pixels": 200,
+      "workload": "large",
+      "variant": "production",
+      "trial": 2,
+      "median_request_ms": 40.7721041667628
+    },
+    {
+      "batch_ms": 407.0484583335201,
+      "caller_concurrency": 1,
+      "count": 56,
+      "folder": "/Volumes/MacMini4/Lundfug_7juli_2026/DCIM_A7R6/100MSDCF",
+      "pixels": 200,
+      "workload": "large",
+      "variant": "candidate",
+      "trial": 2,
+      "median_request_ms": 7.031395833337228,
+      "median_slot_wait_ms": 0.00029166676540626213,
+      "median_work_ms": 7.018166666739489,
+      "peak_work_overlap": 1,
+      "main_thread_at_work_end_count": 0
+    },
+    {
+      "batch_ms": 404.63866666686954,
+      "caller_concurrency": 1,
+      "count": 56,
+      "folder": "/Volumes/MacMini4/Lundfug_7juli_2026/DCIM_A7R6/100MSDCF",
+      "pixels": 200,
+      "workload": "large",
+      "variant": "instrumented",
+      "trial": 2,
+      "median_request_ms": 6.980458333373463,
+      "median_slot_wait_ms": 0.00025000008463393897,
+      "median_work_ms": 6.966624999904525,
+      "peak_work_overlap": 1,
+      "main_thread_at_work_end_count": 0
+    },
+    {
+      "batch_ms": 405.42966666680513,
+      "caller_concurrency": 1,
+      "count": 56,
+      "folder": "/Volumes/MacMini4/Lundfug_7juli_2026/DCIM_A7R6/100MSDCF",
+      "pixels": 200,
+      "workload": "large",
+      "variant": "production",
+      "trial": 2,
+      "median_request_ms": 7.01437500015345
+    },
+    {
+      "batch_ms": 60.30820833348116,
+      "caller_concurrency": 56,
+      "count": 26,
+      "folder": "/Volumes/MacMini4/Pictures_raw/2026/06_mai_2026",
+      "pixels": 200,
+      "workload": "small",
+      "variant": "candidate",
+      "trial": 2,
+      "median_request_ms": 40.05539583340578,
+      "median_slot_wait_ms": 29.400583333426766,
+      "median_work_ms": 11.738645833474948,
+      "peak_work_overlap": 6,
+      "main_thread_at_work_end_count": 0
+    },
+    {
+      "batch_ms": 188.60133333328122,
+      "caller_concurrency": 56,
+      "count": 26,
+      "folder": "/Volumes/MacMini4/Pictures_raw/2026/06_mai_2026",
+      "pixels": 200,
+      "workload": "small",
+      "variant": "instrumented",
+      "trial": 2,
+      "median_request_ms": 101.04949999981727,
+      "median_slot_wait_ms": 94.2306249999092,
+      "median_work_ms": 6.823416666748017,
+      "peak_work_overlap": 1,
+      "main_thread_at_work_end_count": 0
+    },
+    {
+      "batch_ms": 187.3184166665851,
+      "caller_concurrency": 56,
+      "count": 26,
+      "folder": "/Volumes/MacMini4/Pictures_raw/2026/06_mai_2026",
+      "pixels": 200,
+      "workload": "small",
+      "variant": "production",
+      "trial": 2,
+      "median_request_ms": 99.9946458332488
+    },
+    {
+      "batch_ms": 60.864125000080094,
+      "caller_concurrency": 6,
+      "count": 26,
+      "folder": "/Volumes/MacMini4/Pictures_raw/2026/06_mai_2026",
+      "pixels": 200,
+      "workload": "small",
+      "variant": "candidate",
+      "trial": 2,
+      "median_request_ms": 11.294020833247487,
+      "median_slot_wait_ms": 0.0004791666015080409,
+      "median_work_ms": 11.27114583346156,
+      "peak_work_overlap": 6,
+      "main_thread_at_work_end_count": 0
+    },
+    {
+      "batch_ms": 189.00750000011612,
+      "caller_concurrency": 6,
+      "count": 26,
+      "folder": "/Volumes/MacMini4/Pictures_raw/2026/06_mai_2026",
+      "pixels": 200,
+      "workload": "small",
+      "variant": "instrumented",
+      "trial": 2,
+      "median_request_ms": 40.86387500001365,
+      "median_slot_wait_ms": 34.02966666658358,
+      "median_work_ms": 6.85072916644458,
+      "peak_work_overlap": 1,
+      "main_thread_at_work_end_count": 0
+    },
+    {
+      "batch_ms": 188.04491666651302,
+      "caller_concurrency": 6,
+      "count": 26,
+      "folder": "/Volumes/MacMini4/Pictures_raw/2026/06_mai_2026",
+      "pixels": 200,
+      "workload": "small",
+      "variant": "production",
+      "trial": 2,
+      "median_request_ms": 40.79597916665989
+    },
+    {
+      "batch_ms": 191.39170833341268,
+      "caller_concurrency": 1,
+      "count": 26,
+      "folder": "/Volumes/MacMini4/Pictures_raw/2026/06_mai_2026",
+      "pixels": 200,
+      "workload": "small",
+      "variant": "candidate",
+      "trial": 2,
+      "median_request_ms": 6.8986458334165945,
+      "median_slot_wait_ms": 0.0003333334461785853,
+      "median_work_ms": 6.880416666717792,
+      "peak_work_overlap": 1,
+      "main_thread_at_work_end_count": 0
+    },
+    {
+      "batch_ms": 190.4305833336366,
+      "caller_concurrency": 1,
+      "count": 26,
+      "folder": "/Volumes/MacMini4/Pictures_raw/2026/06_mai_2026",
+      "pixels": 200,
+      "workload": "small",
+      "variant": "instrumented",
+      "trial": 2,
+      "median_request_ms": 6.761041666777601,
+      "median_slot_wait_ms": 0.0002916665380325867,
+      "median_work_ms": 6.743750000168802,
+      "peak_work_overlap": 1,
+      "main_thread_at_work_end_count": 0
+    },
+    {
+      "batch_ms": 190.8744583333828,
+      "caller_concurrency": 1,
+      "count": 26,
+      "folder": "/Volumes/MacMini4/Pictures_raw/2026/06_mai_2026",
+      "pixels": 200,
+      "workload": "small",
+      "variant": "production",
+      "trial": 2,
+      "median_request_ms": 6.772312500061162
+    },
+    {
+      "batch_ms": 406.6044166665961,
+      "caller_concurrency": 1,
+      "count": 56,
+      "folder": "/Volumes/MacMini4/Lundfug_7juli_2026/DCIM_A7R6/100MSDCF",
+      "pixels": 200,
+      "workload": "large",
+      "variant": "production",
+      "trial": 3,
+      "median_request_ms": 6.9681249997302075
+    },
+    {
+      "batch_ms": 406.9489166663516,
+      "caller_concurrency": 1,
+      "count": 56,
+      "folder": "/Volumes/MacMini4/Lundfug_7juli_2026/DCIM_A7R6/100MSDCF",
+      "pixels": 200,
+      "workload": "large",
+      "variant": "instrumented",
+      "trial": 3,
+      "median_request_ms": 6.980625000096552,
+      "median_slot_wait_ms": 0.0002499998572602635,
+      "median_work_ms": 6.9661041666222445,
+      "peak_work_overlap": 1,
+      "main_thread_at_work_end_count": 0
+    },
+    {
+      "batch_ms": 423.3467499998369,
+      "caller_concurrency": 1,
+      "count": 56,
+      "folder": "/Volumes/MacMini4/Lundfug_7juli_2026/DCIM_A7R6/100MSDCF",
+      "pixels": 200,
+      "workload": "large",
+      "variant": "candidate",
+      "trial": 3,
+      "median_request_ms": 7.181416666753648,
+      "median_slot_wait_ms": 0.00037499967220355757,
+      "median_work_ms": 7.162937499970212,
+      "peak_work_overlap": 1,
+      "main_thread_at_work_end_count": 0
+    },
+    {
+      "batch_ms": 400.9671666663053,
+      "caller_concurrency": 6,
+      "count": 56,
+      "folder": "/Volumes/MacMini4/Lundfug_7juli_2026/DCIM_A7R6/100MSDCF",
+      "pixels": 200,
+      "workload": "large",
+      "variant": "production",
+      "trial": 3,
+      "median_request_ms": 41.11502083333107
+    },
+    {
+      "batch_ms": 423.6860416667696,
+      "caller_concurrency": 6,
+      "count": 56,
+      "folder": "/Volumes/MacMini4/Lundfug_7juli_2026/DCIM_A7R6/100MSDCF",
+      "pixels": 200,
+      "workload": "large",
+      "variant": "instrumented",
+      "trial": 3,
+      "median_request_ms": 42.0514166664816,
+      "median_slot_wait_ms": 34.809083333357194,
+      "median_work_ms": 7.050770833302522,
+      "peak_work_overlap": 1,
+      "main_thread_at_work_end_count": 0
+    },
+    {
+      "batch_ms": 115.07570833327918,
+      "caller_concurrency": 6,
+      "count": 56,
+      "folder": "/Volumes/MacMini4/Lundfug_7juli_2026/DCIM_A7R6/100MSDCF",
+      "pixels": 200,
+      "workload": "large",
+      "variant": "candidate",
+      "trial": 3,
+      "median_request_ms": 10.472687500168831,
+      "median_slot_wait_ms": 0.00035416678656474687,
+      "median_work_ms": 10.447499999827414,
+      "peak_work_overlap": 6,
+      "main_thread_at_work_end_count": 0
+    },
+    {
+      "batch_ms": 400.64687499989304,
+      "caller_concurrency": 56,
+      "count": 56,
+      "folder": "/Volumes/MacMini4/Lundfug_7juli_2026/DCIM_A7R6/100MSDCF",
+      "pixels": 200,
+      "workload": "large",
+      "variant": "production",
+      "trial": 3,
+      "median_request_ms": 212.170708333133
+    },
+    {
+      "batch_ms": 401.2044999999489,
+      "caller_concurrency": 56,
+      "count": 56,
+      "folder": "/Volumes/MacMini4/Lundfug_7juli_2026/DCIM_A7R6/100MSDCF",
+      "pixels": 200,
+      "workload": "large",
+      "variant": "instrumented",
+      "trial": 3,
+      "median_request_ms": 212.30587499985631,
+      "median_slot_wait_ms": 205.23362499989162,
+      "median_work_ms": 7.023916666412333,
+      "peak_work_overlap": 1,
+      "main_thread_at_work_end_count": 0
+    },
+    {
+      "batch_ms": 110.01958333326911,
+      "caller_concurrency": 56,
+      "count": 56,
+      "folder": "/Volumes/MacMini4/Lundfug_7juli_2026/DCIM_A7R6/100MSDCF",
+      "pixels": 200,
+      "workload": "large",
+      "variant": "candidate",
+      "trial": 3,
+      "median_request_ms": 64.6071666667467,
+      "median_slot_wait_ms": 55.049916666803256,
+      "median_work_ms": 10.663854166750752,
+      "peak_work_overlap": 6,
+      "main_thread_at_work_end_count": 0
+    },
+    {
+      "batch_ms": 192.0154999997976,
+      "caller_concurrency": 1,
+      "count": 26,
+      "folder": "/Volumes/MacMini4/Pictures_raw/2026/06_mai_2026",
+      "pixels": 200,
+      "workload": "small",
+      "variant": "production",
+      "trial": 3,
+      "median_request_ms": 6.858375000092565
+    },
+    {
+      "batch_ms": 191.60725000028833,
+      "caller_concurrency": 1,
+      "count": 26,
+      "folder": "/Volumes/MacMini4/Pictures_raw/2026/06_mai_2026",
+      "pixels": 200,
+      "workload": "small",
+      "variant": "instrumented",
+      "trial": 3,
+      "median_request_ms": 6.861770833438641,
+      "median_slot_wait_ms": 0.00029166676540626213,
+      "median_work_ms": 6.847270833304719,
+      "peak_work_overlap": 1,
+      "main_thread_at_work_end_count": 0
+    },
+    {
+      "batch_ms": 193.78591666645661,
+      "caller_concurrency": 1,
+      "count": 26,
+      "folder": "/Volumes/MacMini4/Pictures_raw/2026/06_mai_2026",
+      "pixels": 200,
+      "workload": "small",
+      "variant": "candidate",
+      "trial": 3,
+      "median_request_ms": 6.982020833220304,
+      "median_slot_wait_ms": 0.0003333334461785853,
+      "median_work_ms": 6.962749999956941,
+      "peak_work_overlap": 1,
+      "main_thread_at_work_end_count": 0
+    },
+    {
+      "batch_ms": 188.41270833308954,
+      "caller_concurrency": 6,
+      "count": 26,
+      "folder": "/Volumes/MacMini4/Pictures_raw/2026/06_mai_2026",
+      "pixels": 200,
+      "workload": "small",
+      "variant": "production",
+      "trial": 3,
+      "median_request_ms": 40.64487499999814
+    },
+    {
+      "batch_ms": 187.94525000021167,
+      "caller_concurrency": 6,
+      "count": 26,
+      "folder": "/Volumes/MacMini4/Pictures_raw/2026/06_mai_2026",
+      "pixels": 200,
+      "workload": "small",
+      "variant": "instrumented",
+      "trial": 3,
+      "median_request_ms": 40.855458333226125,
+      "median_slot_wait_ms": 34.00572916666533,
+      "median_work_ms": 6.890625000096406,
+      "peak_work_overlap": 1,
+      "main_thread_at_work_end_count": 0
+    },
+    {
+      "batch_ms": 59.447000000091066,
+      "caller_concurrency": 6,
+      "count": 26,
+      "folder": "/Volumes/MacMini4/Pictures_raw/2026/06_mai_2026",
+      "pixels": 200,
+      "workload": "small",
+      "variant": "candidate",
+      "trial": 3,
+      "median_request_ms": 11.454291666723293,
+      "median_slot_wait_ms": 0.0004999999418942025,
+      "median_work_ms": 11.346041666456586,
+      "peak_work_overlap": 6,
+      "main_thread_at_work_end_count": 0
+    },
+    {
+      "batch_ms": 188.2274166669049,
+      "caller_concurrency": 56,
+      "count": 26,
+      "folder": "/Volumes/MacMini4/Pictures_raw/2026/06_mai_2026",
+      "pixels": 200,
+      "workload": "small",
+      "variant": "production",
+      "trial": 3,
+      "median_request_ms": 100.67116666664333
+    },
+    {
+      "batch_ms": 188.70370833337802,
+      "caller_concurrency": 56,
+      "count": 26,
+      "folder": "/Volumes/MacMini4/Pictures_raw/2026/06_mai_2026",
+      "pixels": 200,
+      "workload": "small",
+      "variant": "instrumented",
+      "trial": 3,
+      "median_request_ms": 100.7196875000318,
+      "median_slot_wait_ms": 93.81158333349049,
+      "median_work_ms": 6.86164583316895,
+      "peak_work_overlap": 1,
+      "main_thread_at_work_end_count": 0
+    },
+    {
+      "batch_ms": 60.024999999768625,
+      "caller_concurrency": 56,
+      "count": 26,
+      "folder": "/Volumes/MacMini4/Pictures_raw/2026/06_mai_2026",
+      "pixels": 200,
+      "workload": "small",
+      "variant": "candidate",
+      "trial": 3,
+      "median_request_ms": 41.60550000005969,
+      "median_slot_wait_ms": 30.594666666502235,
+      "median_work_ms": 11.534000000210654,
+      "peak_work_overlap": 6,
+      "main_thread_at_work_end_count": 0
+    }
+  ],
+  "outputs": [
+    {
+      "workload": "large",
+      "name": "_DSC4595.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "6b252b7d2cf67c3761d3675294d4983489a44c566c6ff34777366085c6844138"
+    },
+    {
+      "workload": "large",
+      "name": "_DSC4596.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "5d2d1342896e4d73d4fb41c4f69017355e24c3f41ea3ec5973280091b756fe18"
+    },
+    {
+      "workload": "large",
+      "name": "_DSC4597.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "cddcb8d0426804a7d82bd06b726a475f55f4da42d231710734bb3d3ce1269b43"
+    },
+    {
+      "workload": "large",
+      "name": "_DSC4598.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "a0e39dd3b07935ee4f71508b5939a121fef2e4173a49512afe30a7162a43af4c"
+    },
+    {
+      "workload": "large",
+      "name": "_DSC4599.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "208db338d5c42305996c5ad9a8118abf2058c21e9e9b52c25d82d113924dd120"
+    },
+    {
+      "workload": "large",
+      "name": "_DSC4600.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "9dfb2f1235c8e1dd2d12da394b60c7d6f923d3eaaa743f537a180c1e79c15dd0"
+    },
+    {
+      "workload": "large",
+      "name": "_DSC4601.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "38d43f8cc68c4dd55eda92172645926d8f541dd2452ec5bd9fd5b7a6f8376fff"
+    },
+    {
+      "workload": "large",
+      "name": "_DSC4602.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "b2e2602d3ec5516f49b7032bf0621ca8359def2753ef5d6b8478e470d68881f6"
+    },
+    {
+      "workload": "large",
+      "name": "_DSC4603.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "38a5163386409e2775fee7069ddf9fcb2096a29dbb784d9dfdddfc794075805e"
+    },
+    {
+      "workload": "large",
+      "name": "_DSC4604.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "af721ae7a182e2c5f88e2867c044180007a462ac532b64cee185d84ef4e17673"
+    },
+    {
+      "workload": "large",
+      "name": "_DSC4605.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "fdc85a0a0bdbe78a650751754a77706961acb43d8f98a50573b793b2b25e6361"
+    },
+    {
+      "workload": "large",
+      "name": "_DSC4606.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "a14b7eb0957b88431b56d4afb0ac1ec93f4e399da58e77b45c5b982573e9c916"
+    },
+    {
+      "workload": "large",
+      "name": "_DSC4607.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "649e07dd7352327f3653c9e76c58cfb31d793d40a96f03a8cd2fe9cdfeac9acf"
+    },
+    {
+      "workload": "large",
+      "name": "_DSC4608.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "67f74682a9244194420802fecf957c01b589fff32ea95af0a8b133470d076ce5"
+    },
+    {
+      "workload": "large",
+      "name": "_DSC4609.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "4631e81b768cdb8a76e102b5ac9ed8da5aca1535b14f25e7b81dd21c7b2bd802"
+    },
+    {
+      "workload": "large",
+      "name": "_DSC4610.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "626385db41f5f7d4f2ac8a1864e7e32adf0ec8869821d641d07f26266013ff44"
+    },
+    {
+      "workload": "large",
+      "name": "_DSC4611.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "892aa550f8be0617f5b729570c464163aeffdb7135fd029f61ea481790bab637"
+    },
+    {
+      "workload": "large",
+      "name": "_DSC4612.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "1adad98e451b0a7a67061732414b66447e74b5e661ebe9ad340b0046c80185d8"
+    },
+    {
+      "workload": "large",
+      "name": "_DSC4613.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "d0e26541b41ac88c93ec706c4331a1da6cc03e8912bf3c95e6e01e18e6da8906"
+    },
+    {
+      "workload": "large",
+      "name": "_DSC4614.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "207ebc2958fd6918b63226475d37da0100041cb0b30a16c067484e97c3c7811c"
+    },
+    {
+      "workload": "large",
+      "name": "_DSC4615.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "5479d340a4b8f9acca7dea1c071cf8e8bcb04c848076365d6e2d0198ece60d80"
+    },
+    {
+      "workload": "large",
+      "name": "_DSC4616.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "da33983f08405ae58d8737c8e03fdbc0e52c8d310b82d46125bb5c5398ba4aa0"
+    },
+    {
+      "workload": "large",
+      "name": "_DSC4617.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "37acb0f189b44a01bf5fbe98d1e9d7e6914e0e1059122cdc58b46eee6f100c60"
+    },
+    {
+      "workload": "large",
+      "name": "_DSC4618.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "d74ea669f8e414bbed317f516b446496b4beafa7ce8d8baf7bf3df5316b0b4ae"
+    },
+    {
+      "workload": "large",
+      "name": "_DSC4619.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "494b3c217abd513ce3f23e8f719918817ac5ad577f234277073c6e50e88fac76"
+    },
+    {
+      "workload": "large",
+      "name": "_DSC4620.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "1bfee39ebbe4d3d4fc1a10258e070d4650e4cf8af4036ffa7273d92d5c5b4c3b"
+    },
+    {
+      "workload": "large",
+      "name": "_DSC4621.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "81bd951fb0da487b2be69c5f6e96b392aef07762f8f225b6b389327e06fc6acb"
+    },
+    {
+      "workload": "large",
+      "name": "_DSC4622.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "fc928400812d07c96fa02c66cf3db7437bb85c8a4853f1a9a42e93f95ea23d9b"
+    },
+    {
+      "workload": "large",
+      "name": "_DSC4623.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "88fec2c8995d67f432218e4a761f6b372ac8d9d1bb5fe26de5f17060ce1c96f2"
+    },
+    {
+      "workload": "large",
+      "name": "_DSC4624.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "a3409dd72be15d6f2202c038529672e45365161f7cc2ff5c59a2aa2387d27f7c"
+    },
+    {
+      "workload": "large",
+      "name": "_DSC4625.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "47ac35cff1de642f4954f27d327ac38508f54fa703094bd852207353486198cf"
+    },
+    {
+      "workload": "large",
+      "name": "_DSC4626.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "af8956e65ff3f333243f2db5fd09ba656513e039233455d0ba426dcf4841f9a5"
+    },
+    {
+      "workload": "large",
+      "name": "_DSC4627.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "e889e347187e38e1c9531ef3e5a76b1512a75462ae00ed533c0083a5011f785e"
+    },
+    {
+      "workload": "large",
+      "name": "_DSC4628.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "93e6bca7ea29e200c1937288b40057b8be33864ba93ce20a708a66915bd9aa6c"
+    },
+    {
+      "workload": "large",
+      "name": "_DSC4629.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "c25831c312a5ff1da7374b55696c56d1d46bb8b6e74f62e9e213881fd5b5049c"
+    },
+    {
+      "workload": "large",
+      "name": "_DSC4630.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "3915b4e1a0f55f54c1ae95401343568e3617c0986d1e102539e7229c778fbe49"
+    },
+    {
+      "workload": "large",
+      "name": "_DSC4631.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "e4fb05b03cb57c325542c99d9821f13e415ff4011d0f48cd128729a259c2b44b"
+    },
+    {
+      "workload": "large",
+      "name": "_DSC4632.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "125fbe8f2e06c7426ea4e53c2821b03b2d5bb51132d5370224e848f5d49e9999"
+    },
+    {
+      "workload": "large",
+      "name": "_DSC4633.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "4bbe83aa6248e4afcba7972cc0e30f81eac9dcf147f56f1733eda4ae0410401e"
+    },
+    {
+      "workload": "large",
+      "name": "_DSC4634.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "2865605033914bdb3369ecca1b121a97e841f9fcf961d99d359fa153907aac8c"
+    },
+    {
+      "workload": "large",
+      "name": "_DSC4635.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "c050d9f72c9476ba7451845105bfc09ca1115596020ad6ee77275dd86f39ec59"
+    },
+    {
+      "workload": "large",
+      "name": "_DSC4636.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "1e8bcbcff09ddf63128aa7d13912ecc90506f9bb295f443563c095b712cb5549"
+    },
+    {
+      "workload": "large",
+      "name": "_DSC4637.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "365fa930cc196dda3dfc2fb200bbeaf74fdda7c2351696f72e99b47010bc5087"
+    },
+    {
+      "workload": "large",
+      "name": "_DSC4638.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "e54b94a5af502cf2758558ae57a239b92007600b722da22e8b70d6be3cf68344"
+    },
+    {
+      "workload": "large",
+      "name": "_DSC4639.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "faa61963b9373f053f2085fb542089602692fc756d1115e5b8e2a8542a16565b"
+    },
+    {
+      "workload": "large",
+      "name": "_DSC4640.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "c51c24bd7ef9f74eb257a18d0937d07db8f69525e0d987d04d895692a8dd1672"
+    },
+    {
+      "workload": "large",
+      "name": "_DSC4641.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "e46846cffff1a21c38eddc235d772062b20a19f651183188d1d1c26fabe32ab5"
+    },
+    {
+      "workload": "large",
+      "name": "_DSC4642.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "4001de69641a28e5d796b9847039be11ef229ec145f3ba5600b34c9284ed96cb"
+    },
+    {
+      "workload": "large",
+      "name": "_DSC4643.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "1dd64127aca16e466d4a9662aaba887dffab3b89684ab12838eaa2ae2c8f0a9b"
+    },
+    {
+      "workload": "large",
+      "name": "_DSC4644.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "f355d9c0afaf35d747290f367704cbf2437c37607aa867d9e4cff12a201ca97d"
+    },
+    {
+      "workload": "large",
+      "name": "_DSC4645.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "98e7e555e7b89110d4b90330be036a6ac0f776606984df95e3615a49de28deca"
+    },
+    {
+      "workload": "large",
+      "name": "_DSC4646.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "c03cd967585a5a95ca05ece2e4ca3ef0ce90ac6e692057f37807b87aa815adab"
+    },
+    {
+      "workload": "large",
+      "name": "_DSC4647.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "9bc28cd3d9ca462d0eefa89cc1166c012746362ef51bd79d9cccd103264a6c93"
+    },
+    {
+      "workload": "large",
+      "name": "_DSC4648.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "896dcfd2fa2f024088304a28db4cb51a1131b20dc1bfcd8f2ef67f419f9da51c"
+    },
+    {
+      "workload": "large",
+      "name": "_DSC4649.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "75472f8f76ff61da6d2de851ddfb9301879bca3a63a8a16555482f5d26947f36"
+    },
+    {
+      "workload": "large",
+      "name": "_DSC4650.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "7401c78798c7a26d7adefad1781328384f0f4f8256f5d5ce11d7454cbdc478ed"
+    },
+    {
+      "workload": "small",
+      "name": "_DSC7354.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "0ce47cb5b13fc8cb77fec3a60296a4e2de5ecf27d2fce238fc8f16bc3bd763fa"
+    },
+    {
+      "workload": "small",
+      "name": "_DSC7355.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "0f11f84c3f9f752b2eeaf5e1182e69741deb005c6b0611b068b961d5b43a3779"
+    },
+    {
+      "workload": "small",
+      "name": "_DSC7552.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "7a3b2fd3463a229f2542383dff5cc0f9649035e4e35936ec0d5cb338ad94498c"
+    },
+    {
+      "workload": "small",
+      "name": "_DSC7862.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "d81ed67dea9433197f86590c2230943c55a85620895fa269865f5535d4a5624d"
+    },
+    {
+      "workload": "small",
+      "name": "_DSC7955.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "43efd394707581c9bbcce561e491a066d70ed6f25dc399de47907149b2e637f2"
+    },
+    {
+      "workload": "small",
+      "name": "_DSC8126.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "c11bb4e1722c0362a41cfe17c5b62a31b8c8c16f71b18d15f197246e1f0b09b8"
+    },
+    {
+      "workload": "small",
+      "name": "_DSC8130.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "fe235e5b9731509ab2879b5cee31133835b4b8fc398d7fc251924eac5a1ff767"
+    },
+    {
+      "workload": "small",
+      "name": "_DSC8135.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "3edc40206e31ac36007010690c4cc840327022e74750c8f0f967b4a8c545ded4"
+    },
+    {
+      "workload": "small",
+      "name": "_DSC8137.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "2f3a4a7a4486755331da1f75acba095a1622509a26a1bf73666c6be160910e90"
+    },
+    {
+      "workload": "small",
+      "name": "_DSC8146.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "0a160a52c5309f00ed54017a6003be050927291e2b16a9face6607963e65c5bf"
+    },
+    {
+      "workload": "small",
+      "name": "_DSC8152.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "d45b57952eeec3776f4b4fdcf2e8512f82455ea4e6f7425f4fd3732e03339138"
+    },
+    {
+      "workload": "small",
+      "name": "_DSC8153.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "9812b7abfb3edde731a8b7e98bd10fd24f678c1e71e3bbf5f62b902599a52dbf"
+    },
+    {
+      "workload": "small",
+      "name": "_DSC8155.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "d9b77a758077137a4e3ce139b9bedb70424412a12814cf1172ad6a84a698c445"
+    },
+    {
+      "workload": "small",
+      "name": "_DSC8158.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "102c770efb61a2853a64f8fa7370bc9ff30a697f7057b483538a722cef103f49"
+    },
+    {
+      "workload": "small",
+      "name": "_DSC8217.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "5599967b35281bdf3c263581c1993c12e76a7e86bd0129e914c44a598818a9f7"
+    },
+    {
+      "workload": "small",
+      "name": "_DSC8227.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "2c55ca1331923425c96dded218ed162c7602954d16b3631e1b072054341eed0d"
+    },
+    {
+      "workload": "small",
+      "name": "_DSC8274.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "d1530f277ab16087baf3b2780f2c8c33161786bb08cd1fb189b571c9dabd98f8"
+    },
+    {
+      "workload": "small",
+      "name": "_DSC8304.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "47dcc68401854dc9f0638fe87bf1b69a37ef68273d5b8e55ee8008f5365382b1"
+    },
+    {
+      "workload": "small",
+      "name": "_DSC8329.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "313e35674a3f8eeab95f6269e15848846fe2b47d778bd34cf1ca2f9b82901814"
+    },
+    {
+      "workload": "small",
+      "name": "_DSC8363.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "c28fe2a409be1779b513898980876c6323f46e1a635480b23c93089b87052a42"
+    },
+    {
+      "workload": "small",
+      "name": "_DSC8374.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "d7b89d402b4e51cd2faa81b69319ae86a7d7b0d2835bb252524c335cc3a48458"
+    },
+    {
+      "workload": "small",
+      "name": "_DSC8503.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "f5ecedd7147d100328e2645dca355f7c398c340387be26baa82246254d03fb1c"
+    },
+    {
+      "workload": "small",
+      "name": "_DSC8520.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "2d1384ca2bc939c04750751a3e7629a4a151aad4daf1a0855c67c1c406cb5e93"
+    },
+    {
+      "workload": "small",
+      "name": "_DSC8638.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "f06a8d327276917a6bec8849def0975176d189e8b497b4a0fde9e0366bfb93b5"
+    },
+    {
+      "workload": "small",
+      "name": "_DSC8639.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "9107eb3088fbf9f066c7ee5a12d089fbdf634cff0e2d8216c0af336182bad9e5"
+    },
+    {
+      "workload": "small",
+      "name": "_DSC8644.ARW",
+      "width": 200,
+      "height": 134,
+      "rgba_sha256": "cf0ef2ee04d8e8e772eef8a595bf6da6c36d4256953412e09f37aa32222f421d"
+    }
+  ],
+  "raw_results_path": "/tmp/rawbrowse-parser-candidate-v2/results.json",
+  "raw_results_sha256": "337e7555efc9ca105ff146ffcfc3f81f23da05f1aab5eec96d0d84ab4916202f",
+  "memory_trials": [
+    {
+      "variant": "production",
+      "trial": 1,
+      "peak_rss_bytes": 48463872,
+      "peak_footprint_bytes": 16974688,
+      "real_seconds": 0.63,
+      "user_seconds": 0.41,
+      "system_seconds": 0.06
+    },
+    {
+      "variant": "candidate",
+      "trial": 1,
+      "peak_rss_bytes": 54362112,
+      "peak_footprint_bytes": 22774768,
+      "real_seconds": 0.24,
+      "user_seconds": 0.55,
+      "system_seconds": 0.07
+    },
+    {
+      "variant": "candidate",
+      "trial": 2,
+      "peak_rss_bytes": 54231040,
+      "peak_footprint_bytes": 22725544,
+      "real_seconds": 0.25,
+      "user_seconds": 0.57,
+      "system_seconds": 0.07
+    },
+    {
+      "variant": "production",
+      "trial": 2,
+      "peak_rss_bytes": 48660480,
+      "peak_footprint_bytes": 16909176,
+      "real_seconds": 0.65,
+      "user_seconds": 0.43,
+      "system_seconds": 0.06
+    },
+    {
+      "variant": "production",
+      "trial": 3,
+      "peak_rss_bytes": 48480256,
+      "peak_footprint_bytes": 16958280,
+      "real_seconds": 0.64,
+      "user_seconds": 0.41,
+      "system_seconds": 0.06
+    },
+    {
+      "variant": "candidate",
+      "trial": 3,
+      "peak_rss_bytes": 53936128,
+      "peak_footprint_bytes": 22840256,
+      "real_seconds": 0.24,
+      "user_seconds": 0.55,
+      "system_seconds": 0.07
+    }
+  ],
+  "profiles": {
+    "production": {
+      "batches": 20,
+      "cpu_samples": 8090,
+      "main_samples": 152
+    },
+    "candidate": {
+      "batches": 20,
+      "cpu_samples": 11466,
+      "main_samples": 201
+    }
+  }
+}
