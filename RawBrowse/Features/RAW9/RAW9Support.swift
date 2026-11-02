@@ -221,6 +221,14 @@ actor RAW9PreviewRenderer {
         return Float(min(1, maximumDimension / max(1, nativeSize.width, nativeSize.height)))
     }
 
+    private var lastPreviewIsReduced = false
+
+    func renderWithDecodeStatus(url: URL, adjustments: RAW9Adjustments, bitDepth: RAWPreviewBitDepth,
+                                maximumDimension: CGFloat?) throws -> (image: CGImage, isReduced: Bool) {
+        let image = try render(url: url, adjustments: adjustments, bitDepth: bitDepth, maximumDimension: maximumDimension)
+        return (image, lastPreviewIsReduced)
+    }
+
     func render(url: URL, adjustments: RAW9Adjustments, bitDepth: RAWPreviewBitDepth = .eightBit,
                 maximumDimension: CGFloat? = nil) throws -> CGImage {
         // Core Image creates autoreleased render resources on the actor's worker thread.
@@ -239,6 +247,7 @@ actor RAW9PreviewRenderer {
                                                    bitDepth: bitDepth, maximumDimension: maximumDimension)
         if let image = previews.image(for: key) {
             Logger.process.debugMessageOnly("RAW 9 preview cache hit: \(url.lastPathComponent)")
+            lastPreviewIsReduced = previews.isReduced(for: key)
             return image
         }
         Logger.process.debugMessageOnly("RAW 9 preview cache miss; rendering: \(url.lastPathComponent)")
@@ -293,7 +302,8 @@ actor RAW9PreviewRenderer {
         )
         else { throw CocoaError(.fileReadUnknown) }
         try Task.checkCancellation()
-        previews.insert(image, for: key)
+        lastPreviewIsReduced = filter.scaleFactor < 1
+        previews.insert(image, for: key, isReduced: lastPreviewIsReduced)
         Logger.process.debugMessageOnly("RAW 9 render completed: \(url.lastPathComponent), \(started.duration(to: .now)), cached bytes: \(previews.byteCount)")
         return image
     }
@@ -479,6 +489,7 @@ nonisolated struct RAW9RenderedPreviewCache {
     private struct Entry {
         let key: Key
         let image: CGImage
+        let isReduced: Bool
         var cost: Int {
             image.bytesPerRow * image.height
         }
@@ -495,8 +506,12 @@ nonisolated struct RAW9RenderedPreviewCache {
         return entry.image
     }
 
-    mutating func insert(_ image: CGImage, for key: Key) {
-        let entry = Entry(key: key, image: image)
+    func isReduced(for key: Key) -> Bool {
+        entries.first(where: { $0.key == key })?.isReduced ?? false
+    }
+
+    mutating func insert(_ image: CGImage, for key: Key, isReduced: Bool = false) {
+        let entry = Entry(key: key, image: image, isReduced: isReduced)
         guard entry.cost <= byteLimit else { return }
         // Retain one adjustment version per source to avoid filling the cache while dragging a slider.
         for index in entries.indices.reversed() where entries[index].key.url == key.url {

@@ -27,6 +27,7 @@ final class ZoomModel {
         refreshRAW9Preview()
     }
 
+    private(set) var displayedRAWIsReduced: Bool?
     var zoomImageError: String?
     var zoomImage: CGImage?
     var zoomExifInfo: RawImageMetadata?
@@ -86,6 +87,7 @@ final class ZoomModel {
         isApplyingRAW9 = useDevelopedRAW
         if !preserveViewport {
             zoomImage = nil
+            displayedRAWIsReduced = nil
         }
         zoomImageError = nil
         zoomExifInfo = nil
@@ -146,6 +148,8 @@ final class ZoomModel {
                 }
                 guard !Task.isCancelled else { return }
                 zoomImage = loadedImage
+                displayedRAWIsReduced = developRAW && loadedImage != nil
+                    ? (renderedAdjustments != nil ? raw9.renderedPreviewIsReduced : false) : nil
                 diagnostic?.end(loadedImage == nil ? "unavailable" : "image")
                 delivered = true
                 if loadedImage == nil {
@@ -207,6 +211,7 @@ final class ZoomModel {
                 let image = try await renderRAWPreview(url, adjustments, bitDepth, maximumDimension)
                 guard !Task.isCancelled, file?.url == url, useDevelopedRAW else { return }
                 zoomImage = image
+                displayedRAWIsReduced = raw9.renderedPreviewIsReduced
                 zoomImageError = nil
             } catch {
                 guard !Task.isCancelled, file?.url == url else { return }
@@ -226,6 +231,7 @@ final class ZoomModel {
         isApplyingRAW9 = false
         presentation.zoomOverlayVisible = false
         zoomImage = nil
+        displayedRAWIsReduced = nil
         zoomImageError = nil
         zoomExifInfo = nil
         isZoomExifInfoLoaded = false

@@ -201,6 +201,10 @@ struct BrowserZoomOverlayView: View {
 
             VStack {
                 ZStack(alignment: .top) {
+                    if let isReduced = zoom.displayedRAWIsReduced, !isImageOnlyPreview {
+                        RAWDecodeBadgeView(isReduced: isReduced)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
                     if zoomPresentation.isZoomMetadataVisible {
                         ZoomMetadataPanel(
                             fileName: selection.selectedFile?.name,
@@ -208,6 +212,7 @@ struct BrowserZoomOverlayView: View {
                             image: zoom.zoomImage,
                             isCollapsed: $zoomPresentation.isZoomMetadataCollapsed,
                         )
+                        .padding(.top, zoom.displayedRAWIsReduced == nil || isImageOnlyPreview ? 0 : 34)
                         .offset(zoomPresentation.zoomMetadataOffset)
                         .gesture(metadataDragGesture)
                         .frame(maxWidth: .infinity, alignment: .topLeading)
@@ -1057,5 +1062,24 @@ struct BrowserZoomOverlayView: View {
             keyCode: event.keyCode,
             navigationAxis: zoomPresentation.zoomOverlayNavigationAxis,
         ))
+    }
+}
+
+private struct RAWDecodeBadgeView: View {
+    let isReduced: Bool
+
+    private var title: LocalizedStringKey { isReduced ? "Fast RAW" : "Full RAW" }
+
+    var body: some View {
+        Label(title, systemImage: isReduced ? "bolt.fill" : "viewfinder")
+            .font(.system(size: 12, weight: .semibold, design: .monospaced))
+            .foregroundStyle(.white)
+            .padding(.horizontal, 9)
+            .padding(.vertical, 5)
+            .background(ZoomBadgeStyle.fill, in: Capsule())
+            .fixedSize()
+            .help(isReduced
+                ? Text("Reduced-resolution RAW preview for a faster fit-to-window display. Zoom in for full detail.")
+                : Text("Full-resolution RAW image. Decoding at full resolution can take longer."))
     }
 }
