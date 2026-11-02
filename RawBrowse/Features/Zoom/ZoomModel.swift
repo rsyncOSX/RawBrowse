@@ -37,7 +37,7 @@ final class ZoomModel {
     @ObservationIgnored private var isOpeningZoom = false
     @ObservationIgnored private var zoomTask: Task<Void, Never>?
     @ObservationIgnored private let imageLoader: BrowserImageLoader
-    @ObservationIgnored private let renderRAWPreview: @MainActor (URL, RAW9Adjustments, RAWPreviewBitDepth, CGFloat?) async throws -> CGImage
+    @ObservationIgnored private let renderRAWPreview: @MainActor (URL, RAW9Adjustments, RAWPreviewBitDepth, CGFloat?) async throws -> (image: CGImage, isReduced: Bool)
     @ObservationIgnored private let supportsRAW9: @Sendable (URL) async -> Bool
     var rawPreviewBitDepth: RAWPreviewBitDepth {
         get { settingsModel.values.rawPreviewBitDepth }
@@ -54,13 +54,13 @@ final class ZoomModel {
     init(settings: SettingsModel, raw9: RAW9EditingSession,
          imageLoader: BrowserImageLoader = .shared,
          supportsRAW9: @escaping @Sendable (URL) async -> Bool = { await RAW9Support.isSupported(for: $0) },
-         renderRAWPreview: (@MainActor (URL, RAW9Adjustments, RAWPreviewBitDepth, CGFloat?) async throws -> CGImage)? = nil) {
+         renderRAWPreview: (@MainActor (URL, RAW9Adjustments, RAWPreviewBitDepth, CGFloat?) async throws -> (image: CGImage, isReduced: Bool))? = nil) {
         settingsModel = settings
         self.raw9 = raw9
         self.imageLoader = imageLoader
         self.supportsRAW9 = supportsRAW9
         self.renderRAWPreview = renderRAWPreview ?? { url, adjustments, bitDepth, maximumDimension in
-            try await raw9.render(url: url, adjustments: adjustments, bitDepth: bitDepth, maximumDimension: maximumDimension)
+            try await raw9.renderWithDecodeStatus(url: url, adjustments: adjustments, bitDepth: bitDepth, maximumDimension: maximumDimension)
         }
     }
 
@@ -128,6 +128,7 @@ final class ZoomModel {
             let developRAW = useDevelopedRAW && !SupportedFileType.isRenderedImage(selectedFile.url)
             do {
                 let loadedImage: CGImage?
+                var loadedRAWIsReduced = false
                 if developRAW {
                     // Decoder probing and editing state are lazy: JPG navigation never needs them.
                     let shouldLoadSidecar = raw9.prepare(for: selectedFile.url)
@@ -137,8 +138,10 @@ final class ZoomModel {
                         renderedDimension = rawPreviewMaximumDimension
                         renderedAdjustments = raw9.raw9Adjustments
                         renderedBitDepth = settingsModel.values.rawPreviewBitDepth
-                        loadedImage = try await renderRAWPreview(selectedFile.url, raw9.raw9Adjustments,
+                        let preview = try await renderRAWPreview(selectedFile.url, raw9.raw9Adjustments,
                                                                renderedBitDepth, renderedDimension)
+                        loadedImage = preview.image
+                        loadedRAWIsReduced = preview.isReduced
                     } else {
                         loadedImage = try await imageLoader.developedPreview(for: selectedFile.url)
                     }
@@ -149,7 +152,7 @@ final class ZoomModel {
                 guard !Task.isCancelled else { return }
                 zoomImage = loadedImage
                 displayedRAWIsReduced = developRAW && loadedImage != nil
-                    ? (renderedAdjustments != nil ? raw9.renderedPreviewIsReduced : false) : nil
+                    ? loadedRAWIsReduced : nil
                 diagnostic?.end(loadedImage == nil ? "unavailable" : "image")
                 delivered = true
                 if loadedImage == nil {
@@ -208,10 +211,10 @@ final class ZoomModel {
                 }
             }
             do {
-                let image = try await renderRAWPreview(url, adjustments, bitDepth, maximumDimension)
+                let preview = try await renderRAWPreview(url, adjustments, bitDepth, maximumDimension)
                 guard !Task.isCancelled, file?.url == url, useDevelopedRAW else { return }
-                zoomImage = image
-                displayedRAWIsReduced = raw9.renderedPreviewIsReduced
+                zoomImage = preview.image
+                displayedRAWIsReduced = preview.isReduced
                 zoomImageError = nil
             } catch {
                 guard !Task.isCancelled, file?.url == url else { return }

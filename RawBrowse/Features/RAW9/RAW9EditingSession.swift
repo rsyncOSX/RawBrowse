@@ -97,14 +97,16 @@ final class RAW9EditingSession {
         await raw9SidecarSaveTask?.value
     }
 
-    private(set) var renderedPreviewIsReduced = false
-
     func render(url: URL, adjustments: RAW9Adjustments, bitDepth: RAWPreviewBitDepth,
                 maximumDimension: CGFloat? = nil) async throws -> CGImage {
-        let preview = try await raw9Renderer.renderWithDecodeStatus(
+        try await renderWithDecodeStatus(url: url, adjustments: adjustments, bitDepth: bitDepth,
+                                         maximumDimension: maximumDimension).image
+    }
+
+    func renderWithDecodeStatus(url: URL, adjustments: RAW9Adjustments, bitDepth: RAWPreviewBitDepth,
+                                maximumDimension: CGFloat? = nil) async throws -> (image: CGImage, isReduced: Bool) {
+        try await raw9Renderer.renderWithDecodeStatus(
             url: url, adjustments: adjustments, bitDepth: bitDepth, maximumDimension: maximumDimension)
-        renderedPreviewIsReduced = preview.isReduced
-        return preview.image
     }
 
     private func setAdjustments(_ adjustments: RAW9Adjustments, persist: Bool) {

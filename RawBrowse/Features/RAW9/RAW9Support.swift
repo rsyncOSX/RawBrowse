@@ -282,7 +282,8 @@ actor RAW9PreviewRenderer {
         // Preserve enough source pixels for a cropped fit preview. Native zoom and export use scale 1.
         let cropFraction = adjustments.crop.map { min($0.width, $0.height) } ?? 1
         let sourceDimension = maximumDimension.map { $0 / CGFloat(max(0.001, cropFraction)) }
-        filter.scaleFactor = Self.previewScale(nativeSize: nativeSize, maximumDimension: sourceDimension)
+        let decodeScale = Self.previewScale(nativeSize: nativeSize, maximumDimension: sourceDimension)
+        filter.scaleFactor = decodeScale
         filter.luminanceNoiseReductionAmount = min(1, max(0, defaults.noise + Float(adjustments.noiseReduction)))
         filter.sharpnessAmount = min(1, max(0, defaults.sharpness + Float(adjustments.sharpness)))
         filter.contrastAmount = min(1, max(0, defaults.contrast + Float(adjustments.contrast)))
@@ -302,7 +303,7 @@ actor RAW9PreviewRenderer {
         )
         else { throw CocoaError(.fileReadUnknown) }
         try Task.checkCancellation()
-        lastPreviewIsReduced = filter.scaleFactor < 1
+        lastPreviewIsReduced = decodeScale < 1
         previews.insert(image, for: key, isReduced: lastPreviewIsReduced)
         Logger.process.debugMessageOnly("RAW 9 render completed: \(url.lastPathComponent), \(started.duration(to: .now)), cached bytes: \(previews.byteCount)")
         return image

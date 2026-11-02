@@ -361,7 +361,7 @@ struct FullSizeJPGDiskCacheTests {
                                  await gate.arriveAndWait()
                                  cancelled.append(Task.isCancelled)
                                  try Task.checkCancellation()
-                                 return image
+                                 return (image, dimension != nil)
                              })
         defer { zoom.closeZoom() }
         zoom.useDevelopedRAW = true
@@ -385,6 +385,22 @@ struct FullSizeJPGDiskCacheTests {
         #expect(zoom.isZoomExifInfoLoaded)
         #expect(!zoom.isApplyingRAW9)
         #expect(zoom.zoomImageError == nil)
+        #expect(zoom.displayedRAWIsReduced == true)
+        zoom.updateRAWPreviewViewport(size: CGSize(width: 1920, height: 1080), displayScale: 2, zoomScale: 2)
+        await gate.waitForArrivals(3)
+        // Keep the badge attached to the reduced image while native pixels load.
+        #expect(zoom.displayedRAWIsReduced == true)
+        await gate.release()
+        let nativeDeadline = ContinuousClock.now + .seconds(5)
+        while zoom.isApplyingRAW9, ContinuousClock.now < nativeDeadline {
+            try await Task.sleep(for: .milliseconds(10))
+        }
+        #expect(dimensions.count == 3)
+        #expect(dimensions.last == .some(nil))
+        #expect(zoom.displayedRAWIsReduced == false)
+        zoom.closeZoom()
+        #expect(zoom.displayedRAWIsReduced == nil)
+
     }
 
     @Test
