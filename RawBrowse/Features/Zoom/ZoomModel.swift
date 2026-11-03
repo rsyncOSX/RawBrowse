@@ -28,6 +28,7 @@ final class ZoomModel {
     }
 
     private(set) var displayedRAWIsReduced: Bool?
+    private(set) var displayedRAWRenderSeconds: Double?
     var zoomImageError: String?
     var zoomImage: CGImage?
     var zoomExifInfo: RawImageMetadata?
@@ -88,6 +89,7 @@ final class ZoomModel {
         if !preserveViewport {
             zoomImage = nil
             displayedRAWIsReduced = nil
+            displayedRAWRenderSeconds = nil
         }
         zoomImageError = nil
         zoomExifInfo = nil
@@ -129,6 +131,7 @@ final class ZoomModel {
             do {
                 let loadedImage: CGImage?
                 var loadedRAWIsReduced = false
+                var loadedRAWRenderSeconds: Double?
                 if developRAW {
                     // Decoder probing and editing state are lazy: JPG navigation never needs them.
                     let shouldLoadSidecar = raw9.prepare(for: selectedFile.url)
@@ -138,10 +141,12 @@ final class ZoomModel {
                         renderedDimension = rawPreviewMaximumDimension
                         renderedAdjustments = raw9.raw9Adjustments
                         renderedBitDepth = settingsModel.values.rawPreviewBitDepth
+                        let started = ContinuousClock.now
                         let preview = try await renderRAWPreview(selectedFile.url, raw9.raw9Adjustments,
                                                                renderedBitDepth, renderedDimension)
                         loadedImage = preview.image
                         loadedRAWIsReduced = preview.isReduced
+                        loadedRAWRenderSeconds = Self.seconds(started.duration(to: .now))
                     } else {
                         loadedImage = try await imageLoader.developedPreview(for: selectedFile.url)
                     }
@@ -151,6 +156,7 @@ final class ZoomModel {
                 }
                 guard !Task.isCancelled else { return }
                 zoomImage = loadedImage
+                displayedRAWRenderSeconds = loadedRAWRenderSeconds
                 displayedRAWIsReduced = developRAW && loadedImage != nil
                     ? loadedRAWIsReduced : nil
                 diagnostic?.end(loadedImage == nil ? "unavailable" : "image")
@@ -211,16 +217,22 @@ final class ZoomModel {
                 }
             }
             do {
+                let started = ContinuousClock.now
                 let preview = try await renderRAWPreview(url, adjustments, bitDepth, maximumDimension)
                 guard !Task.isCancelled, file?.url == url, useDevelopedRAW else { return }
                 zoomImage = preview.image
                 displayedRAWIsReduced = preview.isReduced
+                displayedRAWRenderSeconds = Self.seconds(started.duration(to: .now))
                 zoomImageError = nil
             } catch {
                 guard !Task.isCancelled, file?.url == url else { return }
                 zoomImageError = "RAW development failed: \(error.localizedDescription)"
             }
         }
+    }
+
+    private static func seconds(_ duration: Duration) -> Double {
+        Double(duration.components.seconds) + Double(duration.components.attoseconds) / 1e18
     }
 
     func closeZoom() {
@@ -235,6 +247,7 @@ final class ZoomModel {
         presentation.zoomOverlayVisible = false
         zoomImage = nil
         displayedRAWIsReduced = nil
+        displayedRAWRenderSeconds = nil
         zoomImageError = nil
         zoomExifInfo = nil
         isZoomExifInfoLoaded = false
