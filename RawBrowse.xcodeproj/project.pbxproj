@@ -9,6 +9,10 @@
 /* Begin PBXBuildFile section */
 		E90ED2132FE07ABB0034DF74 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E90ED2082FE07ABB0034DF74 /* Assets.xcassets */; };
 		E90ED21F2FE07AF50034DF74 /* RawBrowseicon.icon in Resources */ = {isa = PBXBuildFile; fileRef = E90ED21E2FE07AF50034DF74 /* RawBrowseicon.icon */; };
+		E99369EA309DA25700495468 /* PhotoEvidenceContracts in Frameworks */ = {isa = PBXBuildFile; productRef = E99369E9309DA25700495468 /* PhotoEvidenceContracts */; };
+		E99369EC309DA25700495468 /* PhotoEvidenceEngine in Frameworks */ = {isa = PBXBuildFile; productRef = E99369EB309DA25700495468 /* PhotoEvidenceEngine */; };
+		E99369EE309DA25700495468 /* PhotoEvidenceUI in Frameworks */ = {isa = PBXBuildFile; productRef = E99369ED309DA25700495468 /* PhotoEvidenceUI */; };
+		E99369F0309DA25700495468 /* PhotoEvidenceDemo in Frameworks */ = {isa = PBXBuildFile; productRef = E99369EF309DA25700495468 /* PhotoEvidenceDemo */; };
 		E9AA44F8305999690019DE2E /* CoreAICLIPBackend in Frameworks */ = {isa = PBXBuildFile; productRef = E9AA44F7305999690019DE2E /* CoreAICLIPBackend */; };
 		E9AA44FA305999690019DE2E /* CoreAIEfficientSAMBackend in Frameworks */ = {isa = PBXBuildFile; productRef = E9AA44F9305999690019DE2E /* CoreAIEfficientSAMBackend */; };
 		E9AA44FE305999690019DE2E /* CoreAISAM3Backend in Frameworks */ = {isa = PBXBuildFile; productRef = E9AA44FD305999690019DE2E /* CoreAISAM3Backend */; };
@@ -18,9 +22,6 @@
 		E9AA4506305999690019DE2E /* VisionFeaturePrintBackend in Frameworks */ = {isa = PBXBuildFile; productRef = E9AA4505305999690019DE2E /* VisionFeaturePrintBackend */; };
 		E9BCDDC92FF6962A004A4A95 /* RawParserKit in Frameworks */ = {isa = PBXBuildFile; productRef = E9BCDDC82FF6962A004A4A95 /* RawParserKit */; };
 		FB0000010000000000000001 /* RawCullCore in Frameworks */ = {isa = PBXBuildFile; productRef = FB0000010000000000000011 /* RawCullCore */; };
-		FEA100000000000000000010 /* PhotoEvidenceContracts in Frameworks */ = {isa = PBXBuildFile; productRef = FEA100000000000000000020 /* PhotoEvidenceContracts */; };
-		FEA100000000000000000011 /* PhotoEvidenceEngine in Frameworks */ = {isa = PBXBuildFile; productRef = FEA100000000000000000021 /* PhotoEvidenceEngine */; };
-		FEA100000000000000000012 /* PhotoEvidenceUI in Frameworks */ = {isa = PBXBuildFile; productRef = FEA100000000000000000022 /* PhotoEvidenceUI */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -68,13 +69,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				E9AA4500305999690019DE2E /* PhotoAIContracts in Frameworks */,
+				E99369F0309DA25700495468 /* PhotoEvidenceDemo in Frameworks */,
 				FB0000010000000000000001 /* RawCullCore in Frameworks */,
-				FEA100000000000000000010 /* PhotoEvidenceContracts in Frameworks */,
-				FEA100000000000000000011 /* PhotoEvidenceEngine in Frameworks */,
-				FEA100000000000000000012 /* PhotoEvidenceUI in Frameworks */,
+				E99369EE309DA25700495468 /* PhotoEvidenceUI in Frameworks */,
 				E9AA4506305999690019DE2E /* VisionFeaturePrintBackend in Frameworks */,
 				E9AA44FE305999690019DE2E /* CoreAISAM3Backend in Frameworks */,
+				E99369EA309DA25700495468 /* PhotoEvidenceContracts in Frameworks */,
 				E9BCDDC92FF6962A004A4A95 /* RawParserKit in Frameworks */,
+				E99369EC309DA25700495468 /* PhotoEvidenceEngine in Frameworks */,
 				E9AA44FA305999690019DE2E /* CoreAIEfficientSAMBackend in Frameworks */,
 				E9AA4504305999690019DE2E /* PhotoAIWorkflows in Frameworks */,
 				E9AA44F8305999690019DE2E /* CoreAICLIPBackend in Frameworks */,
@@ -150,9 +152,6 @@
 			name = RawBrowse;
 			packageProductDependencies = (
 				FB0000010000000000000011 /* RawCullCore */,
-				FEA100000000000000000020 /* PhotoEvidenceContracts */,
-				FEA100000000000000000021 /* PhotoEvidenceEngine */,
-				FEA100000000000000000022 /* PhotoEvidenceUI */,
 				E9BCDDC82FF6962A004A4A95 /* RawParserKit */,
 				E9AA44F7305999690019DE2E /* CoreAICLIPBackend */,
 				E9AA44F9305999690019DE2E /* CoreAIEfficientSAMBackend */,
@@ -161,6 +160,10 @@
 				E9AA4501305999690019DE2E /* PhotoAIStorage */,
 				E9AA4503305999690019DE2E /* PhotoAIWorkflows */,
 				E9AA4505305999690019DE2E /* VisionFeaturePrintBackend */,
+				E99369E9309DA25700495468 /* PhotoEvidenceContracts */,
+				E99369EB309DA25700495468 /* PhotoEvidenceEngine */,
+				E99369ED309DA25700495468 /* PhotoEvidenceUI */,
+				E99369EF309DA25700495468 /* PhotoEvidenceDemo */,
 			);
 			productName = RawBrowse;
 			productReference = FB0000010000000000000003 /* RawBrowse.app */;
@@ -195,10 +198,10 @@
 			mainGroup = FB0000010000000000000007;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				FEA100000000000000000001 /* XCLocalSwiftPackageReference "PhotoEvidenceKit" */,
 				FB000001000000000000000F /* XCRemoteSwiftPackageReference "RawCullCore" */,
 				E9BCDDC72FF6962A004A4A95 /* XCRemoteSwiftPackageReference "RawParserKit" */,
 				E9AA44F6305999690019DE2E /* XCRemoteSwiftPackageReference "PhotoAIKit" */,
+				E99369E8309DA25700495468 /* XCRemoteSwiftPackageReference "PhotoEvidenceKit" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = FB0000010000000000000008 /* Products */;
@@ -553,14 +556,15 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCLocalSwiftPackageReference section */
-        FEA100000000000000000001 /* XCLocalSwiftPackageReference "PhotoEvidenceKit" */ = {
-            isa = XCLocalSwiftPackageReference;
-            relativePath = ../PhotoEvidenceKit;
-        };
-/* End XCLocalSwiftPackageReference section */
-
 /* Begin XCRemoteSwiftPackageReference section */
+		E99369E8309DA25700495468 /* XCRemoteSwiftPackageReference "PhotoEvidenceKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "git@github.com:rsyncOSX/PhotoEvidenceKit.git";
+			requirement = {
+				kind = exactVersion;
+				version = 1.0.0;
+			};
+		};
 		E9AA44F6305999690019DE2E /* XCRemoteSwiftPackageReference "PhotoAIKit" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/rsyncOSX/PhotoAIKit";
@@ -588,6 +592,26 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		E99369E9309DA25700495468 /* PhotoEvidenceContracts */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E99369E8309DA25700495468 /* XCRemoteSwiftPackageReference "PhotoEvidenceKit" */;
+			productName = PhotoEvidenceContracts;
+		};
+		E99369EB309DA25700495468 /* PhotoEvidenceEngine */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E99369E8309DA25700495468 /* XCRemoteSwiftPackageReference "PhotoEvidenceKit" */;
+			productName = PhotoEvidenceEngine;
+		};
+		E99369ED309DA25700495468 /* PhotoEvidenceUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E99369E8309DA25700495468 /* XCRemoteSwiftPackageReference "PhotoEvidenceKit" */;
+			productName = PhotoEvidenceUI;
+		};
+		E99369EF309DA25700495468 /* PhotoEvidenceDemo */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E99369E8309DA25700495468 /* XCRemoteSwiftPackageReference "PhotoEvidenceKit" */;
+			productName = PhotoEvidenceDemo;
+		};
 		E9AA44F7305999690019DE2E /* CoreAICLIPBackend */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = E9AA44F6305999690019DE2E /* XCRemoteSwiftPackageReference "PhotoAIKit" */;
@@ -632,21 +656,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = FB000001000000000000000F /* XCRemoteSwiftPackageReference "RawCullCore" */;
 			productName = RawCullCore;
-		};
-		FEA100000000000000000020 /* PhotoEvidenceContracts */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = FEA100000000000000000001 /* XCLocalSwiftPackageReference "PhotoEvidenceKit" */;
-			productName = PhotoEvidenceContracts;
-		};
-		FEA100000000000000000021 /* PhotoEvidenceEngine */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = FEA100000000000000000001 /* XCLocalSwiftPackageReference "PhotoEvidenceKit" */;
-			productName = PhotoEvidenceEngine;
-		};
-		FEA100000000000000000022 /* PhotoEvidenceUI */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = FEA100000000000000000001 /* XCLocalSwiftPackageReference "PhotoEvidenceKit" */;
-			productName = PhotoEvidenceUI;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
