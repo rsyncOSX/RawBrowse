@@ -1,4 +1,5 @@
 import SwiftUI
+import PhotoEvidenceUI
 
 struct FileBrowserView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -18,7 +19,7 @@ struct FileBrowserView: View {
     @Environment(\.openWindow) private var openWindow
     @State private var isExportQueuePresented = false
     @State private var isCloseUpsPresented = false
-    @State private var closeUps = CloseUpModel()
+    @State private var closeUps = CloseUpModel(storage: BrowserCloseUpRegionStore())
     @State private var closeUpRenderer = BrowserCloseUpRenderer()
     private let exports = RAW9ExportQueue.shared
 
@@ -27,9 +28,8 @@ struct FileBrowserView: View {
             browserWorkspace
             if isCloseUpsPresented {
                 Divider()
-                CloseUpPanel(frames: selection.selectedFiles.map(\.closeUpFrame),
-                             model: closeUps, renderer: closeUpRenderer,
-                             onClose: { isCloseUpsPresented = false })
+                BrowserCloseUpsView(model: closeUps, renderer: closeUpRenderer,
+                                    onClose: { isCloseUpsPresented = false })
             }
         }
     }
@@ -122,7 +122,7 @@ struct FileBrowserView: View {
             Button("Close-ups", systemImage: "viewfinder") {
                 isCloseUpsPresented.toggle()
             }
-            .disabled(selection.selectedFiles.isEmpty && !isCloseUpsPresented)
+            .disabled(selection.selectedFiles.isEmpty && closeUps.reference == nil && !isCloseUpsPresented)
             .help("Inspect manual close-ups of all selected images")
             .accessibilityValue(isCloseUpsPresented ? "Shown" : "Hidden")
 
