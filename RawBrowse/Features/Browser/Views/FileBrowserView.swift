@@ -17,11 +17,25 @@ struct FileBrowserView: View {
     @Environment(FileBrowserViewModel.self) private var viewModel
     @Environment(\.openWindow) private var openWindow
     @State private var isExportQueuePresented = false
+    @State private var isCloseUpsPresented = false
+    @State private var closeUps = CloseUpModel()
+    @State private var closeUpRenderer = BrowserCloseUpRenderer()
     private let exports = RAW9ExportQueue.shared
 
     var body: some View {
-        @Bindable var browserPresentation = browserPresentation
+        return HStack(spacing: 0) {
+            if isCloseUpsPresented {
+                CloseUpPanel(frames: selection.selectedFiles.map(\.closeUpFrame),
+                             model: closeUps, renderer: closeUpRenderer,
+                             onClose: { isCloseUpsPresented = false })
+                Divider()
+            }
+            browserWorkspace
+        }
+    }
 
+    private var browserWorkspace: some View {
+        @Bindable var browserPresentation = browserPresentation
         return ZStack {
             NavigationSplitView {
                 BrowserSidebarView()
@@ -104,6 +118,13 @@ struct FileBrowserView: View {
             }
             .disabled(selection.selectedFile == nil)
             .help("Preview the selected image (Return)")
+
+            Button("Close-ups", systemImage: "viewfinder") {
+                isCloseUpsPresented.toggle()
+            }
+            .disabled(selection.selectedFiles.isEmpty && !isCloseUpsPresented)
+            .help("Inspect manual close-ups of all selected images")
+            .accessibilityValue(isCloseUpsPresented ? "Shown" : "Hidden")
 
             Button("AI Workspace", systemImage: "sparkles.rectangle.stack") {
                 openWindow(id: "ai-workspace")
