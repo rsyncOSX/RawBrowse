@@ -24,13 +24,13 @@ struct FileBrowserView: View {
 
     var body: some View {
         return HStack(spacing: 0) {
+            browserWorkspace
             if isCloseUpsPresented {
+                Divider()
                 CloseUpPanel(frames: selection.selectedFiles.map(\.closeUpFrame),
                              model: closeUps, renderer: closeUpRenderer,
                              onClose: { isCloseUpsPresented = false })
-                Divider()
             }
-            browserWorkspace
         }
     }
 

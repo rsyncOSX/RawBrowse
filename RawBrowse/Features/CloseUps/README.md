@@ -3,7 +3,7 @@
 Implements the manual-inspection slice of TechDocRawCull's Unified Burst Evidence
 plan. In RawBrowse, select images (Command-click or Shift-click), choose Close-ups
 in the toolbar, and open Preview to retain the full photograph alongside the
-vertical panel. All selected images have a card; scrolling loads cards lazily.
+vertical panel on the right. All selected images have a card; scrolling loads cards lazily.
 Click a card's overview, drag its blue region, or use its keyboard-accessible center sliders to choose
 a manual inspection region. Each frame has an independent region. Fit region
 varies magnification; Source pixels shows one oriented source pixel per display
