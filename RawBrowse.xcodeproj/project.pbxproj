@@ -7,11 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E90ED2132FE07ABB0034DF74 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E90ED2082FE07ABB0034DF74 /* Assets.xcassets */; };
+		E90ED21F2FE07AF50034DF74 /* RawBrowseicon.icon in Resources */ = {isa = PBXBuildFile; fileRef = E90ED21E2FE07AF50034DF74 /* RawBrowseicon.icon */; };
 		E99369EA309DA25700495468 /* PhotoEvidenceContracts in Frameworks */ = {isa = PBXBuildFile; productRef = E99369E9309DA25700495468 /* PhotoEvidenceContracts */; };
 		E99369EC309DA25700495468 /* PhotoEvidenceEngine in Frameworks */ = {isa = PBXBuildFile; productRef = E99369EB309DA25700495468 /* PhotoEvidenceEngine */; };
 		E99369EE309DA25700495468 /* PhotoEvidenceUI in Frameworks */ = {isa = PBXBuildFile; productRef = E99369ED309DA25700495468 /* PhotoEvidenceUI */; };
-		E90ED2132FE07ABB0034DF74 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E90ED2082FE07ABB0034DF74 /* Assets.xcassets */; };
-		E90ED21F2FE07AF50034DF74 /* RawBrowseicon.icon in Resources */ = {isa = PBXBuildFile; fileRef = E90ED21E2FE07AF50034DF74 /* RawBrowseicon.icon */; };
 		E9AA44F8305999690019DE2E /* CoreAICLIPBackend in Frameworks */ = {isa = PBXBuildFile; productRef = E9AA44F7305999690019DE2E /* CoreAICLIPBackend */; };
 		E9AA44FA305999690019DE2E /* CoreAIEfficientSAMBackend in Frameworks */ = {isa = PBXBuildFile; productRef = E9AA44F9305999690019DE2E /* CoreAIEfficientSAMBackend */; };
 		E9AA44FE305999690019DE2E /* CoreAISAM3Backend in Frameworks */ = {isa = PBXBuildFile; productRef = E9AA44FD305999690019DE2E /* CoreAISAM3Backend */; };
@@ -20,6 +20,9 @@
 		E9AA4504305999690019DE2E /* PhotoAIWorkflows in Frameworks */ = {isa = PBXBuildFile; productRef = E9AA4503305999690019DE2E /* PhotoAIWorkflows */; };
 		E9AA4506305999690019DE2E /* VisionFeaturePrintBackend in Frameworks */ = {isa = PBXBuildFile; productRef = E9AA4505305999690019DE2E /* VisionFeaturePrintBackend */; };
 		E9BCDDC92FF6962A004A4A95 /* RawParserKit in Frameworks */ = {isa = PBXBuildFile; productRef = E9BCDDC82FF6962A004A4A95 /* RawParserKit */; };
+		E9F81C57309DB1D400A6DBBE /* PhotoEvidenceUI in Frameworks */ = {isa = PBXBuildFile; productRef = E99369ED309DA25700495468 /* PhotoEvidenceUI */; };
+		E9F81C58309DB1D400A6DBBE /* PhotoEvidenceEngine in Frameworks */ = {isa = PBXBuildFile; productRef = E99369EB309DA25700495468 /* PhotoEvidenceEngine */; };
+		E9F81C59309DB1D400A6DBBE /* PhotoEvidenceContracts in Frameworks */ = {isa = PBXBuildFile; productRef = E99369E9309DA25700495468 /* PhotoEvidenceContracts */; };
 		FB0000010000000000000001 /* RawCullCore in Frameworks */ = {isa = PBXBuildFile; productRef = FB0000010000000000000011 /* RawCullCore */; };
 /* End PBXBuildFile section */
 
@@ -60,6 +63,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E9F81C59309DB1D400A6DBBE /* PhotoEvidenceContracts in Frameworks */,
+				E9F81C58309DB1D400A6DBBE /* PhotoEvidenceEngine in Frameworks */,
+				E9F81C57309DB1D400A6DBBE /* PhotoEvidenceUI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -578,7 +584,7 @@
 			repositoryURL = "git@github.com:rsyncOSX/PhotoEvidenceKit.git";
 			requirement = {
 				kind = exactVersion;
-				version = 1.0.1;
+				version = 1.0.2;
 			};
 		};
 		FB000001000000000000000F /* XCRemoteSwiftPackageReference "RawCullCore" */ = {
