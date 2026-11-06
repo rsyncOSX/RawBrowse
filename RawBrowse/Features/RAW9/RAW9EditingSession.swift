@@ -87,6 +87,13 @@ final class RAW9EditingSession {
         raw9LoadedSidecarURL == url && url != nil
     }
 
+    /// Read-only per-file snapshot for other render consumers. It never prepares
+    /// another file or replaces this session's current editing state.
+    func adjustmentsSnapshot(for url: URL) -> RAW9Adjustments? {
+        if isEditing(url), hasRestored(url) { return raw9Adjustments }
+        return pendingSaves[url]?.adjustments
+    }
+
     func close() {
         raw9AdjustmentURL = nil
         raw9LoadedSidecarURL = nil
