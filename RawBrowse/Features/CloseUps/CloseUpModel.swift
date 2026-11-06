@@ -28,11 +28,15 @@ final class CloseUpCardModel {
     private(set) var failure: String?
     private(set) var isLoading = false
     private var generation = 0
+    @ObservationIgnored private var displayedFrame: CloseUpFrame?
 
     func load(_ request: CloseUpRequest, using renderer: any CloseUpRendering) async {
         generation += 1
         let current = generation
-        render = nil
+        // Keep the overview mounted during region edits so an active drag is
+        // not destroyed by its own asynchronous crop request.
+        if displayedFrame != request.frame { render = nil }
+        displayedFrame = request.frame
         failure = nil
         isLoading = true
         do {
@@ -47,6 +51,7 @@ final class CloseUpCardModel {
     }
 
     func release() {
+        displayedFrame = nil
         generation += 1
         render = nil
         failure = nil

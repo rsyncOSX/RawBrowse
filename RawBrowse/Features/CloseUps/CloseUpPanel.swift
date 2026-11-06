@@ -70,6 +70,25 @@ private struct CloseUpCard: View {
         CloseUpRequest(frame: frame, region: region, mode: mode, displayScale: displayScale)
     }
 
+    private func overviewBounds(for render: CloseUpRender) -> CGRect {
+        // Update the selection rectangle immediately; crop rendering may finish
+        // later, especially while the mouse is generating continuous edits.
+        let requested = region.pixelBounds(width: render.sourceWidth, height: render.sourceHeight)
+        let pixels: CGRect
+        if mode == .sourcePixels {
+            let width = min(requested.width, 280)
+            let height = min(requested.height, 210)
+            pixels = CGRect(x: floor(requested.midX - width / 2), y: floor(requested.midY - height / 2),
+                            width: width, height: height)
+        } else {
+            pixels = requested
+        }
+        return CGRect(x: pixels.minX / Double(render.sourceWidth),
+                      y: pixels.minY / Double(render.sourceHeight),
+                      width: pixels.width / Double(render.sourceWidth),
+                      height: pixels.height / Double(render.sourceHeight))
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(frame.name).font(.caption.weight(.semibold)).lineLimit(1).help(frame.name)
@@ -90,9 +109,14 @@ private struct CloseUpCard: View {
                 }
             }
             .frame(height: 210).clipped()
+            .overlay(alignment: .topTrailing) {
+                if model.isLoading, model.render != nil {
+                    ProgressView().controlSize(.small).padding(8)
+                }
+            }
             .accessibilityLabel("Inspection crop for \(frame.name)")
             if let render = model.render {
-                CloseUpOverview(image: render.overview, bounds: render.displayedBounds) { center in
+                CloseUpOverview(image: render.overview, bounds: overviewBounds(for: render)) { center in
                     region.center = center
                 }
                 Text("\(render.sourceLabel) · \(render.sourceWidth) × \(render.sourceHeight)")
@@ -114,7 +138,7 @@ private struct CloseUpCard: View {
                 Slider(value: $region.center.y, in: 0 ... 1)
                     .accessibilityLabel("Vertical region center for \(frame.name)")
             }
-            Text("Click the overview to center a manual region.")
+            Text("Click to center, or drag the blue region in the overview.")
                 .font(.caption2).foregroundStyle(.secondary)
             if let failure = model.failure {
                 Text(failure).font(.caption).foregroundStyle(.secondary)
@@ -133,6 +157,7 @@ private struct CloseUpOverview: View {
     let image: CGImage
     let bounds: CGRect
     let onCenter: (CGPoint) -> Void
+    @State private var dragAnchor: CGPoint?
 
     var body: some View {
         GeometryReader { geometry in
@@ -149,13 +174,26 @@ private struct CloseUpOverview: View {
             }
             .frame(width: size.width, height: size.height)
             .contentShape(Rectangle())
-            .gesture(SpatialTapGesture().onEnded { value in
-                onCenter(CGPoint(x: min(1, max(0, value.location.x / size.width)),
-                                 y: min(1, max(0, value.location.y / size.height))))
-            })
+            .gesture(DragGesture(minimumDistance: 0)
+                .onChanged { value in
+                    guard size.width > 0, size.height > 0 else { return }
+                    if dragAnchor == nil {
+                        let start = CGPoint(x: value.startLocation.x / size.width,
+                                            y: value.startLocation.y / size.height)
+                        // Preserve the grab offset when dragging inside the region.
+                        // Clicking elsewhere centers the region under the pointer.
+                        dragAnchor = bounds.contains(start)
+                            ? CGPoint(x: bounds.midX, y: bounds.midY) : start
+                    }
+                    guard let anchor = dragAnchor else { return }
+                    onCenter(CGPoint(
+                        x: min(1, max(0, anchor.x + value.translation.width / size.width)),
+                        y: min(1, max(0, anchor.y + value.translation.height / size.height))))
+                }
+                .onEnded { _ in dragAnchor = nil })
             .offset(x: origin.x, y: origin.y)
             .accessibilityLabel("Manual region overview")
-            .accessibilityHint("Use region size and Reset to adjust the inspection region.")
+            .accessibilityHint("Click or drag to move the region. Center sliders also support keyboard adjustment.")
         }
         .frame(height: 110)
     }

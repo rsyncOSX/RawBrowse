@@ -75,6 +75,27 @@ struct CloseUpTests {
         #expect(model.render == nil)
     }
 
+    @Test @MainActor func regionRefreshKeepsOverviewAvailableForDragging() async {
+        let renderer = HeldCloseUpRenderer()
+        let model = CloseUpCardModel()
+        let initial = request("drag")
+        let first = Task { await model.load(initial, using: renderer) }
+        await renderer.waitForRequest(initial.frame.id)
+        await renderer.finish(initial.frame.id, label: "initial")
+        await first.value
+        let moved = CloseUpRequest(frame: initial.frame,
+            region: CloseUpRegion(center: CGPoint(x: 0.7, y: 0.6), fraction: 0.25),
+            mode: initial.mode, displayScale: initial.displayScale)
+        let refresh = Task { await model.load(moved, using: renderer) }
+        await renderer.waitForRequest(initial.frame.id)
+        #expect(model.isLoading)
+        #expect(model.render?.sourceLabel == "initial")
+        await renderer.finish(initial.frame.id, label: "moved")
+        await refresh.value
+        #expect(model.render?.sourceLabel == "moved")
+        #expect(!model.isLoading)
+    }
+
     @Test @MainActor func disappearingCardRejectsUncooperativeCompletion() async {
         let renderer = HeldCloseUpRenderer()
         let model = CloseUpCardModel()
