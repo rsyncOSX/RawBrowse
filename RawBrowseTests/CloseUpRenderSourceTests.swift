@@ -7,6 +7,28 @@ import PhotoEvidenceEngine
 
 @Suite("Close-ups decoded source integration") @MainActor
 struct CloseUpRenderSourceTests {
+    @Test func cancelledCapabilityProbeDoesNotDisableRAW9ForLaterEdits() async throws {
+        let probe = CancelledCapabilityProbe()
+        let planner = BrowserCloseUpSourcePlanner(supportsRAW9: { _ in await probe.check() })
+        let file = BrowserCloseUpFile(url: URL(filePath: "/fixture/cancelled.ARW"), refreshRevision: UUID())
+        let inputs = BrowserCloseUpRenderingInputs(files: [file], reference: nil,
+            developRAW: true, bitDepth: .sixteenBit, liveAdjustments: [file.url: RAW9Adjustments()])
+        let cancelled = Task { try await planner.prepare(inputs) }
+        do {
+            _ = try await cancelled.value
+            Issue.record("Cancelled preparation must not publish a plan")
+        } catch is CancellationError {
+            // The next preparation must probe again rather than reuse false.
+        }
+        var edited = RAW9Adjustments(); edited.exposure = 2
+        let updated = BrowserCloseUpRenderingInputs(files: [file], reference: nil,
+            developRAW: true, bitDepth: .sixteenBit, liveAdjustments: [file.url: edited])
+        let plan = try #require(try await planner.prepare(updated).first)
+        #expect(plan.backend == .raw9)
+        #expect(plan.adjustments == edited)
+        #expect(await probe.calls == 2)
+    }
+
     @Test func selectedSourceAppliesToCandidatesAndDeselectedReference() async throws {
         let planner = BrowserCloseUpSourcePlanner(supportsRAW9: { $0.lastPathComponent == "a.ARW" })
         let a = BrowserCloseUpFile(url: URL(filePath: "/fixture/a.ARW"), refreshRevision: UUID())
@@ -85,6 +107,19 @@ struct CloseUpRenderSourceTests {
         #expect(result.renderSource == plan.source)
         #expect(result.sourceLabel == "RAW 9 fixture")
         #expect(await probe.lastPlan == plan)
+    }
+}
+
+private actor CancelledCapabilityProbe {
+    private(set) var calls = 0
+
+    func check() -> Bool {
+        calls += 1
+        if calls == 1 {
+            withUnsafeCurrentTask { $0?.cancel() }
+            return false
+        }
+        return true
     }
 }
 

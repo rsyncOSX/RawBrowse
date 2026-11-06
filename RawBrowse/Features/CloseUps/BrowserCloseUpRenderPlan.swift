@@ -75,6 +75,9 @@ actor BrowserCloseUpSourcePlanner {
                 if let cached = supportCache[frame.revision] { supported = cached }
                 else {
                     supported = await supportsRAW9(frame.id)
+                    // A cancelled decoder probe can report false. Do not retain
+                    // that result as a capability decision for later edits.
+                    try Task.checkCancellation()
                     if supportCache.count > 64 { supportCache.removeAll() }
                     supportCache[frame.revision] = supported
                 }

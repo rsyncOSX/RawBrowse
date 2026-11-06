@@ -27,6 +27,7 @@ struct BrowserCloseUpsView: View {
     }
 
     var body: some View {
+        let snapshot = inputs
         CloseUpPanel(frames: frames, currentFrameID: selection.selectedFile?.url,
             model: model, renderer: renderer, renderSources: sources,
             onActivate: { frame in
@@ -38,8 +39,7 @@ struct BrowserCloseUpsView: View {
                 Text(preparationFailure).font(.caption).padding(8).background(.regularMaterial)
             }
         }
-        .task(id: inputs) {
-            let snapshot = inputs
+        .task(id: snapshot) {
             do {
                 let plans = try await planner.prepare(snapshot)
                 try Task.checkCancellation()
