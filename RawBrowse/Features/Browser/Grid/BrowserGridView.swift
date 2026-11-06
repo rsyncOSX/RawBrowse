@@ -93,9 +93,9 @@ struct BrowserGridView: View {
             }
 
             if clip.isSearching {
-                ProgressView("Searching…")
-                    .padding(14)
-                    .background(.regularMaterial, in: .rect(cornerRadius: 8))
+                ProgressView()
+                    .progressViewStyle(.circular)
+                    .accessibilityLabel("Searching images")
             }
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {

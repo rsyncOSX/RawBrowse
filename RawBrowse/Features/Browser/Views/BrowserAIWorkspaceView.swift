@@ -12,6 +12,7 @@ struct BrowserAIWorkspaceView: View {
 
     @Environment(FileBrowserViewModel.self) private var viewModel
     @Environment(\.openWindow) private var openWindow
+    @Environment(\.dismissWindow) private var dismissWindow
     @State private var reviewFiles: [BrowserFileItem] = []
     @State private var reviewSignature: BurstGroupSignature?
 
@@ -111,7 +112,7 @@ struct BrowserAIWorkspaceView: View {
                             .lineLimit(1)
                         Button("Find Similar", systemImage: "photo.stack") {
                             viewModel.startSimilaritySearch()
-                            openWindow(id: "main-window")
+                            showSearchInBrowser()
                         }
                         .disabled(!viewModel.canFindSimilar)
                     }
@@ -124,9 +125,6 @@ struct BrowserAIWorkspaceView: View {
                 Text("Search uses the top-level catalog’s index. Manage the CLIP model and catalog index in Settings.")
                     .foregroundStyle(.secondary)
             }
-            if clip.isSearching {
-                ProgressView("Searching…")
-            }
             if let error = clip.clipFeatureError {
                 Text(error).foregroundStyle(.orange)
             }
@@ -138,6 +136,12 @@ struct BrowserAIWorkspaceView: View {
               !clip.semanticSearchQuery.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         else { return }
         clip.startSemanticSearch()
+        showSearchInBrowser()
+    }
+
+    private func showSearchInBrowser() {
+        guard clip.isSearching else { return }
         openWindow(id: "main-window")
+        dismissWindow(id: "ai-workspace")
     }
 }
