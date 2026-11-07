@@ -584,7 +584,7 @@
 			repositoryURL = "git@github.com:rsyncOSX/PhotoEvidenceKit.git";
 			requirement = {
 				kind = exactVersion;
-				version = 1.0.5;
+				version = 1.0.6;
 			};
 		};
 		FB000001000000000000000F /* XCRemoteSwiftPackageReference "RawCullCore" */ = {
