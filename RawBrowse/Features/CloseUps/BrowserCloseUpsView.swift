@@ -13,6 +13,7 @@ struct BrowserCloseUpsView: View {
     let renderer: BrowserCloseUpRenderer
     let onClose: () -> Void
     @State private var frames: [CloseUpFrame] = []
+    @State private var afPoints: [URL: CloseUpAFPointAvailability] = [:]
     @State private var sources: [URL: CloseUpRenderSource] = [:]
     @State private var planner = BrowserCloseUpSourcePlanner()
     @State private var preparationFailure: String?
@@ -29,7 +30,7 @@ struct BrowserCloseUpsView: View {
     var body: some View {
         let snapshot = inputs
         CloseUpPanel(frames: frames, currentFrameID: selection.selectedFile?.url,
-            model: model, renderer: renderer, renderSources: sources,
+            model: model, renderer: renderer, renderSources: sources, afPoints: afPoints,
             onActivate: { frame in
                 guard let file = selection.selectedFiles.first(where: { $0.url == frame.id }) else { return }
                 browser.openZoom(for: file)
@@ -43,8 +44,10 @@ struct BrowserCloseUpsView: View {
             do {
                 let plans = try await planner.prepare(snapshot)
                 try Task.checkCancellation()
+                let loadedAFPoints = try await BrowserCloseUpAFPoint.load(for: plans.map(\.frame))
                 await renderer.configure(plans)
                 try Task.checkCancellation()
+                afPoints = loadedAFPoints
                 sources = Dictionary(plans.map { ($0.frame.id, $0.source) }, uniquingKeysWith: { _, last in last })
                 let selectedIDs = Set(snapshot.files.map(\.url))
                 frames = plans.map(\.frame).filter { selectedIDs.contains($0.id) }

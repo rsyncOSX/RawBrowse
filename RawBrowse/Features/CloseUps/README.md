@@ -15,6 +15,11 @@ This folder owns only the host adapters:
 - BrowserCloseUpsView supplies selected frames and current-image identity, and
   handles explicit Show image actions without changing multi-selection.
 
+Each card offers Use AF point, matching RawCull: recorded camera coordinates are
+converted to the oriented image before centering the manual region. Missing or
+invalid AF metadata disables the action with an explanation. This also applies
+to retained references.
+
 The right-hand panel supports Pin/Replace/Unpin reference, independent regions,
 relative linked pan/zoom, unlink/reset and saved regions across navigation and
 relaunch. Pinning is temporary and never changes ratings or winners. Reset region
