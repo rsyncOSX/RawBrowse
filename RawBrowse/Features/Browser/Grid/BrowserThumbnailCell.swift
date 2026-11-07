@@ -7,6 +7,7 @@ struct BrowserThumbnailCell: View {
     let isSelected: Bool
     let thumbnailSize: Int
     let displayPath: String?
+    var showsRAW9Badge = false
 
     @State private var presentation = ThumbnailPresentationModel()
 
@@ -58,6 +59,12 @@ struct BrowserThumbnailCell: View {
                         .padding(6)
                 }
             }
+            .overlay(alignment: .topLeading) {
+                if showsRAW9Badge {
+                    RAW9ThumbnailBadge(url: file.url)
+                        .padding(6)
+                }
+            }
     }
 
     private var borderColor: Color {
@@ -85,5 +92,31 @@ struct BrowserThumbnailCell: View {
                 .font(.largeTitle)
                 .foregroundStyle(.secondary)
         }
+    }
+}
+
+private struct RAW9ThumbnailBadge: View {
+    let url: URL
+
+    @State private var supportedURL: URL?
+
+    var body: some View {
+        // Keep a concrete view mounted so its task runs before support is known.
+        Text("RAW 9")
+            .font(.system(size: 10, weight: .semibold))
+            .foregroundStyle(.white)
+            .padding(.horizontal, 6)
+            .padding(.vertical, 3)
+            .background(.black.opacity(0.7), in: .rect(cornerRadius: 4))
+            .opacity(supportedURL == url ? 1 : 0)
+            .accessibilityLabel("Supports RAW 9")
+            .accessibilityHidden(supportedURL != url)
+            .allowsHitTesting(false)
+            .task(id: url) {
+                supportedURL = nil
+                let isSupported = await RAW9Support.isSupported(for: url)
+                guard !Task.isCancelled else { return }
+                supportedURL = isSupported ? url : nil
+            }
     }
 }

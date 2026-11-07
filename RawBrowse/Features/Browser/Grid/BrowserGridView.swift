@@ -39,6 +39,7 @@ struct BrowserGridView: View {
                             isSelected: selection.selectedFileIDs.contains(file.id),
                             thumbnailSize: settingsModel.values.thumbnailSizeGrid,
                             displayPath: clip.isShowingSemanticResults ? file.url.path : nil,
+                            showsRAW9Badge: clip.isShowingSemanticResults,
                         )
                         .onTapGesture {
                             select(file)
