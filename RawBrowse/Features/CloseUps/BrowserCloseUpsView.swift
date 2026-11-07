@@ -36,8 +36,13 @@ struct BrowserCloseUpsView: View {
                 browser.openZoom(for: file)
                 zoom.presentation.isZoomFocusPointVisible = true
             }, onUseAFPoint: { frame in
-                guard zoom.file?.url == frame.id else { return }
-                zoom.presentation.isZoomFocusPointVisible = true
+                if zoom.presentation.zoomOverlayVisible, zoom.file?.url == frame.id {
+                    zoom.presentation.isZoomFocusPointVisible.toggle()
+                } else {
+                    guard let file = selection.selectedFiles.first(where: { $0.url == frame.id }) else { return }
+                    browser.openZoom(for: file, showFocusPointOnOpen: true)
+                    zoom.presentation.isZoomFocusPointVisible = true
+                }
             }, onClose: onClose)
         .overlay(alignment: .bottom) {
             if let preparationFailure {

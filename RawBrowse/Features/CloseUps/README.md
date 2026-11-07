@@ -20,7 +20,8 @@ Each card offers Use AF point, matching RawCull: recorded camera coordinates are
 converted to the oriented image before centering the manual region. Missing or
 invalid AF metadata disables the action with an explanation. This also applies
 to retained references.
-Using the AF point for the image open in the main preview immediately enables its AF overlay.
+Using the AF point opens that selected image in the main preview with its AF overlay enabled.
+Using it again for the image already open toggles the overlay off or on.
 
 The right-hand panel supports Pin/Replace/Unpin reference, independent regions,
 relative linked pan/zoom, unlink/reset and saved regions across navigation and
