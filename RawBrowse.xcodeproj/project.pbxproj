@@ -428,7 +428,7 @@
 				CODE_SIGN_ENTITLEMENTS = RawBrowse.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 13;
+				CURRENT_PROJECT_VERSION = 14;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 93M47F4H9T;
 				ENABLE_APP_SANDBOX = YES;
@@ -483,7 +483,7 @@
 				CODE_SIGN_ENTITLEMENTS = RawBrowse.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 13;
+				CURRENT_PROJECT_VERSION = 14;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 93M47F4H9T;
 				ENABLE_APP_SANDBOX = YES;
@@ -584,7 +584,7 @@
 			repositoryURL = "git@github.com:rsyncOSX/PhotoEvidenceKit.git";
 			requirement = {
 				kind = exactVersion;
-				version = 1.0.6;
+				version = 1.0.7;
 			};
 		};
 		FB000001000000000000000F /* XCRemoteSwiftPackageReference "RawCullCore" */ = {
