@@ -14,14 +14,16 @@ This folder owns only the host adapters:
   validating source identity/revision when the package restores them.
 - BrowserCloseUpsView supplies selected frames and current-image identity, and
   handles explicit Show image actions without changing multi-selection.
-  Show image also enables the AF point overlay in the main preview when metadata is available.
 
 Each card offers Use AF point, matching RawCull: recorded camera coordinates are
 converted to the oriented image before centering the manual region. Missing or
-invalid AF metadata disables the action with an explanation. This also applies
+invalid AF metadata disables enabling the toggle with an explanation. This also applies
 to retained references.
-Using the AF point opens that selected image in the main preview with its AF overlay enabled.
-Using it again for the image already open toggles the overlay off or on.
+Use AF point is a session preference synchronized with the main preview's AF overlay
+and A shortcut, even while the close-up panel is hidden. It stays enabled across
+navigation and preview resets until switched off. Each new frame centers on its
+own recorded AF point when metadata arrives. Enabling it opens the selected image
+in the main preview; Show image preserves the current AF preference.
 
 The right-hand panel supports Pin/Replace/Unpin reference, independent regions,
 relative linked pan/zoom, unlink/reset and saved regions across navigation and

@@ -902,7 +902,6 @@ struct BrowserZoomOverlayView: View {
         lastScale = transform.scale
         zoomPresentation.zoomOffset = transform.offset
         lastOffset = transform.offset
-        zoomPresentation.isZoomFocusPointVisible = zoom.zoomExifInfo?.focusPoint != nil
     }
 
     private var normalizedFocusPoint: CGPoint? {

@@ -18,7 +18,6 @@ final class ZoomPresentationState {
         zoomOffset = .zero
         isZoomMetadataCollapsed = false
         zoomMetadataOffset = .zero
-        isZoomFocusPointVisible = false
         zoomLaunchContext = .default
     }
 }

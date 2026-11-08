@@ -32,6 +32,14 @@ struct FileBrowserView: View {
                                     onClose: { isCloseUpsPresented = false })
             }
         }
+        .onChange(of: zoomPresentation.isZoomFocusPointVisible, initial: true) { _, enabled in
+            if closeUps.usesAFPoint != enabled { closeUps.usesAFPoint = enabled }
+        }
+        .onChange(of: closeUps.usesAFPoint) { _, enabled in
+            if zoomPresentation.isZoomFocusPointVisible != enabled {
+                zoomPresentation.isZoomFocusPointVisible = enabled
+            }
+        }
     }
 
     private var browserWorkspace: some View {

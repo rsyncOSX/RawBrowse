@@ -6,6 +6,16 @@ import PhotoEvidenceUI
 
 @Suite("Close-ups host integration") @MainActor
 struct CloseUpTests {
+    @Test(arguments: [false, true])
+    func afPreferenceSurvivesPreviewReset(enabled: Bool) {
+        let presentation = ZoomPresentationState()
+        presentation.isZoomFocusPointVisible = enabled
+        presentation.zoomScale = 3
+        presentation.resetZoomInterfaceState()
+        #expect(presentation.isZoomFocusPointVisible == enabled)
+        #expect(presentation.zoomScale == 1)
+    }
+
     @Test func adapterIncludesAllSelectedImagesWithStableSourceRevisions() async throws {
         let directory = URL.temporaryDirectory.appending(path: UUID().uuidString)
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
