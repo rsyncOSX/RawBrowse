@@ -27,7 +27,7 @@ nonisolated enum BrowserCloseUpAFPoint {
             try Task.checkCancellation()
             let access = await CatalogAccess.shared.lease(for: frame.id)
             defer { withExtendedLifetime(access) {} }
-            let metadata = await RawParserKit.RawImageLoader.shared.exifInfo(for: frame.id)
+            let metadata = await RawParserKit.RawImageLoader.shared.metadata(for: frame.id)
             let point = metadata?.focusPoint.map {
                 CGPoint(x: $0.normalizedX, y: $0.normalizedY)
             }

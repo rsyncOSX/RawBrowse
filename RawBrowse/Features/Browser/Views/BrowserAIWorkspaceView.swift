@@ -99,7 +99,7 @@ struct BrowserAIWorkspaceView: View {
                             submitSemanticSearch()
                         }
                         .disabled(!clip.canSearch || clip.semanticSearchQuery.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                        Text("Search returns up to \(clip.semanticSearchLimit) images using the current Settings.")
+                        Text(searchAvailabilityMessage)
                             .foregroundStyle(.secondary)
                     }
                     .padding(8)
@@ -121,13 +121,46 @@ struct BrowserAIWorkspaceView: View {
                 }
                 .frame(width: 300)
             }
-            if !clip.canSearch, !clip.isSearching {
-                Text("Search uses the top-level catalog’s index. Manage the CLIP model and catalog index in Settings.")
-                    .foregroundStyle(.secondary)
-            }
             if let error = clip.clipFeatureError {
                 Text(error).foregroundStyle(.orange)
             }
+        }
+    }
+
+    private var searchAvailabilityMessage: LocalizedStringKey {
+        if clip.canSearch {
+            if clip.semanticSearchQuery.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                return "Enter an image description to search."
+            }
+            return "Search returns up to \(clip.semanticSearchLimit) images using the current Settings."
+        }
+        if clip.isSearching { return "Searching…" }
+        if clip.isIndexing { return "Wait for indexing to finish before searching." }
+
+        switch clip.clipModelStatus {
+        case .notConfigured:
+            return "Choose and verify a CLIP model in Settings → AI."
+        case .missing:
+            return "The selected CLIP model is missing. Choose a model in Settings → AI."
+        case .invalid:
+            return "The selected CLIP model could not be verified. Check Settings → AI."
+        case .checking:
+            return "Checking the CLIP model…"
+        case .available:
+            break
+        }
+
+        switch clip.clipIndexStatus {
+        case .noFolderSelected:
+            return "Select a catalog in the browser to search."
+        case .checking:
+            return "Checking the catalog index…"
+        case .notFound:
+            return "Index the top-level catalog in Settings → AI to enable search."
+        case .invalid:
+            return "Update the top-level catalog’s index in Settings → AI to enable search."
+        case .modelRequired, .valid, .needsUpdate:
+            return "Search is temporarily unavailable."
         }
     }
 
