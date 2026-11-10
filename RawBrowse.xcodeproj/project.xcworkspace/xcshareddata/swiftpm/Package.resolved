@@ -33,8 +33,8 @@
       "kind" : "remoteSourceControl",
       "location" : "git@github.com:rsyncOSX/PhotoEvidenceKit.git",
       "state" : {
-        "revision" : "7614fd1528bb7cf2549799fb937678ea39d90228",
-        "version" : "1.0.7"
+        "revision" : "35e8aca4135ac2151cbce033e4e9baefb8bafabc",
+        "version" : "1.1.0"
       }
     },
     {
@@ -42,8 +42,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/rsyncOSX/RawCullCore.git",
       "state" : {
-        "revision" : "d25a51e65ad32a82bf82f86fa0ec07d6e14498e9",
-        "version" : "1.1.2"
+        "revision" : "ea8ac2fc6611949af2b55ec433456bfe502cf886",
+        "version" : "1.1.5"
       }
     },
     {
