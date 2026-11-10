@@ -8,6 +8,7 @@ struct BrowserCloseUpsView: View {
     @Environment(FileBrowserViewModel.self) private var browser
     @Environment(ZoomModel.self) private var zoom
     @Environment(RAW9EditingSession.self) private var raw9
+    @Environment(CLIPFeatureModel.self) private var clip
     @Environment(SettingsModel.self) private var settings
     let model: CloseUpModel
     let renderer: BrowserCloseUpRenderer
@@ -29,20 +30,35 @@ struct BrowserCloseUpsView: View {
 
     var body: some View {
         let snapshot = inputs
-        CloseUpPanel(frames: frames, currentFrameID: selection.selectedFile?.url,
-            model: model, renderer: renderer, renderSources: sources, afPoints: afPoints,
-            onActivate: { frame in
-                guard let file = selection.selectedFiles.first(where: { $0.url == frame.id }) else { return }
-                browser.openZoom(for: file)
-            }, onUseAFPoint: { frame in
-                if zoom.presentation.zoomOverlayVisible, zoom.file?.url == frame.id {
-                    zoom.presentation.isZoomFocusPointVisible = true
+        VStack(spacing: 0) {
+            if !snapshot.files.isEmpty {
+                if clip.isIndexing {
+                    Text("Detected close-ups resume after indexing")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(12)
                 } else {
-                    guard let file = selection.selectedFiles.first(where: { $0.url == frame.id }) else { return }
-                    browser.openZoom(for: file, showFocusPointOnOpen: true)
-                    zoom.presentation.isZoomFocusPointVisible = true
+                    BrowserDetectedFacesSection(files: snapshot.files)
                 }
-            }, onClose: onClose)
+                Divider()
+            }
+            CloseUpPanel(frames: frames, currentFrameID: selection.selectedFile?.url,
+                model: model, renderer: renderer, renderSources: sources, afPoints: afPoints,
+                onActivate: { frame in
+                    guard let file = selection.selectedFiles.first(where: { $0.url == frame.id }) else { return }
+                    browser.openZoom(for: file)
+                }, onUseAFPoint: { frame in
+                    if zoom.presentation.zoomOverlayVisible, zoom.file?.url == frame.id {
+                        zoom.presentation.isZoomFocusPointVisible = true
+                    } else {
+                        guard let file = selection.selectedFiles.first(where: { $0.url == frame.id }) else { return }
+                        browser.openZoom(for: file, showFocusPointOnOpen: true)
+                        zoom.presentation.isZoomFocusPointVisible = true
+                    }
+                }, onClose: onClose)
+        }
+        .frame(width: 304)
         .overlay(alignment: .bottom) {
             if let preparationFailure {
                 Text(preparationFailure).font(.caption).padding(8).background(.regularMaterial)

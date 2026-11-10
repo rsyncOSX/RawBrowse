@@ -29,6 +29,15 @@
       }
     },
     {
+      "identity" : "photoanalysiskit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/rsyncOSX/PhotoAnalysisKit.git",
+      "state" : {
+        "revision" : "4cc2ce2f0a0354acdb5c026f60e9f966c59d5c85",
+        "version" : "1.3.5"
+      }
+    },
+    {
       "identity" : "photoevidencekit",
       "kind" : "remoteSourceControl",
       "location" : "git@github.com:rsyncOSX/PhotoEvidenceKit.git",

@@ -131,7 +131,7 @@ struct FileBrowserView: View {
                 isCloseUpsPresented.toggle()
             }
             .disabled(selection.selectedFiles.isEmpty && closeUps.reference == nil && !isCloseUpsPresented)
-            .help("Inspect manual close-ups of all selected images")
+            .help("Inspect manual close-ups, detected faces, and animal landmarks in selected images")
             .accessibilityValue(isCloseUpsPresented ? "Shown" : "Hidden")
 
             Button("AI Workspace", systemImage: "sparkles.rectangle.stack") {
