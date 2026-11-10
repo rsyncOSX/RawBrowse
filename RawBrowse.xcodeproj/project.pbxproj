@@ -23,8 +23,8 @@
 		E9F81C57309DB1D400A6DBBE /* PhotoEvidenceUI in Frameworks */ = {isa = PBXBuildFile; productRef = E99369ED309DA25700495468 /* PhotoEvidenceUI */; };
 		E9F81C58309DB1D400A6DBBE /* PhotoEvidenceEngine in Frameworks */ = {isa = PBXBuildFile; productRef = E99369EB309DA25700495468 /* PhotoEvidenceEngine */; };
 		E9F81C59309DB1D400A6DBBE /* PhotoEvidenceContracts in Frameworks */ = {isa = PBXBuildFile; productRef = E99369E9309DA25700495468 /* PhotoEvidenceContracts */; };
-		FB0000010000000000000001 /* RawCullCore in Frameworks */ = {isa = PBXBuildFile; productRef = FB0000010000000000000011 /* RawCullCore */; };
 		E9FF6C1D30A3029300DEF266 /* PhotoAnalysisKit in Frameworks */ = {isa = PBXBuildFile; productRef = E9825225305081A400231F61 /* PhotoAnalysisKit */; };
+		FB0000010000000000000001 /* RawCullCore in Frameworks */ = {isa = PBXBuildFile; productRef = FB0000010000000000000011 /* RawCullCore */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -458,7 +458,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.1.0;
+				MARKETING_VERSION = 1.1.5;
 				PRODUCT_BUNDLE_IDENTIFIER = no.blogspot.RawBrowse;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
@@ -513,7 +513,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.1.0;
+				MARKETING_VERSION = 1.1.5;
 				PRODUCT_BUNDLE_IDENTIFIER = no.blogspot.RawBrowse;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
@@ -591,14 +591,6 @@
 				version = 1.1.0;
 			};
 		};
-		FB000001000000000000000F /* XCRemoteSwiftPackageReference "RawCullCore" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/rsyncOSX/RawCullCore.git";
-			requirement = {
-				kind = exactVersion;
-				version = 1.1.5;
-			};
-		};
 		E9FF6C1C30A3029300DEF266 /* XCRemoteSwiftPackageReference "PhotoAnalysisKit" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/rsyncOSX/PhotoAnalysisKit.git";
@@ -607,9 +599,22 @@
 				version = 1.3.5;
 			};
 		};
+		FB000001000000000000000F /* XCRemoteSwiftPackageReference "RawCullCore" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/rsyncOSX/RawCullCore.git";
+			requirement = {
+				kind = exactVersion;
+				version = 1.1.5;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		E9825225305081A400231F61 /* PhotoAnalysisKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E9FF6C1C30A3029300DEF266 /* XCRemoteSwiftPackageReference "PhotoAnalysisKit" */;
+			productName = PhotoAnalysisKit;
+		};
 		E99369E9309DA25700495468 /* PhotoEvidenceContracts */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = E9F89B78309DAB5200B26A52 /* XCRemoteSwiftPackageReference "PhotoEvidenceKit" */;
@@ -669,11 +674,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = FB000001000000000000000F /* XCRemoteSwiftPackageReference "RawCullCore" */;
 			productName = RawCullCore;
-		};
-		E9825225305081A400231F61 /* PhotoAnalysisKit */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = E9FF6C1C30A3029300DEF266 /* XCRemoteSwiftPackageReference "PhotoAnalysisKit" */;
-			productName = PhotoAnalysisKit;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
