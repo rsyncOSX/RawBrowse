@@ -4,19 +4,24 @@ import PhotoEvidenceEngine
 import SwiftUI
 
 private nonisolated struct BrowserDetectedCrop: Identifiable, Sendable {
-    let evidence: DetectedFaceCloseUp
-    let animalKind: AnimalCloseUpDetector.Kind?
+    let id: Int
     let crop: CGImage
-    var id: Int {
-        evidence.id
-    }
+    let animalKind: AnimalCloseUpDetector.Kind?
+}
+
+private nonisolated enum BrowserFaceStatus: Sendable {
+    case ready
+    case noFace
+    case multipleFaces
+    case detailUnavailable
+    case unavailable
 }
 
 private actor BrowserDetectedFaceLoader {
     static let shared = BrowserDetectedFaceLoader()
     private let analyzer = FaceEvidenceAnalyzer()
 
-    func load(_ url: URL) async throws -> (faces: [BrowserDetectedCrop]?, animals: [BrowserDetectedCrop]?) {
+    func load(_ url: URL) async throws -> (faces: [BrowserDetectedCrop], animals: [BrowserDetectedCrop]?, status: BrowserFaceStatus) {
         let access = await CatalogAccess.shared.lease(for: url)
         defer { withExtendedLifetime(access) {} }
         try Task.checkCancellation()
@@ -32,20 +37,34 @@ private actor BrowserDetectedFaceLoader {
         guard ImageSourceFingerprint.key(for: url) == revision else {
             throw CloseUpRenderError.sourceChanged
         }
-        let faces: [BrowserDetectedCrop]? = result?.faces.compactMap { face in
+        let faces: [BrowserDetectedCrop] = (result?.faces ?? []).compactMap { face in
             let target = DetectedFaceCloseUp(id: face.id, normalizedBounds: face.normalizedBounds,
                                              localDetail: face.localDetail)
             guard let crop = DetectedFaceRasterizer.crop(target, from: preview) else { return nil }
-            return BrowserDetectedCrop(evidence: target, animalKind: nil, crop: crop)
+            return BrowserDetectedCrop(id: face.id, crop: crop, animalKind: nil)
         }
         let animals: [BrowserDetectedCrop]? = animalRegions.map { regions in
             regions.enumerated().compactMap { index, region in
                 let target = DetectedFaceCloseUp(id: index, normalizedBounds: region.bounds, localDetail: nil)
                 guard let crop = DetectedFaceRasterizer.crop(target, from: preview) else { return nil }
-                return BrowserDetectedCrop(evidence: target, animalKind: region.kind, crop: crop)
+                return BrowserDetectedCrop(id: index, crop: crop, animalKind: region.kind)
             }
         }
-        return (faces, animals)
+        let status: BrowserFaceStatus = switch result?.faces.count {
+        case nil:
+            .unavailable
+        case 0:
+            .noFace
+        case 1:
+            if let detail = result?.faces.first?.localDetail, detail.isFinite, detail > 0 {
+                .ready
+            } else {
+                .detailUnavailable
+            }
+        default:
+            .multipleFaces
+        }
+        return (faces, animals, status)
     }
 }
 
@@ -54,7 +73,7 @@ private struct BrowserDetectedFacesView: View {
 
     private enum State {
         case loading
-        case loaded(faces: [BrowserDetectedCrop]?, animals: [BrowserDetectedCrop]?)
+        case loaded(faces: [BrowserDetectedCrop], animals: [BrowserDetectedCrop]?, status: BrowserFaceStatus)
         case unavailable
     }
 
@@ -65,15 +84,15 @@ private struct BrowserDetectedFacesView: View {
         VStack(alignment: .leading, spacing: 6) {
             switch state {
             case .loading:
-                ProgressView().controlSize(.small).accessibilityLabel("Detecting faces and animal landmarks")
+                Label("Checking…", systemImage: "clock")
+                    .font(.caption)
+                    .foregroundStyle(.yellow)
 
-            case let .loaded(faces, animals):
-                if faces?.isEmpty == true && animals?.isEmpty == true {
-                    Text("No faces or animal landmarks detected").font(.caption).foregroundStyle(.secondary)
-                } else if faces?.isEmpty == false || animals?.isEmpty == false {
+            case let .loaded(faces, animals, status):
+                if !faces.isEmpty || animals?.isEmpty == false {
                     ScrollView(.horizontal) {
                         HStack(alignment: .top, spacing: 8) {
-                            ForEach(faces ?? []) { face in
+                            ForEach(faces) { face in
                                 cropTile(face)
                             }
                             ForEach(animals ?? []) { animal in
@@ -82,18 +101,21 @@ private struct BrowserDetectedFacesView: View {
                         }
                     }
                 }
-                if faces == nil || animals == nil {
-                    HStack {
-                        detectionFailure(faces: faces, animals: animals)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                HStack {
+                    faceStatusLabel(status)
+                    if status == .unavailable || animals == nil {
                         Button("Retry") { retry += 1 }.controlSize(.small)
                     }
+                }
+                if animals == nil {
+                    Text("Animal close-ups unavailable")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                 }
 
             case .unavailable:
                 HStack {
-                    Text("Detected close-ups unavailable").font(.caption).foregroundStyle(.secondary)
+                    faceStatusLabel(.unavailable)
                     Button("Retry") { retry += 1 }.controlSize(.small)
                 }
             }
@@ -104,7 +126,7 @@ private struct BrowserDetectedFacesView: View {
                 try await Task.sleep(for: .milliseconds(150))
                 let detections = try await BrowserDetectedFaceLoader.shared.load(url)
                 try Task.checkCancellation()
-                state = .loaded(faces: detections.faces, animals: detections.animals)
+                state = .loaded(faces: detections.faces, animals: detections.animals, status: detections.status)
             } catch {
                 guard !Task.isCancelled else { return }
                 state = .unavailable
@@ -112,35 +134,38 @@ private struct BrowserDetectedFacesView: View {
         }
     }
 
-    private func detectionFailure(faces: [BrowserDetectedCrop]?, animals: [BrowserDetectedCrop]?) -> Text {
-        if faces == nil, animals == nil { return Text("Detected close-ups unavailable") }
-        if faces == nil { return Text("Human face detection unavailable") }
-        return Text("Animal close-ups unavailable")
-    }
-
-    private func cropTile(_ face: BrowserDetectedCrop) -> some View {
-        let label: LocalizedStringResource = switch face.animalKind {
+    private func cropTile(_ detection: BrowserDetectedCrop) -> some View {
+        let label: LocalizedStringKey = switch detection.animalKind {
         case .head: "Animal head"
         case .eye: "Animal eye"
-        case nil: "Detected face \(face.id + 1)"
+        case nil: "Detected face \(detection.id + 1)"
         }
         return VStack(alignment: .leading, spacing: 3) {
-            Image(decorative: face.crop, scale: 1)
+            Image(detection.crop, scale: 1, label: Text(label))
                 .resizable()
                 .scaledToFit()
                 .frame(width: 118, height: 92)
                 .background(.black)
-                .accessibilityLabel(Text(label))
-            Text(label)
-            if face.animalKind == nil, let detail = face.evidence.localDetail {
-                Text("Detail: \(detail.formatted(.number.precision(.significantDigits(3))))")
-                    .help("Preview detail measurement for comparing similar captures of the same face.")
-            } else if face.animalKind == nil {
-                Text("Detail unavailable")
+            if detection.animalKind != nil {
+                Text(label)
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
             }
         }
-        .font(.caption2)
-        .foregroundStyle(.secondary)
+    }
+
+    private func faceStatusLabel(_ status: BrowserFaceStatus) -> some View {
+        let title: LocalizedStringKey = switch status {
+        case .ready: "Face ready"
+        case .noFace: "No face detected"
+        case .multipleFaces: "Multiple faces detected"
+        case .detailUnavailable: "Face detail unavailable"
+        case .unavailable: "Face check unavailable"
+        }
+        return Label(title, systemImage: status == .ready ? "checkmark.circle" : "exclamationmark.triangle")
+            .font(.caption)
+            .foregroundStyle(status == .ready ? Color.green : Color.red)
+            .help("Face evidence for this frame, measured from the browser preview.")
     }
 }
 
@@ -149,8 +174,6 @@ struct BrowserDetectedFacesSection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text("Detected faces and animal landmarks · browser preview")
-                .font(.caption.weight(.semibold))
             if files.count > 1 {
                 ScrollViewReader { proxy in
                     Menu("Jump to image (\(files.count))") {
@@ -165,15 +188,9 @@ struct BrowserDetectedFacesSection: View {
                     ScrollView {
                         LazyVStack(alignment: .leading, spacing: 10) {
                             ForEach(files, id: \.url) { file in
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text(file.url.lastPathComponent)
-                                        .font(.caption.weight(.medium))
-                                        .lineLimit(1)
-                                        .help(file.url.lastPathComponent)
-                                    BrowserDetectedFacesView(url: file.url)
-                                        .id(file.refreshRevision)
-                                }
-                                .id(file.url)
+                                BrowserDetectedFacesView(url: file.url)
+                                    .id(file.refreshRevision)
+                                    .id(file.url)
                             }
                         }
                     }
