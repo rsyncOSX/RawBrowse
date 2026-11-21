@@ -572,7 +572,7 @@
 			repositoryURL = "https://github.com/rsyncOSX/PhotoAIKit";
 			requirement = {
 				kind = exactVersion;
-				version = 1.0.0;
+				version = 3.1.0;
 			};
 		};
 		E9BCDDC72FF6962A004A4A95 /* XCRemoteSwiftPackageReference "RawParserKit" */ = {
@@ -596,7 +596,7 @@
 			repositoryURL = "https://github.com/rsyncOSX/PhotoAnalysisKit.git";
 			requirement = {
 				kind = exactVersion;
-				version = 1.3.9;
+				version = 1.4.0;
 			};
 		};
 		FB000001000000000000000F /* XCRemoteSwiftPackageReference "RawCullCore" */ = {

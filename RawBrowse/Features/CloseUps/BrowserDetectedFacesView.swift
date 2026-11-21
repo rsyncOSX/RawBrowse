@@ -32,7 +32,7 @@ private actor BrowserDetectedFaceLoader {
 
         let result = try? await analyzer.analyze(preview)
         try Task.checkCancellation()
-        let animalRegions = try? AnimalCloseUpDetector.regions(in: preview)
+        let animalRegions = try? await AnimalCloseUpDetector.regions(in: preview)
         try Task.checkCancellation()
         guard ImageSourceFingerprint.key(for: url) == revision else {
             throw CloseUpRenderError.sourceChanged
