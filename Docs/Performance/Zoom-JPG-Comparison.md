@@ -98,7 +98,7 @@ The app's hidden 8700-pixel limit adds a resize for these 9984-pixel previews, w
 
 Full-size JPG browsing now requests native pixels and skips the arbitrary resize. Explicitly bounded loader callers retain their existing resize behavior, and native/bounded variants have separate memory cache keys. Orientation and camera JPEG bytes retain the existing parser/cache handling. Larger native images consume more memory per retained image; the existing byte budget still bounds retention. The legacy full-size setting remains decodable for compatibility; diagnostics now report native resolution.
 
-RAW 9 support probing and sidecar preparation now occur only in developed RAW mode. Catalog badge discovery remains a separate background scan; it can still construct a RAW filter and is not claimed to be eliminated by the JPG navigation change.
+RAW 9 support probing and sidecar preparation now occur only in developed RAW mode. Catalog discovery no longer probes RAW 9 compatibility or displays a compatibility badge.
 
 At investigation time `/Applications/RawBrowse.app` had a 16:43 executable timestamp, preceding the preceding lazy RAW setup change at 16:50. The installed executable therefore did not contain that source change. An optimized build of the updated source is prepared separately for testing; no installed app or user photos are replaced.
 

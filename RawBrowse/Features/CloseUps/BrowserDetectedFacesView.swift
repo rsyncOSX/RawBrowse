@@ -30,6 +30,9 @@ private actor BrowserDetectedFaceLoader {
             throw CloseUpRenderError.unavailable
         }
 
+        try Task.checkCancellation()
+
+        // Both PhotoAnalysisKit APIs submit Vision work to VisionRequestGate.shared.
         let result = try? await analyzer.analyze(preview)
         try Task.checkCancellation()
         let animalRegions = try? await AnimalCloseUpDetector.regions(in: preview)

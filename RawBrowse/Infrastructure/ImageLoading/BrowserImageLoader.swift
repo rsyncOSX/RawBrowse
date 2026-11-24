@@ -56,7 +56,7 @@ actor BrowserImageLoader {
             return children.compactMap { url -> BrowserFolderItem? in
                 let values = try? url.resourceValues(forKeys: keys)
                 guard values?.isDirectory == true, values?.isHidden != true else { return nil }
-                return Self.folderItem(at: url, supportsRAW9: nil)
+                return Self.folderItem(at: url)
             }
             .sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
         }.value
@@ -66,22 +66,8 @@ actor BrowserImageLoader {
         let access = await CatalogAccess.shared.lease(for: folderURL)
         defer { withExtendedLifetime(access) {} }
         return await Task.detached(priority: .utility) {
-            Self.folderItem(at: folderURL, supportsRAW9: nil)
+            Self.folderItem(at: folderURL)
         }.value
-    }
-
-    /// Run decoder probes separately so folder discovery never waits for compatibility.
-    nonisolated func hasRAW9Files(at folderURL: URL) async -> Bool {
-        let access = await CatalogAccess.shared.lease(for: folderURL)
-        defer { withExtendedLifetime(access) {} }
-        let worker = Task.detached(priority: .background) {
-            Self.folderItem(at: folderURL, supportsRAW9: { RAW9Support.supportsDecoder(for: $0) }).hasRAW9Files
-        }
-        return await withTaskCancellationHandler {
-            await worker.value
-        } onCancel: {
-            worker.cancel()
-        }
     }
 
     func discoverSupportedFiles(at folderURL: URL) async throws -> [BrowserFileItem] {
@@ -452,19 +438,14 @@ actor BrowserImageLoader {
     }
 
     /// Called from background discovery; only files directly inside this folder contribute.
-    nonisolated static func folderItem(
-        at folderURL: URL,
-        supportsRAW9: ((URL) -> Bool)? = nil,
-    ) -> BrowserFolderItem {
-        let rawExtensions = RawFormatRegistry.allExtensions
-        let supported = rawExtensions.union(SupportedFileType.renderedImageExtensions)
+    nonisolated static func folderItem(at folderURL: URL) -> BrowserFolderItem {
+        let supported = RawFormatRegistry.allExtensions.union(SupportedFileType.renderedImageExtensions)
         let children = (try? FileManager.default.contentsOfDirectory(
             at: folderURL,
             includingPropertiesForKeys: [.isRegularFileKey],
             options: [.skipsHiddenFiles, .skipsPackageDescendants],
         )) ?? []
         var count = 0
-        var hasRAW9Files = false
         for url in children {
             guard !Task.isCancelled else { break }
             let fileExtension = url.pathExtension.lowercased()
@@ -472,17 +453,11 @@ actor BrowserImageLoader {
                   (try? url.resourceValues(forKeys: [.isRegularFileKey]))?.isRegularFile == true
             else { continue }
             count += 1
-            if let supportsRAW9, !hasRAW9Files, rawExtensions.contains(fileExtension),
-               !SupportedFileType.isRenderedImage(url)
-            {
-                hasRAW9Files = supportsRAW9(url)
-            }
         }
         return BrowserFolderItem(
             url: folderURL,
             supportedFileCount: count,
             hasCLIPIndex: CLIPIndexPaths.containsIndex(in: folderURL),
-            hasRAW9Files: hasRAW9Files,
         )
     }
 }
